@@ -2,6 +2,19 @@
 
 A digital platform designed for the Benue State Agro-Climatic Resilience in Semi-Arid Landscapes (ACReSAL) Project to track key interventions, engage communities, and support proactive decision-making through simple AI predictions.
 
+## Table of Contents
+
+- [1. Project Overview](#1-project-overview)
+- [2. Stakeholders](#2-stakeholders)
+- [3. Features](#3-features)
+- [4. User Roles & Access Levels](#4-user-roles--access-levels)
+- [5. System Components](#5-system-components)
+- [6. Non-Functional Requirements](#6-non-functional-requirements)
+- [7. Assumptions & Constraints](#7-assumptions--constraints)
+- [8. Future Enhancements](#8-future-enhancements)
+- [9. Technology Suggestions](#9-technology-suggestions)
+- [10. Project Status](#10-project-status)
+
 ---
 
 ## 1. Project Overview
