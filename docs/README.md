@@ -17,8 +17,8 @@ For the general project pitch, see the [root README](../README.md).
 - [Data Model](architecture/data-model.md) — draft core entities and relationships
 - [Technology Stack](architecture/tech-stack.md) — recommended stack and rationale
 - [Architecture Decision Records](architecture/decisions/) — a dated log of significant architecture decisions
-  - [0001 — Record Architecture Decisions](architecture/decisions/0001-record-architecture-decisions.md)
-  - [0002 — Adopt Initial Technology Stack](architecture/decisions/0002-adopt-initial-technology-stack.md)
+  - [0001 — Record Architecture Decisions](architecture/decisions/0001-record-architecture-decisions.md) (Accepted)
+  - [0002 — Adopt Initial Technology Stack](architecture/decisions/0002-adopt-initial-technology-stack.md) (Accepted)
 
 ## Documentation Conventions
 

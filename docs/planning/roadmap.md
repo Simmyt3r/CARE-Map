@@ -1,13 +1,13 @@
 # Roadmap
 
 **Status:** Proposed — for team review and re-prioritization
-**Last updated:** 2026-09-01
+**Last updated:** 2026-09-10
 
 The [root README](../../README.md) states that development will happen in phases, with AI features starting simple and improving as data accumulates. This roadmap proposes one way to sequence that work. It's a starting point, not a commitment — scope and durations are for the team to confirm.
 
 ## Phase 0 — Planning & Design (current)
 - [x] Finalize requirements and close the open questions in [requirements.md](requirements.md)
-- [ ] Confirm or revise the technology stack (see [ADR-0002](../architecture/decisions/0002-adopt-initial-technology-stack.md))
+- [x] Confirm or revise the technology stack (see [ADR-0002](../architecture/decisions/0002-adopt-initial-technology-stack.md))
 - [ ] Produce detailed design: data model, API contracts, wireframes
 - [x] Identify pilot LGAs for initial rollout
 

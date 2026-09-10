@@ -1,7 +1,8 @@
 # 0002 — Adopt Initial Technology Stack
 
-**Status:** Proposed
-**Date:** 2026-09-01
+**Status:** Accepted
+**Proposed:** 2026-09-01
+**Accepted:** 2026-09-10
 
 ## Context
 
@@ -21,5 +22,5 @@ Full rationale is in [tech-stack.md](../tech-stack.md).
 ## Consequences
 
 - The team can start detailed design and prototyping immediately instead of blocking on a full technology evaluation.
-- Because this is **Proposed**, not **Accepted**, it should be revisited explicitly once the team has evaluated alternatives (e.g. PostGIS vs. a managed geospatial service) — at that point this ADR should move to Accepted, or a new ADR should supersede it.
+- Accepted as a starting point without a full formal evaluation of alternatives (e.g. PostGIS vs. a managed geospatial service). Per [ADR-0001](0001-record-architecture-decisions.md), this ADR won't be edited further — if that evaluation later favors a different choice, a new ADR should supersede this one.
 - Choosing Supabase/Firebase now optimizes for delivery speed over long-term infrastructure control; worth revisiting before Phase 2 if more backend flexibility looks necessary.
