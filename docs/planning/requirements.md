@@ -60,7 +60,7 @@ This restates the requirements from the [root README](../../README.md) as discre
 |----|-------------|
 | NFR-01 | **Usability** — the interface must be simple and mobile-friendly. |
 | NFR-02 | **Accessibility** — the public map must be usable without login. |
-| NFR-03 | **Performance** — maps and data must load quickly. |
+| NFR-03 | **Performance** — the system supports at least 500 concurrent users, with map and data views loading in under 2 seconds. |
 | NFR-04 | **Scalability** — the system must support growing data volume over time. |
 | NFR-05 | **Security** — staff data is protected; public data is view-only. |
 | NFR-06 | **Offline capability** — the system should degrade gracefully in areas with poor internet (desirable, not mandatory for v1). |
@@ -78,6 +78,8 @@ This restates the requirements from the [root README](../../README.md) as discre
 
 ## Open Questions
 
-- [ ] What load/response-time targets define "fast loading" (NFR-03), and how many concurrent users should the system support?
-- [ ] What data retention and privacy rules apply to community-submitted reports and registered users' personal data?
-- [ ] Which LGAs (Local Government Areas) are in scope for the initial rollout?
+All three were resolved on 2026-09-01 and are kept here for traceability rather than deleted.
+
+- [x] ~~What load/response-time targets define "fast loading" (NFR-03), and how many concurrent users should the system support?~~ → Resolved: 500 concurrent users, sub-2-second map load (see NFR-03 above).
+- [x] ~~What data retention and privacy rules apply to community-submitted reports and registered users' personal data?~~ → Resolved: see [data-privacy.md](data-privacy.md).
+- [x] ~~Which LGAs (Local Government Areas) are in scope for the initial rollout?~~ → Resolved: all ~14 currently-active ACReSAL LGAs (see [scope.md](scope.md)).

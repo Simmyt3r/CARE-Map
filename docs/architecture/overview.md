@@ -39,6 +39,7 @@ flowchart TD
 - **Staff data changes are the authoritative source.** Community reports feed into the Data Management Module as proposed/unverified entries rather than directly overwriting staff-managed records — verification is a staff responsibility per the README's user roles.
 - **AI starts simple.** The AI Prediction Engine is designed to run as rule-based logic first, so Phase 3 doesn't block on a trained model or a large dataset — see [roadmap.md](../planning/roadmap.md).
 - **Mobile-first.** All modules are designed for mobile-friendly usage given the target users (NFR-01).
+- **Privacy by design.** The Data Management Module needs an anonymization/deletion path for `Report` and `User` records, not just create/read/update — see [data-privacy.md](../planning/data-privacy.md).
 
 ## Open Design Questions
 

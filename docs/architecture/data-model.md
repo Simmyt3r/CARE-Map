@@ -73,3 +73,4 @@ erDiagram
 
 - `Report` is intentionally decoupled from the entity it concerns, since community members may report a problem with something not yet in the system (e.g. an unknown small river).
 - Verification state on community-reported entities is a workflow concern as much as a data concern — see the related open question in [architecture/overview.md](overview.md).
+- `Report` and `User` both need an anonymization/deletion path per [data-privacy.md](../planning/data-privacy.md) — personal identifiers on `Report` are stripped 2 years after resolution, and `User` records are deletable by the user at any time.

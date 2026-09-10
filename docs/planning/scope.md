@@ -3,6 +3,14 @@
 **Status:** Draft
 **Last updated:** 2026-09-01
 
+## Pilot LGAs
+
+**Resolved 2026-09-01:** the initial rollout covers all Benue LGAs where ACReSAL already has active ground-level interventions (dam rehabilitation, boreholes, gully-erosion control, afforestation, or climate-smart farming support) as of September 2026 — 14 of Benue's 23 LGAs:
+
+Makurdi, Vandeikya, Otukpo, Gwer West, Ogbadibo, Gboko, Ohimini, Oju, Konshisha, Gwer East, Katsina-Ala, Kwande, Guma, and Agatu.
+
+Makurdi and Vandeikya were the original pilot LGAs named for the broader ACReSAL scheme; the rest were included because they already have real interventions for CARE-Map to track from launch. The remaining 9 LGAs are candidates for a later expansion phase — see [roadmap.md](roadmap.md).
+
 ## In Scope
 
 - Boreholes

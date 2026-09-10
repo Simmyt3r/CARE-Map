@@ -10,6 +10,7 @@ For the general project pitch, see the [root README](../README.md).
 - [Requirements](planning/requirements.md) — functional and non-functional requirements, with traceable IDs
 - [Roadmap](planning/roadmap.md) — proposed phased delivery plan
 - [Scope](planning/scope.md) — in-scope / out-of-scope boundaries, assumptions, and constraints
+- [Data Privacy & Retention](planning/data-privacy.md) — NDPA-grounded retention rules and data subject rights
 
 ### Architecture
 - [Architecture Overview](architecture/overview.md) — components, diagram, and data flow
