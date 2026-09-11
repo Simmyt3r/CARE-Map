@@ -5,13 +5,15 @@
 
 The [root README](../../README.md) states that development will happen in phases, with AI features starting simple and improving as data accumulates. This roadmap proposes one way to sequence that work. It's a starting point, not a commitment — scope and durations are for the team to confirm.
 
-## Phase 0 — Planning & Design (current)
+## Phase 0 — Planning & Design ✅ Complete (2026-09-10)
 - [x] Finalize requirements and close the open questions in [requirements.md](requirements.md)
 - [x] Confirm or revise the technology stack (see [ADR-0002](../architecture/decisions/0002-adopt-initial-technology-stack.md))
-- [ ] Produce detailed design: data model, API contracts, wireframes
+- [x] Produce detailed design: data model, API contracts, wireframes
 - [x] Identify pilot LGAs for initial rollout
 
-## Phase 1 — Core Tracking (MVP)
+All four items are done; see [data-model.md](../architecture/data-model.md), [api-contracts.md](../architecture/api-contracts.md), and [design/](../design/README.md) for the detailed-design output. Phase 1 can start.
+
+## Phase 1 — Core Tracking (MVP) (current)
 - Staff-facing create/edit for boreholes, assets, forests/afforestation sites, and rivers
 - GPS, photo, and status capture per record
 - Interactive public map (view-only, no login)

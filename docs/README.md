@@ -14,11 +14,15 @@ For the general project pitch, see the [root README](../README.md).
 
 ### Architecture
 - [Architecture Overview](architecture/overview.md) — components, diagram, and data flow
-- [Data Model](architecture/data-model.md) — draft core entities and relationships
-- [Technology Stack](architecture/tech-stack.md) — recommended stack and rationale
+- [Data Model](architecture/data-model.md) — entities and a PostgreSQL/PostGIS schema
+- [API Contracts](architecture/api-contracts.md) — REST endpoints, auth, and request/response conventions
+- [Technology Stack](architecture/tech-stack.md) — accepted stack and rationale
 - [Architecture Decision Records](architecture/decisions/) — a dated log of significant architecture decisions
   - [0001 — Record Architecture Decisions](architecture/decisions/0001-record-architecture-decisions.md) (Accepted)
   - [0002 — Adopt Initial Technology Stack](architecture/decisions/0002-adopt-initial-technology-stack.md) (Accepted)
+
+### Design
+- [Wireframes](design/README.md) — low-fidelity screens for the public map, report submission, staff data entry, and the dashboard
 
 ## Documentation Conventions
 
