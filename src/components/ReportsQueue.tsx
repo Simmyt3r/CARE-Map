@@ -1,0 +1,8 @@
+"use client";
+import {useEffect,useState} from "react";
+export default function ReportsQueue(){
+ const[rows,setRows]=useState<any[]>([]),[message,setMessage]=useState("");
+ async function load(){const r=await fetch("/api/reports");const j=await r.json();setRows(j.data||[]);}useEffect(()=>{load();},[]);
+ async function move(id:string,status:string){setMessage("");const r=await fetch("/api/reports/"+id+"/status",{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({status})});if(!r.ok){const j=await r.json().catch(()=>({}));return setMessage(j.error?.message||"Update failed.");}load();}
+ return <div className="card">{message&&<div className="error">{message}</div>}<div className="table-wrap"><table><thead><tr><th>Report</th><th>Location</th><th>Status</th><th>Submitted</th><th>Workflow</th></tr></thead><tbody>{rows.map(r=><tr key={r.id}><td><strong>{r.type}</strong><div className="muted">{r.description}</div><small>{r.reporter_name||r.submitter_name||"Anonymous"} {r.reporter_contact||""}</small></td><td>{Number(r.latitude).toFixed(5)}, {Number(r.longitude).toFixed(5)}</td><td><span className="badge">{r.status}</span></td><td>{new Date(r.submitted_at).toLocaleString()}</td><td><div className="actions"><button className="btn" onClick={()=>move(r.id,"under_review")}>Review</button><button className="btn" onClick={()=>move(r.id,"verified")}>Verify</button><button className="btn primary" onClick={()=>move(r.id,"resolved")}>Resolve</button><button className="btn danger" onClick={()=>move(r.id,"rejected")}>Reject</button></div></td></tr>)}</tbody></table></div></div>
+}

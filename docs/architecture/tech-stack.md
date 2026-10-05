@@ -1,18 +1,29 @@
 # Technology Stack
 
-**Status:** Accepted — formalized in [ADR-0002](decisions/0002-adopt-initial-technology-stack.md)
-**Last updated:** 2026-09-10
+**Status:** Accepted
+**Last updated:** 2026-10-05
 
-This expands on the "Technology Suggestions" in the [root README](../../README.md#9-technology-suggestions) with brief rationale.
+ADR-0003 supersedes the backend ambiguity in ADR-0002.
 
-| Layer | Recommendation | Why |
-|-------|-----------------|-----|
-| Frontend | React + Leaflet / MapLibre | React is a well-supported, maintainable choice for a combined staff+public web app; Leaflet/MapLibre are lightweight, open-source mapping libraries well suited to an interactive intervention map. |
-| Backend & Database | Supabase or Firebase | Both bundle auth, database, and hosting, which speeds up delivery of an MVP with a small team. |
-| Alternative Backend | Node.js + PostgreSQL/PostGIS | PostGIS supports the geospatial queries (location, boundaries) this project needs, if more control than Supabase/Firebase is required later. |
-| Hosting | Vercel / Netlify | Low-friction hosting for the frontend, especially before scale is a concern. |
-| AI/ML | Python (scikit-learn) or rule-based logic | Keeps Phase 3 (AI Prediction) simple initially, consistent with the "start simple" principle in [roadmap.md](../planning/roadmap.md). |
+| Layer | Selected technology | Reason |
+|---|---|---|
+| Web | Next.js 16.3.8 + React + TypeScript | Single full-stack application, server routes, mobile-first UI, straightforward Vercel deployment |
+| GIS rendering | MapLibre GL JS | Open-source interactive map engine with GeoJSON support |
+| Database | Aiven for PostgreSQL | Managed relational database aligned with CARE-Map structured intervention data |
+| Spatial engine | PostGIS | Native points, lines, polygons, GIST indexes, bounding-box queries, distance calculations and GeoJSON output |
+| Authentication | JWT HTTP-only sessions + database roles | Deployable RBAC without coupling CARE-Map to another backend vendor |
+| Hosting | Vercel | Fits the Next.js runtime and scheduled cron endpoint |
+| Risk/AI | Rule-based scoring first | Explainable decisions before enough validated historical data exists for ML |
+| Testing | TypeScript, ESLint, Vitest, GitHub Actions | Automated regression and build checks |
 
-## Status Note
+## Database transport
 
-This was accepted on 2026-09-10 as the working stack, without a full formal evaluation of alternatives — see [ADR-0002](decisions/0002-adopt-initial-technology-stack.md) for the trade-off this accepts and when it should be revisited.
+Aiven PostgreSQL connections use TLS. Production should provide the Aiven CA certificate through AIVEN_CA_CERT so the Node PostgreSQL client performs certificate verification.
+
+## Spatial design
+
+All CARE-Map spatial records use SRID 4326. Points are stored for boreholes, assets and reports; arbitrary geometry is stored for forest boundaries and river courses. Each spatial column has a GIST index.
+
+## Revisit triggers
+
+Revisit this stack only if field deployment reveals a concrete constraint such as native offline requirements, substantially higher tile traffic, satellite-processing workloads, or integration requirements from ACReSAL existing systems.
