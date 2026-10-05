@@ -1,6 +1,7 @@
 "use client";
 import {useEffect,useRef,useState} from "react";
-import maplibregl,{type GeoJSONSource} from "maplibre-gl";
+import * as maplibregl from "maplibre-gl";
+import type {GeoJSONSource} from "maplibre-gl";
 type Lga={code:string;name:string};
 type Filters={type:string;lga:string;status:string};
 export default function PublicMap(){
