@@ -1,1 +1,2 @@
-export default function AppNav(){return <header className="topbar"><div className="shell topbar-inner"><a className="brand" href="/">CARE-Map</a><nav className="nav"><a href="/">Public Map</a><a href="/report">Report Issue</a><a href="/register">Register</a><a href="/login">Staff Login</a></nav></div></header>}
+import Link from "next/link";
+export default function AppNav(){return <header className="topbar"><div className="shell topbar-inner"><Link className="brand" href="/">CARE-Map</Link><nav className="nav"><Link href="/">Public Map</Link><Link href="/report">Report Issue</Link><Link href="/register">Register</Link><Link href="/login">Staff Login</Link></nav></div></header>}
