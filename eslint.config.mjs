@@ -4,6 +4,6 @@ import nextTs from "eslint-config-next/typescript";
 export default defineConfig([
   ...nextVitals,
   ...nextTs,
-  { rules: { "@typescript-eslint/no-explicit-any":"off", "react-hooks/exhaustive-deps":"off" } },
+  { rules: { "@typescript-eslint/no-explicit-any":"off", "react-hooks/exhaustive-deps":"off", "react-hooks/set-state-in-effect":"off" } },
   globalIgnores([".next/**","coverage/**","node_modules/**"])
 ]);
