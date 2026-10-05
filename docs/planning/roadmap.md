@@ -1,43 +1,76 @@
 # Roadmap
 
-**Status:** Proposed — for team review and re-prioritization
-**Last updated:** 2026-09-10
+**Status:** Core product implementation built
+**Last updated:** 2026-10-05
 
-The [root README](../../README.md) states that development will happen in phases, with AI features starting simple and improving as data accumulates. This roadmap proposes one way to sequence that work. It's a starting point, not a commitment — scope and durations are for the team to confirm.
+## Phase 0 — Planning & Design ✅
+- [x] Requirements
+- [x] Technology decision
+- [x] Data model
+- [x] API contracts
+- [x] Mobile wireframes
+- [x] Pilot LGA scope
 
-## Phase 0 — Planning & Design ✅ Complete (2026-09-10)
-- [x] Finalize requirements and close the open questions in [requirements.md](requirements.md)
-- [x] Confirm or revise the technology stack (see [ADR-0002](../architecture/decisions/0002-adopt-initial-technology-stack.md))
-- [x] Produce detailed design: data model, API contracts, wireframes
-- [x] Identify pilot LGAs for initial rollout
+## Phase 1 — Core Tracking ✅ Implementation complete
+- [x] Aiven PostgreSQL/PostGIS migration
+- [x] Staff authentication and roles
+- [x] Borehole CRUD foundation
+- [x] Asset CRUD foundation
+- [x] Forest-site CRUD foundation
+- [x] River CRUD foundation and verification flag
+- [x] GPS capture for point interventions
+- [x] GeoJSON line/polygon entry
+- [x] Public interactive map
+- [x] Bounding-box spatial queries
+- [x] LGA/type/status filtering
+- [x] Spatial GIST indexes
+- [x] Maintenance records API
 
-All four items are done; see [data-model.md](../architecture/data-model.md), [api-contracts.md](../architecture/api-contracts.md), and [design/](../design/README.md) for the detailed-design output. Phase 1 can start.
+Production gate: run the migration against the real Aiven service and field-test with validated coordinates.
 
-## Phase 1 — Core Tracking (MVP) (current)
-- Staff-facing create/edit for boreholes, assets, forests/afforestation sites, and rivers
-- GPS, photo, and status capture per record
-- Interactive public map (view-only, no login)
-- Filtering and search by LGA, type, status, and date
+## Phase 2 — Community Reporting ✅ Implementation complete
+- [x] Anonymous public reporting
+- [x] Unknown stream/small-river reporting
+- [x] Optional community registration
+- [x] Registered user report tracking
+- [x] Staff report review queue
+- [x] Verify/reject/resolve workflow
+- [x] Rate limiting
+- [x] Privacy retention/anonymization hook
 
-## Phase 2 — Community Reporting
-- Public problem reporting (faulty borehole, dying trees, erosion, etc.)
-- Community reporting of unknown small rivers/streams
-- Optional community registration and report status tracking
+## Phase 3 — Risk Prediction ✅ Rule-based baseline complete
+- [x] Borehole maintenance-risk score
+- [x] Asset maintenance-risk score
+- [x] Forest-site nearby-report risk signal
+- [x] River stress-to-risk conversion
+- [x] Priority ranking endpoint
+- [x] Scheduled daily refresh
+- [ ] Replace or augment rules with validated ML only after sufficient quality historical data exists
 
-## Phase 3 — AI Prediction (rule-based first)
-- Rule-based maintenance-need predictions for boreholes/assets
-- Rule-based flagging of flood/erosion/disaster risk areas
-- Forest/afforestation failure risk indicators
-- Priority ranking output for staff action
+## Phase 4 — Dashboard, Reporting & Hardening 🟡 Mostly complete
+- [x] Staff summary dashboard
+- [x] Functional-rate metric
+- [x] High-risk overview
+- [x] CSV export
+- [x] Audit log
+- [x] PWA/service-worker baseline
+- [x] CI workflow
+- [x] Admin user management
+- [ ] Validate offline behavior in target LGAs
+- [ ] Add photo object-storage provider and direct field uploads
+- [ ] Add English/local-language translations
+- [ ] Evaluate satellite/Google Earth Engine integration
+- [ ] Complete formal NDPA/legal review
+- [ ] Field acceptance testing and production launch
 
-## Phase 4 — Dashboard, Reporting & Hardening
-- Summary dashboard (totals, functional rates, risk overview)
-- Data/map export
-- Offline-friendly improvements for low-connectivity areas
-- Multi-language support (English + local languages)
-- Evaluate satellite data integration (e.g. Google Earth Engine) and SMS/WhatsApp notifications
+## Immediate production sequence
 
-## Sequencing Notes
-
-- AI features (Phase 3) are sequenced after Phases 1–2 so there's real tracking data to work from, matching the README's "start simple, improve as more data is collected" approach.
-- Offline support and multi-language are called out as future/desirable in the README's [Future Enhancements](../../README.md#8-future-enhancements), so they're placed after the core loop is proven rather than in the MVP.
+1. Provision Aiven PostgreSQL.
+2. Configure TLS secrets.
+3. Apply migrations.
+4. Seed administrator.
+5. Deploy to Vercel.
+6. Import or collect verified initial intervention coordinates.
+7. Field-test GPS capture and report workflow.
+8. Launch internally to ACReSAL staff.
+9. Open the public map after data-quality review.
