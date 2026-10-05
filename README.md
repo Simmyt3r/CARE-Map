@@ -1,158 +1,102 @@
-# Benue ACReSAL Smart Asset, Forest, River & Borehole Tracking System
+# CARE-Map
 
-A digital platform designed for the Benue State Agro-Climatic Resilience in Semi-Arid Landscapes (ACReSAL) Project to track key interventions, engage communities, and support proactive decision-making through simple AI predictions.
+**Benue ACReSAL Smart Asset, Forest, River & Borehole Tracking System**
 
-## Table of Contents
+CARE-Map is a mobile-first GIS platform for tracking ACReSAL interventions, collecting community reports, monitoring maintenance, and prioritizing field action with explainable risk scoring.
 
-- [1. Project Overview](#1-project-overview)
-- [2. Stakeholders](#2-stakeholders)
-- [3. Features](#3-features)
-- [4. User Roles & Access Levels](#4-user-roles--access-levels)
-- [5. System Components](#5-system-components)
-- [6. Non-Functional Requirements](#6-non-functional-requirements)
-- [7. Assumptions & Constraints](#7-assumptions--constraints)
-- [8. Future Enhancements](#8-future-enhancements)
-- [9. Technology Suggestions](#9-technology-suggestions)
-- [10. Project Status](#10-project-status)
+## Current implementation
 
----
+The repository now contains a working Next.js application and Aiven/PostGIS database migration, not only planning documents.
 
-## 1. Project Overview
+### Public
+- Interactive MapLibre map backed by PostGIS GeoJSON queries
+- Borehole, asset, forest-site, and river layers
+- LGA/type/status filtering
+- Bounding-box queries so only the visible map area is requested
+- Anonymous community problem reporting
+- Small-river/stream reporting
+- Phone GPS capture or manual coordinate entry
+- Optional community registration and report tracking
+- PWA/service-worker shell for graceful low-connectivity behavior
 
-### Purpose
-This system enables ACReSAL staff and community members to monitor and manage critical project interventions while capturing valuable local knowledge.
+### Staff
+- Secure staff/admin authentication
+- Operations dashboard
+- Borehole and asset coordinate capture
+- Forest polygon and river line entry using GeoJSON
+- Infrastructure status updates
+- Maintenance-history API
+- Community report review/verification/resolution workflow
+- Explainable risk priority ranking
+- CSV export
 
-### Key Objectives
-- Digitally track boreholes, assets, forests/afforestation sites, and rivers
-- Provide public access to project interventions via an interactive map
-- Allow communities to report issues and unknown small rivers/streams
-- Use simple AI to predict maintenance needs and disaster risks
-- Improve transparency, monitoring, and early response
+### Administration
+- Role-based users: registered community, staff, admin
+- Admin user creation
+- Audit logging for key data changes
+- Scheduled risk refresh and two-year report anonymization hook
 
-### Scope
-The system covers:
-- Boreholes
-- Project assets (irrigation pumps, equipment, etc.)
-- Forests and afforestation sites
-- Official rivers and water-related interventions
-- Community-reported small rivers and streams
+## Technology
 
----
+- Next.js 16.3.8 + React + TypeScript
+- MapLibre GL JS
+- Aiven for PostgreSQL
+- PostGIS
+- JWT HTTP-only sessions
+- Vercel
+- Vitest + GitHub Actions
 
-## 2. Stakeholders
+Architecture decision: docs/architecture/decisions/0003-adopt-aiven-postgis-nextjs.md
 
-| Stakeholder              | Interest                                      |
-|--------------------------|-----------------------------------------------|
-| ACReSAL Staff / SPMU     | Manage data, monitor progress, receive alerts |
-| GIS / MIS Officer        | Spatial data management and analysis          |
-| M&E Team                 | Reporting and performance tracking            |
-| Community Members        | View interventions and report problems        |
-| Project Coordinator      | Oversight and decision-making                 |
+## Local setup
 
----
+1. Create an Aiven for PostgreSQL service.
+2. Copy .env.example to .env.local.
+3. Set DATABASE_URL to the Aiven PostgreSQL service URI.
+4. For production-grade certificate verification, put the Aiven CA certificate in AIVEN_CA_CERT with newlines escaped.
+5. Set a random SESSION_SECRET of at least 32 characters.
+6. Set CRON_SECRET.
+7. Run npm install.
+8. Run npm run db:migrate.
+9. Set ADMIN_EMAIL and ADMIN_PASSWORD, then run npm run db:seed-admin.
+10. Run npm run dev.
 
-## 3. Features
+## Aiven migration
 
-### 3.1 Core Tracking Features
-- Register and manage boreholes, assets, forests, and rivers
-- Capture GPS location, photos, status, and key details
-- Update status and maintenance history
-- Interactive map view of all interventions
-- Filter and search by LGA, type, status, and date
+db/migrations/001_init.sql enables PostGIS, pgcrypto, and citext; creates the operational schema; creates GIST spatial indexes; and seeds all 23 Benue LGAs with the 14 initial CARE-Map pilot LGAs marked.
 
-### 3.2 Community Features
-- Public interactive map (no login required)
-- View details of interventions
-- Report problems (faulty borehole, dying trees, erosion, etc.)
-- Report unknown small rivers and streams (location, local name, description, photos)
-- Optional registration to track submitted reports
+## Environment variables
 
-### 3.3 AI Prediction Features
-- Predict maintenance needs for boreholes and assets
-- Flag areas at risk of flooding, erosion, or related disasters
-- Assess risk of forest/afforestation site failure
-- Identify water bodies under stress
-- Generate priority rankings for action
+| Variable | Purpose |
+|---|---|
+| DATABASE_URL | Aiven PostgreSQL connection URI |
+| AIVEN_CA_CERT | Aiven CA certificate for TLS verification |
+| SESSION_SECRET | Signs authentication sessions |
+| CRON_SECRET | Protects scheduled maintenance/risk endpoint |
+| ADMIN_EMAIL | Initial administrator email |
+| ADMIN_PASSWORD | Initial administrator password |
 
-### 3.4 Dashboard & Reporting
-- Summary dashboard (totals, functional rates, risk overview)
-- Data and map export capabilities
-- Basic analytics for management
+Never expose database or session secrets through NEXT_PUBLIC variables.
 
----
+## API highlights
 
-## 4. User Roles & Access Levels
+- GET /api/map/features
+- GET/POST /api/resources/{boreholes|assets|forest-sites|rivers}
+- PATCH /api/resources/:kind/:id
+- GET/POST /api/resources/:kind/:id/maintenance
+- GET/POST /api/reports
+- PATCH /api/reports/:id/status
+- GET /api/reports/mine
+- GET /api/dashboard/summary
+- GET /api/dashboard/export
+- GET /api/predictions/priority-rankings
+- GET/POST /api/admin/users
+- GET /api/health
 
-| User Type              | Access Level                                      |
-|------------------------|---------------------------------------------------|
-| Public / Community     | View map, report problems, report small rivers    |
-| Registered Community   | Track status of their own reports                 |
-| ACReSAL Staff          | Full create, edit, update, and verification rights|
-| Administrator          | User management and system configuration          |
+## Documentation
 
----
+See docs/planning, docs/architecture, docs/design, and docs/IMPLEMENTATION.md.
 
-## 5. System Components
+## Production status
 
-1. Web Application (Staff + Public interface)
-2. Interactive Map Module
-3. Data Management Module
-4. Community Reporting Module
-5. AI Prediction Engine (rule-based + basic ML initially)
-6. Dashboard & Reporting Module
-
----
-
-## 6. Non-Functional Requirements
-
-- **Usability**: Simple and mobile-friendly interface
-- **Accessibility**: Public map accessible without login
-- **Performance**: Fast loading of map and data
-- **Scalability**: Ability to grow as more data is added
-- **Security**: Staff data protected; public data view-only
-- **Offline Capability**: Support for areas with poor internet (desirable)
-- **Maintainability**: Easy for future corps members or staff to manage
-
----
-
-## 7. Assumptions & Constraints
-
-- Initial version focuses on core tracking and community reporting
-- AI features will start simple and improve as more data is collected
-- System should work well on mobile devices
-- Integration with existing ACReSAL tools will be considered where possible
-- Development will be implemented in phases
-
----
-
-## 8. Future Enhancements
-
-- Full offline mobile application
-- Advanced machine learning models
-- Integration with satellite data (e.g. Google Earth Engine)
-- SMS or WhatsApp notifications
-- Multi-language support (English + local languages)
-
----
-
-## 9. Technology Suggestions
-
-**Recommended Starting Stack:**
-- Frontend: React + Leaflet / MapLibre
-- Backend & Database: Supabase or Firebase (for speed)
-- Alternative Backend: Node.js + PostgreSQL/PostGIS
-- Hosting: Vercel / Netlify
-- AI/ML: Python (scikit-learn) or simple rule-based logic initially
-
----
-
-## 10. Project Status
-
-- **Current Stage**: High-level requirements defined
-- **Next Steps**: Detailed design, prototyping, and phased development
-
----
-
-**Prepared for:** Benue ACReSAL Project  
-**Version:** 1.0  
-**Date:** September 2026
+Application implementation is substantially complete. The remaining production gate is external: provision the real Aiven service, apply the migration, configure Vercel secrets, run CI against the branch, and perform field acceptance testing with real Benue intervention coordinates before public launch.
