@@ -1,0 +1,1 @@
+export default function AppNav(){return <header className="topbar"><div className="shell topbar-inner"><a className="brand" href="/">CARE-Map</a><nav className="nav"><a href="/">Public Map</a><a href="/report">Report Issue</a><a href="/register">Register</a><a href="/login">Staff Login</a></nav></div></header>}
