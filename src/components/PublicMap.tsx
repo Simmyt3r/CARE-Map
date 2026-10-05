@@ -7,7 +7,6 @@ type Filters={type:string;lga:string;status:string};
 export default function PublicMap(){
  const node=useRef<HTMLDivElement|null>(null),mapRef=useRef<maplibregl.Map|null>(null),filterRef=useRef<Filters>({type:"",lga:"",status:""});
  const[type,setType]=useState(""),[lga,setLga]=useState(""),[status,setStatus]=useState(""),[lgas,setLgas]=useState<Lga[]>([]),[error,setError]=useState("");
- filterRef.current={type,lga,status};
  useEffect(()=>{fetch("/api/lgas").then(r=>r.json()).then(j=>setLgas(j.data||[])).catch(()=>{});},[]);
  async function loadFeatures(map=mapRef.current){
   if(!map)return;const b=map.getBounds(),f=filterRef.current;const qs=new URLSearchParams({bbox:[b.getWest(),b.getSouth(),b.getEast(),b.getNorth()].join(",")});
@@ -28,6 +27,6 @@ export default function PublicMap(){
   });
   map.on("moveend",()=>loadFeatures(map));mapRef.current=map;return()=>{map.remove();mapRef.current=null;};
  },[]);
- useEffect(()=>{loadFeatures();},[type,lga,status]);
+ useEffect(()=>{filterRef.current={type,lga,status};loadFeatures();},[type,lga,status]);
  return <div className="card"><div className="filters"><div className="field"><label>Layer</label><select value={type} onChange={e=>setType(e.target.value)}><option value="">All interventions</option><option value="borehole">Boreholes</option><option value="asset">Assets</option><option value="forest_site">Forests</option><option value="river">Rivers</option></select></div><div className="field"><label>LGA</label><select value={lga} onChange={e=>setLga(e.target.value)}><option value="">All LGAs</option>{lgas.map(x=><option key={x.code} value={x.code}>{x.name}</option>)}</select></div><div className="field"><label>Status</label><select value={status} onChange={e=>setStatus(e.target.value)}><option value="">Any status</option><option value="functional">Functional</option><option value="needs_maintenance">Needs maintenance</option><option value="non_functional">Non-functional</option></select></div><div className="field"><label>Legend</label><div className="notice">Markers are coloured by current risk level.</div></div></div>{error&&<div className="error">{error}</div>}<div ref={node} className="map-wrap" aria-label="CARE-Map interactive intervention map"/></div>;
 }
