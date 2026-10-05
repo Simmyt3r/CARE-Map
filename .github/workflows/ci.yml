@@ -15,6 +15,7 @@ jobs:
         with:
           node-version: 22
       - run: npm install
+      - run: npm audit --omit=dev --audit-level=critical
       - run: npm run typecheck
       - run: npm run lint
       - run: npm test
