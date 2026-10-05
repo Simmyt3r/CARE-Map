@@ -8,7 +8,7 @@ export async function GET(request:Request){
  const baseParams:unknown[]=bbox?[bbox.minLng,bbox.minLat,bbox.maxLng,bbox.maxLat]:[];const rows:FeatureRow[]=[];
  const configs=[["borehole","boreholes","location","name","status","TRUE"],["asset","assets","location","name","status","TRUE"],["forest_site","forest_sites","boundary","name","status","TRUE"],["river","rivers","course","COALESCE(name,local_name)","stress_indicator","verified=TRUE"]] as const;
  for(const[entityType,table,geom,nameExpr,statusExpr,visibility]of configs){
-  if(type&&type!==entityType)continue;const clauses=[visibility],params=[...baseParams];
+  if(type&&type!==entityType)continue;const clauses:string[]=[visibility];const params:unknown[]=[...baseParams];
   if(bbox)clauses.push("ST_Intersects("+geom+",ST_MakeEnvelope($1,$2,$3,$4,4326))");
   if(lga){params.push(lga);clauses.push("lga_code=$"+params.length);}
   if(status){params.push(status);clauses.push(statusExpr+"=$"+params.length);}
