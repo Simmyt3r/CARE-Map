@@ -1,0 +1,5 @@
+import {z} from "zod";
+export const loginSchema=z.object({email:z.email().max(254),password:z.string().min(8).max(200)});
+export const registerSchema=z.object({name:z.string().min(2).max(120),email:z.email().max(254),password:z.string().min(10).max(200)});
+export const reportSchema=z.object({type:z.enum(["problem_report","small_river_report"]),reporterName:z.string().max(120).optional().nullable(),reporterContact:z.string().max(160).optional().nullable(),relatedEntityType:z.enum(["borehole","asset","forest_site","river"]).optional().nullable(),relatedEntityId:z.uuid().optional().nullable(),description:z.string().min(10).max(4000),latitude:z.number().min(-90).max(90),longitude:z.number().min(-180).max(180)});
+export const userCreateSchema=z.object({name:z.string().min(2).max(120),email:z.email().max(254),password:z.string().min(12).max(200),role:z.enum(["staff","admin","registered_community"])});
