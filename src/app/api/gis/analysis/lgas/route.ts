@@ -45,19 +45,19 @@ export async function GET(){
       FROM rivers GROUP BY lga_code
     ) rv ON rv.lga_code=l.code
     LEFT JOIN (
-      SELECT COALESCE(
-        CASE related_entity_type
-          WHEN 'borehole' THEN (SELECT lga_code FROM boreholes WHERE id=reports.related_entity_id)
-          WHEN 'asset' THEN (SELECT lga_code FROM assets WHERE id=reports.related_entity_id)
-          WHEN 'forest_site' THEN (SELECT lga_code FROM forest_sites WHERE id=reports.related_entity_id)
-          WHEN 'river' THEN (SELECT lga_code FROM rivers WHERE id=reports.related_entity_id)
-        END,
-        NULL
-      ) lga_code,
-      count(*) FILTER(WHERE status NOT IN ('resolved','rejected')) open_reports,
-      count(*) FILTER(WHERE status NOT IN ('resolved','rejected') AND priority='critical') critical_reports
-      FROM reports
-      GROUP BY 1
+      SELECT linked.lga_code,
+        count(*) FILTER(WHERE linked.status NOT IN ('resolved','rejected')) open_reports,
+        count(*) FILTER(WHERE linked.status NOT IN ('resolved','rejected') AND linked.priority='critical') critical_reports
+      FROM (
+        SELECT r.status,r.priority,b.lga_code FROM reports r JOIN boreholes b ON r.related_entity_type='borehole' AND r.related_entity_id=b.id
+        UNION ALL
+        SELECT r.status,r.priority,a.lga_code FROM reports r JOIN assets a ON r.related_entity_type='asset' AND r.related_entity_id=a.id
+        UNION ALL
+        SELECT r.status,r.priority,f.lga_code FROM reports r JOIN forest_sites f ON r.related_entity_type='forest_site' AND r.related_entity_id=f.id
+        UNION ALL
+        SELECT r.status,r.priority,rv.lga_code FROM reports r JOIN rivers rv ON r.related_entity_type='river' AND r.related_entity_id=rv.id
+      ) linked
+      GROUP BY linked.lga_code
     ) rp ON rp.lga_code=l.code
     ORDER BY l.pilot DESC,l.name
   `);
