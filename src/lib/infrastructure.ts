@@ -93,6 +93,7 @@ export async function currentInfrastructureSnapshot(){
     caConfigured:Boolean(process.env.AIVEN_CA_CERT),
     sessionSecretConfigured:Boolean(process.env.SESSION_SECRET&&process.env.SESSION_SECRET.length>=32),
     cronSecretConfigured:Boolean(process.env.CRON_SECRET&&process.env.CRON_SECRET.length>=24),
+    blobConfigured:Boolean(process.env.BLOB_READ_WRITE_TOKEN),
     adminSeedConfigured:Boolean(process.env.ADMIN_EMAIL&&process.env.ADMIN_PASSWORD),
     databaseHost:details?.host||null,databaseName:details?.database||null,database
   };
