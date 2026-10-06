@@ -36,3 +36,9 @@ main{padding:24px 0 48px}.hero{display:grid;grid-template-columns:1.1fr .9fr;gap
 
 code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px}
 @media(max-width:560px){.resource-drawer{padding:14px}.drawer-backdrop{align-items:flex-end}.grid.three{grid-template-columns:1fr}}
+
+.photo-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.photo-card{display:block;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}
+.photo-card img{width:100%;height:150px;object-fit:cover;display:block;background:#edf2ed}
+.photo-card div{padding:9px}.photo-card strong,.photo-card small{display:block}.photo-card small{color:var(--muted);margin-top:3px}
+@media(max-width:560px){.photo-grid{grid-template-columns:1fr}}
