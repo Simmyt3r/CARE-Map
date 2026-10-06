@@ -20,8 +20,8 @@ export async function GET(){
       COALESCE(f.area_ha,0)::numeric(14,2) forest_area_ha,
       COALESCE(rv.total,0)::int verified_rivers,
       COALESCE(rv.length_km,0)::numeric(14,2) river_length_km,
-      COALESCE(rp.open_reports,0)::int open_reports,
-      COALESCE(rp.critical_reports,0)::int critical_reports
+      COALESCE(rp.open_reports,0)::int linked_open_reports,
+      COALESCE(rp.critical_reports,0)::int linked_critical_reports
     FROM lgas l
     LEFT JOIN (
       SELECT lga_code,count(*) total,
