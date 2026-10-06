@@ -5,7 +5,7 @@ import {notFound} from "next/navigation";
 import QRCode from "qrcode";
 import PublicResourceMap from "@/components/PublicResourceMap";
 import PrintButton from "@/components/PrintButton";
-import {getPublicResource,isPublicKind,type PublicKind} from "@/lib/public-resource";
+import {getPublicResource,isPublicKind,isPublicResourceId,type PublicKind} from "@/lib/public-resource";
 
 export const dynamic="force-dynamic";
 
@@ -22,7 +22,7 @@ async function absoluteUrl(kind:string,id:string){
 
 export async function generateMetadata({params}:{params:Promise<{kind:string;id:string}>}):Promise<Metadata>{
   const{kind,id}=await params;
-  if(!isPublicKind(kind))return{title:"Resource not found | CARE-Map"};
+  if(!isPublicKind(kind)||!isPublicResourceId(id))return{title:"Resource not found | CARE-Map"};
   const resource=await getPublicResource(kind,id);
   if(!resource)return{title:"Resource not found | CARE-Map"};
   return{
@@ -33,7 +33,7 @@ export async function generateMetadata({params}:{params:Promise<{kind:string;id:
 
 export default async function PublicResourcePage({params}:{params:Promise<{kind:string;id:string}>}){
   const{kind,id}=await params;
-  if(!isPublicKind(kind))notFound();
+  if(!isPublicKind(kind)||!isPublicResourceId(id))notFound();
   const resource=await getPublicResource(kind,id);
   if(!resource)notFound();
 
