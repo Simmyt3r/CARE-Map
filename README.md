@@ -32,6 +32,8 @@ The repository now contains a working Next.js application and Aiven/PostGIS data
 - Infrastructure status updates
 - Maintenance-history API
 - Community report review/verification/resolution workflow
+- Report assignment, priority, deadlines and immutable status timeline
+- Operations Center for overdue, critical and unassigned work
 - Explainable risk priority ranking
 - CSV and GeoJSON export for QGIS/ArcGIS/Excel/Python
 - GIS Workbench for CSV/GeoJSON bulk imports with preview and row-level failures
@@ -44,6 +46,9 @@ The repository now contains a working Next.js application and Aiven/PostGIS data
 ### Administration
 - Role-based users: registered community, staff, admin
 - Admin user creation
+- User activation/deactivation and role governance
+- Immediate session revocation after account/role changes
+- Searchable audit log and GIS import-job history
 - Audit logging for key data changes
 - Scheduled risk refresh and two-year report anonymization hook
 
@@ -74,7 +79,7 @@ Architecture decision: docs/architecture/decisions/0003-adopt-aiven-postgis-next
 
 ## Aiven migration
 
-db/migrations/001_init.sql enables PostGIS, pgcrypto, and citext; creates the operational schema; creates GIST spatial indexes; and seeds all 23 Benue LGAs with the 14 initial CARE-Map pilot LGAs marked. db/migrations/002_field_operations.sql adds GPS quality/provenance, inspections, import auditing, and GIS quality views.
+db/migrations/001_init.sql enables PostGIS, pgcrypto, and citext; creates the operational schema; creates GIST spatial indexes; and seeds all 23 Benue LGAs with the 14 initial CARE-Map pilot LGAs marked. db/migrations/002_field_operations.sql adds GPS quality/provenance, inspections, import auditing, and GIS quality views. db/migrations/003_operations_governance.sql adds report ownership, priority/deadlines, status history, account governance metadata, and supporting indexes.
 
 ## Environment variables
 
