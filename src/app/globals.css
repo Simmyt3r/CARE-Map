@@ -9,3 +9,15 @@ main{padding:24px 0 48px}.hero{display:grid;grid-template-columns:1.1fr .9fr;gap
 .section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:0 0 14px}.section-head h1,.section-head h2{margin:0}.muted{color:var(--muted)}.stack{display:grid;gap:14px}.staff-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}.staff-tabs a{padding:9px 12px;background:#fff;border:1px solid var(--line);border-radius:9px}.geometry-help{font-size:12px;color:var(--muted);line-height:1.4}
 @media(max-width:850px){.hero{grid-template-columns:1fr}.filters,.stats,.grid.two,.grid.three{grid-template-columns:1fr 1fr}.map-wrap{height:480px}}
 @media(max-width:560px){.filters,.stats,.grid.two,.grid.three{grid-template-columns:1fr}.topbar-inner{align-items:flex-start;padding-top:10px;padding-bottom:10px}.map-wrap{height:430px}.hero-copy h1{font-size:38px}}
+
+.setup-status-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0}
+.setup-status{display:flex;gap:10px;align-items:center;padding:12px;border:1px solid var(--line);border-radius:12px;background:#fff}
+.setup-status>span{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:800}
+.setup-status.ok>span{background:#e4f5e8;color:#245d34}.setup-status.missing>span{background:#fff1d7;color:#7b5200}
+.setup-status strong,.setup-status small{display:block}.setup-status small{margin-top:2px;color:var(--muted)}
+.secret-row{display:grid;grid-template-columns:1fr auto;gap:8px}.env-preview{min-height:220px!important;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;line-height:1.5}
+.checklist{display:grid;gap:9px}.checklist>div{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}.checklist>div:last-child{border-bottom:0}
+.checklist span{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--brand2);color:var(--brand);font-weight:800}
+.infra-details{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.infra-details span{background:rgba(255,255,255,.7);padding:4px 7px;border-radius:7px;font-size:12px}
+@media(max-width:850px){.setup-status-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.setup-status-grid,.secret-row{grid-template-columns:1fr}}
