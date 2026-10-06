@@ -7,6 +7,10 @@ export function isPublicKind(value:string):value is PublicKind{
   return publicKinds.includes(value as PublicKind);
 }
 
+export function isPublicResourceId(value:string){
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+}
+
 export function singularEntity(kind:PublicKind){
   return kind==="boreholes"?"borehole":kind==="assets"?"asset":kind==="forest-sites"?"forest_site":"river";
 }
