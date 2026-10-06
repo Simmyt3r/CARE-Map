@@ -82,3 +82,18 @@ Production gate: run the migration against the real Aiven service and field-test
 7. Field-test GPS capture and report workflow.
 8. Launch internally to ACReSAL staff.
 9. Open the public map after data-quality review.
+
+
+## Phase 5 — Operations Governance ✅ Implementation complete
+
+- [x] Report priority levels
+- [x] Staff assignment and deadlines
+- [x] Report status-history timeline
+- [x] Operations Center for critical, overdue and unassigned work
+- [x] Administrator audit-log viewer
+- [x] GIS import-job history and failure review
+- [x] User role changes and account activation/deactivation
+- [x] Last-login visibility
+- [x] Immediate session revalidation after account/role changes
+
+**Production gate:** apply migration 003 to the configured Aiven database before using governance workflows.
