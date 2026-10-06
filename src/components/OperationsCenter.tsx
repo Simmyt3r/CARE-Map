@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import {useEffect,useState} from "react";
 
 export default function OperationsCenter(){
@@ -28,7 +29,7 @@ export default function OperationsCenter(){
     <section className="card">
       <div className="section-head">
         <div><h2>Action needed</h2><div className="muted">Open reports ordered by urgency, overdue state and age.</div></div>
-        <a className="btn primary" href="/staff/reports">Open report workflow</a>
+        <Link className="btn primary" href="/staff/reports">Open report workflow</Link>
       </div>
       <div className="table-wrap"><table>
         <thead><tr><th>Priority</th><th>Report</th><th>Owner</th><th>Status</th><th>Due</th></tr></thead>
@@ -43,7 +44,7 @@ export default function OperationsCenter(){
     </section>
 
     <section className="card">
-      <div className="section-head"><div><h2>Recent GIS imports</h2><div className="muted">Latest bulk data loads and their success/failure counts.</div></div><a className="btn" href="/staff/gis">GIS Workbench</a></div>
+      <div className="section-head"><div><h2>Recent GIS imports</h2><div className="muted">Latest bulk data loads and their success/failure counts.</div></div><Link className="btn" href="/staff/gis">GIS Workbench</Link></div>
       <div className="table-wrap"><table>
         <thead><tr><th>Date</th><th>Type</th><th>Format</th><th>Imported</th><th>Failed</th><th>By</th></tr></thead>
         <tbody>{(data?.imports||[]).map((i:any)=><tr key={i.id}><td>{new Date(i.created_at).toLocaleString()}</td><td>{i.kind}</td><td>{i.format}</td><td>{i.imported_rows}/{i.total_rows}</td><td className={Number(i.failed_rows)>0?"overdue-text":""}>{i.failed_rows}</td><td>{i.created_by_name||"Unknown"}</td></tr>)}</tbody>
