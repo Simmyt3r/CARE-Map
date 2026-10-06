@@ -1,4 +1,43 @@
+import type {QueryResultRow} from "pg";
 import {query} from "@/lib/db";
+
+export interface PublicResourceRow extends QueryResultRow{
+  id:string;
+  name:string;
+  code:string|null;
+  lga_code:string;
+  status:string;
+  risk_level:string;
+  risk_score:number|string;
+  description:string|null;
+  installation_date:string|null;
+  last_maintenance_date:string|null;
+  gps_accuracy_m:number|string|null;
+  captured_at:string|null;
+  capture_source:string|null;
+  geometry:{type:string;coordinates:unknown};
+  latitude:number|string;
+  longitude:number|string;
+  subtype:string|null;
+}
+
+interface PublicPhotoRow extends QueryResultRow{
+  id:string;url:string;caption:string|null;uploaded_at:string;
+}
+interface InspectionSummaryRow extends QueryResultRow{
+  total:number|string;last_inspected_at:string|null;last_condition:string|null;
+}
+interface MaintenanceSummaryRow extends QueryResultRow{
+  total:number|string;last_performed_at:string|null;
+}
+
+export type PublicResource=PublicResourceRow&{
+  kind:PublicKind;
+  entityType:string;
+  photos:PublicPhotoRow[];
+  inspectionSummary:InspectionSummaryRow;
+  maintenanceSummary:MaintenanceSummaryRow;
+};
 
 export const publicKinds=["boreholes","assets","forest-sites","rivers"] as const;
 export type PublicKind=typeof publicKinds[number];
@@ -15,7 +54,7 @@ export function singularEntity(kind:PublicKind){
   return kind==="boreholes"?"borehole":kind==="assets"?"asset":kind==="forest-sites"?"forest_site":"river";
 }
 
-export async function getPublicResource(kind:PublicKind,id:string){
+export async function getPublicResource(kind:PublicKind,id:string):Promise<PublicResource|null>{
   let sql="";
   if(kind==="boreholes"){
     sql=`SELECT id,name,borehole_code code,lga_code,status,risk_level,risk_score,description,
@@ -48,20 +87,20 @@ export async function getPublicResource(kind:PublicKind,id:string){
       FROM rivers WHERE id=$1 AND verified=TRUE`;
   }
 
-  const result=await query(sql,[id]);
+  const result=await query<PublicResourceRow>(sql,[id]);
   const row=result.rows[0];
   if(!row)return null;
 
   const entityType=singularEntity(kind);
   const [photos,inspection,maintenance]=await Promise.all([
-    query("SELECT id,url,caption,uploaded_at FROM photos WHERE entity_type=$1 AND entity_id=$2 ORDER BY uploaded_at DESC LIMIT 20",[entityType,id]),
-    query(
+    query<PublicPhotoRow>("SELECT id,url,caption,uploaded_at FROM photos WHERE entity_type=$1 AND entity_id=$2 ORDER BY uploaded_at DESC LIMIT 20",[entityType,id]),
+    query<InspectionSummaryRow>(
       "SELECT count(*)::int total,max(inspected_at) last_inspected_at,(SELECT condition FROM inspections i2 WHERE i2.entity_type=$1 AND i2.entity_id=$2 ORDER BY inspected_at DESC LIMIT 1) last_condition FROM inspections WHERE entity_type=$1 AND entity_id=$2",
       [entityType,id]
     ),
     (kind==="boreholes"||kind==="assets")
-      ?query("SELECT count(*)::int total,max(performed_at) last_performed_at FROM maintenance_records WHERE entity_type=$1 AND entity_id=$2",[entityType,id])
-      :Promise.resolve({rows:[{total:0,last_performed_at:null}]})
+      ?query<MaintenanceSummaryRow>("SELECT count(*)::int total,max(performed_at) last_performed_at FROM maintenance_records WHERE entity_type=$1 AND entity_id=$2",[entityType,id])
+      :Promise.resolve({rows:[{total:0,last_performed_at:null} as MaintenanceSummaryRow]})
   ]);
 
   return{
