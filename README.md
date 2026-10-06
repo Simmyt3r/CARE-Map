@@ -20,6 +20,9 @@ The repository now contains a working Next.js application and Aiven/PostGIS data
 - PWA/service-worker shell for graceful low-connectivity behavior
 - Offline community-report queue with automatic retry when connectivity returns
 - Clustered public map markers with risk legend and scale control
+- Stable public detail page for every approved mapped resource
+- Printable QR identification labels for field assets
+- QR scan-to-report workflow tied to the exact mapped resource
 
 ### Staff
 - Secure staff/admin authentication
@@ -35,6 +38,7 @@ The repository now contains a working Next.js application and Aiven/PostGIS data
 - GPS accuracy/capture provenance on point data
 - Field inspections with condition and GPS metadata
 - Site-photo uploads through Vercel Blob
+- Public-safe resource history summaries and photo galleries
 - Automated GIS data-quality checks and possible-duplicate detection
 
 ### Administration

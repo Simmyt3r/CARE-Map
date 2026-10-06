@@ -96,6 +96,7 @@ export default function ResourceOperations({kind,row,onClose,onUpdated}:{kind:Ki
   return <div className="drawer-backdrop" onMouseDown={e=>{if(e.currentTarget===e.target)onClose();}}>
     <aside className="resource-drawer">
       <div className="section-head"><div><h2>{row.name||row.local_name||"Resource"}</h2><div className="muted">{kind} · {row.lga_code}</div></div><button className="btn" onClick={onClose}>Close</button></div>
+      <div className="actions" style={{marginTop:0,marginBottom:12}}><a className="btn" href={"/resource/"+kind+"/"+row.id} target="_blank" rel="noreferrer">Public page / QR label</a></div>
 
       <div className="stack">
         <section className="drawer-section stack">
