@@ -17,7 +17,7 @@ export default function PublicResourceMap({geometry,name}:{geometry:Geometry;nam
     if(!node.current)return;
     const bounds=new maplibregl.LngLatBounds();
     visitCoordinates(geometry.coordinates,(lng,lat)=>bounds.extend([lng,lat]));
-    const center=bounds.isEmpty()?[8.7,7.35]:bounds.getCenter();
+    const center:maplibregl.LngLatLike=bounds.isEmpty()?([8.7,7.35] as [number,number]):bounds.getCenter();
     const map=new maplibregl.Map({
       container:node.current,
       center,
