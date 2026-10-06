@@ -1,8 +1,71 @@
 "use client";
-import {useEffect,useState} from "react";
+import {useEffect,useMemo,useState} from "react";
+import ReportGovernanceDrawer from "@/components/ReportGovernanceDrawer";
+
 export default function ReportsQueue(){
- const[rows,setRows]=useState<any[]>([]),[message,setMessage]=useState("");
- async function load(){const r=await fetch("/api/reports");const j=await r.json();setRows(j.data||[]);}useEffect(()=>{load();},[]);
- async function move(id:string,status:string){setMessage("");const r=await fetch("/api/reports/"+id+"/status",{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({status})});if(!r.ok){const j=await r.json().catch(()=>({}));return setMessage(j.error?.message||"Update failed.");}load();}
- return <div className="card">{message&&<div className="error">{message}</div>}<div className="table-wrap"><table><thead><tr><th>Report</th><th>Location</th><th>Status</th><th>Submitted</th><th>Workflow</th></tr></thead><tbody>{rows.map(r=><tr key={r.id}><td><strong>{r.type}</strong><div className="muted">{r.description}</div><small>{r.reporter_name||r.submitter_name||"Anonymous"} {r.reporter_contact||""}</small></td><td>{Number(r.latitude).toFixed(5)}, {Number(r.longitude).toFixed(5)}</td><td><span className="badge">{r.status}</span></td><td>{new Date(r.submitted_at).toLocaleString()}</td><td><div className="actions"><button className="btn" onClick={()=>move(r.id,"under_review")}>Review</button><button className="btn" onClick={()=>move(r.id,"verified")}>Verify</button><button className="btn primary" onClick={()=>move(r.id,"resolved")}>Resolve</button><button className="btn danger" onClick={()=>move(r.id,"rejected")}>Reject</button></div></td></tr>)}</tbody></table></div></div>
+  const[rows,setRows]=useState<any[]>([]);
+  const[staff,setStaff]=useState<any[]>([]);
+  const[selected,setSelected]=useState<any|null>(null);
+  const[filter,setFilter]=useState("open");
+  const[message,setMessage]=useState("");
+
+  async function load(){
+    const r=await fetch("/api/reports");
+    const j=await r.json().catch(()=>({}));
+    if(!r.ok)return setMessage(j.error?.message||"Reports could not be loaded.");
+    setRows(j.data||[]);
+    setStaff(j.staff||[]);
+  }
+
+  useEffect(()=>{load();},[]);
+
+  const visible=useMemo(()=>rows.filter(r=>{
+    if(filter==="open")return !["resolved","rejected"].includes(r.status);
+    if(filter==="unassigned")return !["resolved","rejected"].includes(r.status)&&!r.assigned_to;
+    if(filter==="overdue")return !["resolved","rejected"].includes(r.status)&&r.due_at&&new Date(r.due_at).getTime()<Date.now();
+    if(filter==="critical")return !["resolved","rejected"].includes(r.status)&&r.priority==="critical";
+    if(filter==="closed")return ["resolved","rejected"].includes(r.status);
+    return true;
+  }),[rows,filter]);
+
+  function dueLabel(r:any){
+    if(!r.due_at)return "No deadline";
+    const due=new Date(r.due_at);
+    const overdue=!["resolved","rejected"].includes(r.status)&&due.getTime()<Date.now();
+    return (overdue?"OVERDUE · ":"")+due.toLocaleString();
+  }
+
+  return <div className="stack">
+    <div className="staff-tabs">
+      <button className="btn" onClick={()=>setFilter("open")}>Open</button>
+      <button className="btn" onClick={()=>setFilter("unassigned")}>Unassigned</button>
+      <button className="btn" onClick={()=>setFilter("overdue")}>Overdue</button>
+      <button className="btn" onClick={()=>setFilter("critical")}>Critical</button>
+      <button className="btn" onClick={()=>setFilter("closed")}>Closed</button>
+      <button className="btn" onClick={()=>setFilter("all")}>All</button>
+    </div>
+
+    {message&&<div className="error">{message}</div>}
+
+    <div className="card">
+      <div className="section-head">
+        <div><h2>Report queue</h2><div className="muted">Sorted by priority. Open a report to assign an owner, deadline and status note.</div></div>
+        <span className="badge">{visible.length}</span>
+      </div>
+
+      <div className="table-wrap"><table>
+        <thead><tr><th>Report</th><th>Priority</th><th>Owner</th><th>Status</th><th>Deadline</th><th>Action</th></tr></thead>
+        <tbody>{visible.map(r=><tr key={r.id} className={r.priority==="critical"?"critical-row":""}>
+          <td><strong>{r.type.replaceAll("_"," ")}</strong><div className="muted clamp-2">{r.description}</div><small>{new Date(r.submitted_at).toLocaleString()}</small></td>
+          <td><span className={"priority-badge priority-"+r.priority}>{r.priority}</span></td>
+          <td>{r.assigned_name||<span className="muted">Unassigned</span>}</td>
+          <td><span className="badge">{r.status.replaceAll("_"," ")}</span></td>
+          <td className={r.due_at&&!["resolved","rejected"].includes(r.status)&&new Date(r.due_at).getTime()<Date.now()?"overdue-text":""}>{dueLabel(r)}</td>
+          <td><button className="btn" onClick={()=>setSelected(r)}>Manage</button></td>
+        </tr>)}</tbody>
+      </table></div>
+    </div>
+
+    {selected&&<ReportGovernanceDrawer report={selected} staff={staff} onClose={()=>setSelected(null)} onUpdated={load}/>}
+  </div>;
 }
