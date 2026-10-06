@@ -4,7 +4,7 @@ import {getSession,isAdmin} from "@/lib/auth";
 import {error} from "@/lib/http";
 import {query} from "@/lib/db";
 import {userCreateSchema} from "@/lib/validators";
-export async function GET(){const session=await getSession();if(!isAdmin(session))return error("Administrator access required",403,"FORBIDDEN");const result=await query("SELECT id,email,name,role,active,created_at FROM users WHERE deleted_at IS NULL ORDER BY created_at DESC");return NextResponse.json({data:result.rows});}
+export async function GET(){const session=await getSession();if(!isAdmin(session))return error("Administrator access required",403,"FORBIDDEN");const result=await query("SELECT id,email,name,role,active,created_at,last_login_at,disabled_reason FROM users WHERE deleted_at IS NULL ORDER BY active DESC,role,name");return NextResponse.json({data:result.rows});}
 export async function POST(request:Request){
  const session=await getSession();if(!isAdmin(session))return error("Administrator access required",403,"FORBIDDEN");
  const parsed=userCreateSchema.safeParse(await request.json().catch(()=>null));if(!parsed.success)return error("Invalid user details");const hash=await bcrypt.hash(parsed.data.password,12);
