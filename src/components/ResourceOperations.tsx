@@ -1,4 +1,4 @@
-"use client";
+/* eslint-disable @next/next/no-img-element */\n"use client";
 import {useEffect,useState} from "react";
 
 type Kind="boreholes"|"assets"|"forest-sites"|"rivers";
@@ -19,13 +19,17 @@ export default function ResourceOperations({kind,row,onClose,onUpdated}:{kind:Ki
   });
   const[inspection,setInspection]=useState({condition:"good",notes:"",latitude:"",longitude:"",gpsAccuracy:""});
   const[inspections,setInspections]=useState<any[]>([]);
-  const[maintenance,setMaintenance]=useState({performedAt:new Date().toISOString().slice(0,10),notes:""});
+  const[maintenance,setMaintenance]=useState({performedAt:new Date().toISOString().slice(0,10),notes:""});\n  const[photos,setPhotos]=useState<any[]>([]);\n  const[photoFile,setPhotoFile]=useState<File|null>(null);\n  const[photoCaption,setPhotoCaption]=useState("");
 
   async function loadInspections(){
     const r=await fetch("/api/resources/"+kind+"/"+row.id+"/inspections");
     if(r.ok){const j=await r.json();setInspections(j.data||[]);}
   }
-  useEffect(()=>{loadInspections();},[kind,row.id]);
+  async function loadPhotos(){
+    const r=await fetch("/api/resources/"+kind+"/"+row.id+"/photos");
+    if(r.ok){const j=await r.json();setPhotos(j.data||[]);}
+  }
+  useEffect(()=>{loadInspections();loadPhotos();},[kind,row.id]);
 
   async function save(){
     setBusy(true);setMessage("");
@@ -72,6 +76,19 @@ export default function ResourceOperations({kind,row,onClose,onUpdated}:{kind:Ki
     setMessage("Maintenance record saved.");onUpdated();
   }
 
+  async function uploadPhoto(){
+    if(!photoFile)return setMessage("Choose an image first.");
+    setBusy(true);setMessage("");
+    const data=new FormData();
+    data.set("file",photoFile);
+    data.set("caption",photoCaption);
+    const r=await fetch("/api/resources/"+kind+"/"+row.id+"/photos",{method:"POST",body:data});
+    const j=await r.json().catch(()=>({}));
+    setBusy(false);
+    if(!r.ok)return setMessage(j.error?.message||"Photo upload failed.");
+    setPhotoFile(null);setPhotoCaption("");setMessage("Photo uploaded.");await loadPhotos();
+  }
+
   return <div className="drawer-backdrop" onMouseDown={e=>{if(e.currentTarget===e.target)onClose();}}>
     <aside className="resource-drawer">
       <div className="section-head"><div><h2>{row.name||row.local_name||"Resource"}</h2><div className="muted">{kind} · {row.lga_code}</div></div><button className="btn" onClick={onClose}>Close</button></div>
@@ -88,6 +105,14 @@ export default function ResourceOperations({kind,row,onClose,onUpdated}:{kind:Ki
           {kind==="rivers"&&<div className="grid two"><div className="field"><label>Local name</label><input value={form.localName} onChange={e=>setForm(x=>({...x,localName:e.target.value}))}/></div><div className="field"><label>Stress indicator</label><select value={form.stressIndicator} onChange={e=>setForm(x=>({...x,stressIndicator:e.target.value}))}><option value="none">None</option><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></div><label className="check-field"><input type="checkbox" checked={form.verified} onChange={e=>setForm(x=>({...x,verified:e.target.checked}))}/> Verified river</label></div>}
           <div className="field"><label>Description</label><textarea value={form.description} onChange={e=>setForm(x=>({...x,description:e.target.value}))}/></div>
           <button className="btn primary" disabled={busy} onClick={save}>Save changes</button>
+        </section>
+
+        <section className="drawer-section stack">
+          <div className="section-head"><div><h3>Site photos</h3><div className="muted">JPEG, PNG or WebP up to 4 MB.</div></div><span className="badge">{photos.length}</span></div>
+          <div className="field"><label>Image</label><input type="file" accept="image/jpeg,image/png,image/webp" onChange={e=>setPhotoFile(e.target.files?.[0]||null)}/></div>
+          <div className="field"><label>Caption</label><input value={photoCaption} onChange={e=>setPhotoCaption(e.target.value)} placeholder="Site condition, date, direction, or context"/></div>
+          <button className="btn primary" disabled={busy||!photoFile} onClick={uploadPhoto}>Upload photo</button>
+          {!!photos.length&&<div className="photo-grid">{photos.map(p=><a key={p.id} href={p.url} target="_blank" rel="noreferrer" className="photo-card"><img src={p.url} alt={p.caption||"CARE-Map site photo"}/><div><strong>{p.caption||"Site photo"}</strong><small>{new Date(p.uploaded_at).toLocaleDateString()} · {p.uploaded_by_name||"Staff"}</small></div></a>)}</div>}
         </section>
 
         <section className="drawer-section stack">
