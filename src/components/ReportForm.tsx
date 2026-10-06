@@ -5,6 +5,7 @@ const QUEUE_KEY="caremap_report_queue_v1";
 type ReportPayload={
   type:string;reporterName:string|null;reporterContact:string|null;description:string;
   latitude:number;longitude:number;gpsAccuracy:number|null;capturedAt:string|null;captureSource:"manual"|"device_gps";
+  relatedEntityType:"borehole"|"asset"|"forest_site"|"river"|null;relatedEntityId:string|null;
 };
 type Queued={id:string;payload:ReportPayload;queuedAt:string};
 
@@ -13,8 +14,8 @@ function readQueue():Queued[]{
 }
 function writeQueue(items:Queued[]){localStorage.setItem(QUEUE_KEY,JSON.stringify(items));}
 
-export default function ReportForm(){
-  const[form,setForm]=useState({type:"problem_report",reporterName:"",reporterContact:"",description:"",latitude:"",longitude:"",gpsAccuracy:"",capturedAt:"",captureSource:"manual" as "manual"|"device_gps"});
+export default function ReportForm({relatedEntityType=null,relatedEntityId=null,relatedName="",initialLatitude="",initialLongitude=""}:{relatedEntityType?:"borehole"|"asset"|"forest_site"|"river"|null;relatedEntityId?:string|null;relatedName?:string;initialLatitude?:string;initialLongitude?:string}){
+  const[form,setForm]=useState({type:"problem_report",reporterName:"",reporterContact:"",description:"",latitude:initialLatitude,longitude:initialLongitude,gpsAccuracy:"",capturedAt:"",captureSource:"manual" as "manual"|"device_gps"});
   const[message,setMessage]=useState("");
   const[busy,setBusy]=useState(false);
   const[queued,setQueued]=useState(0);
@@ -77,7 +78,9 @@ export default function ReportForm(){
       longitude:Number(form.longitude),
       gpsAccuracy:form.gpsAccuracy?Number(form.gpsAccuracy):null,
       capturedAt:form.capturedAt||null,
-      captureSource:form.captureSource
+      captureSource:form.captureSource,
+      relatedEntityType:relatedEntityType||null,
+      relatedEntityId:relatedEntityId||null
     };
   }
 
@@ -107,6 +110,7 @@ export default function ReportForm(){
   }
 
   return <form className="card stack" onSubmit={submit}>
+    {relatedEntityId&&<div className="resource-report-context"><strong>Reporting against a mapped CARE-Map resource</strong><span>{relatedName||relatedEntityType} · reference {relatedEntityId.slice(0,8)}</span></div>}
     {queued>0&&<div className="notice"><strong>{queued} report{queued===1?"":"s"} waiting for internet.</strong> Keep this browser data until they are submitted.</div>}
     <div className="grid two">
       <div className="field"><label>Report type</label><select value={form.type} onChange={e=>set("type",e.target.value)}><option value="problem_report">Problem / fault</option><option value="small_river_report">Unknown small river / stream</option></select></div>
