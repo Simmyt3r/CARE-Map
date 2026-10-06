@@ -19,7 +19,7 @@ export default function StaffNav({role,name}:{role:string;name:string}){
       <Link href="/staff">Dashboard</Link>
       <Link href="/staff/operations">Operations</Link>
       <Link href="/staff/data">GIS Data</Link>
-      <Link href="/staff/gis">GIS Workbench</Link>
+      <Link href="/staff/gis">GIS Workbench</Link>\n      <Link href="/staff/analysis">Spatial Analysis</Link>
       <Link href="/staff/reports">Reports</Link>
       {role==="admin"&&<Link href="/staff/admin">Users</Link>}
       {role==="admin"&&<Link href="/staff/admin/governance">Governance</Link>}
