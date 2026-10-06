@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import {useEffect,useState} from "react";
 
 export default function AdminUsers(){
@@ -49,7 +50,7 @@ export default function AdminUsers(){
         <div className="stack">
           <div className="notice">Inactive accounts cannot sign in. CARE-Map prevents the last active administrator from being disabled or demoted.</div>
           <div className="notice">Role and activation changes are written to the audit log.</div>
-          <a className="btn" href="/staff/admin/governance">Open Governance & Audit</a>
+          <Link className="btn" href="/staff/admin/governance">Open Governance & Audit</Link>
         </div>
       </div>
     </div>
