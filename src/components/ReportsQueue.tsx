@@ -8,6 +8,7 @@ export default function ReportsQueue(){
   const[selected,setSelected]=useState<any|null>(null);
   const[filter,setFilter]=useState("open");
   const[message,setMessage]=useState("");
+  const[now,setNow]=useState<number|null>(null);
 
   async function load(){
     const r=await fetch("/api/reports");
@@ -17,12 +18,12 @@ export default function ReportsQueue(){
     setStaff(j.staff||[]);
   }
 
-  useEffect(()=>{load();},[]);
+  useEffect(()=>{load();setNow(Date.now());const timer=window.setInterval(()=>setNow(Date.now()),60_000);return()=>window.clearInterval(timer);},[]);
 
   const visible=useMemo(()=>rows.filter(r=>{
     if(filter==="open")return !["resolved","rejected"].includes(r.status);
     if(filter==="unassigned")return !["resolved","rejected"].includes(r.status)&&!r.assigned_to;
-    if(filter==="overdue")return !["resolved","rejected"].includes(r.status)&&r.due_at&&new Date(r.due_at).getTime()<Date.now();
+    if(filter==="overdue")return !["resolved","rejected"].includes(r.status)&&r.due_at&&now!==null&&new Date(r.due_at).getTime()<now;
     if(filter==="critical")return !["resolved","rejected"].includes(r.status)&&r.priority==="critical";
     if(filter==="closed")return ["resolved","rejected"].includes(r.status);
     return true;
@@ -31,7 +32,7 @@ export default function ReportsQueue(){
   function dueLabel(r:any){
     if(!r.due_at)return "No deadline";
     const due=new Date(r.due_at);
-    const overdue=!["resolved","rejected"].includes(r.status)&&due.getTime()<Date.now();
+    const overdue=now!==null&&!["resolved","rejected"].includes(r.status)&&due.getTime()<now;
     return (overdue?"OVERDUE · ":"")+due.toLocaleString();
   }
 
@@ -60,7 +61,7 @@ export default function ReportsQueue(){
           <td><span className={"priority-badge priority-"+r.priority}>{r.priority}</span></td>
           <td>{r.assigned_name||<span className="muted">Unassigned</span>}</td>
           <td><span className="badge">{r.status.replaceAll("_"," ")}</span></td>
-          <td className={r.due_at&&!["resolved","rejected"].includes(r.status)&&new Date(r.due_at).getTime()<Date.now()?"overdue-text":""}>{dueLabel(r)}</td>
+          <td className={r.due_at&&!["resolved","rejected"].includes(r.status)&&now!==null&&new Date(r.due_at).getTime()<now?"overdue-text":""}>{dueLabel(r)}</td>
           <td><button className="btn" onClick={()=>setSelected(r)}>Manage</button></td>
         </tr>)}</tbody>
       </table></div>
