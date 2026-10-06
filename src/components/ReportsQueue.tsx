@@ -27,7 +27,7 @@ export default function ReportsQueue(){
     if(filter==="critical")return !["resolved","rejected"].includes(r.status)&&r.priority==="critical";
     if(filter==="closed")return ["resolved","rejected"].includes(r.status);
     return true;
-  }),[rows,filter]);
+  }),[rows,filter,now]);
 
   function dueLabel(r:any){
     if(!r.due_at)return "No deadline";
