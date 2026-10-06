@@ -97,3 +97,17 @@ Production gate: run the migration against the real Aiven service and field-test
 - [x] Immediate session revalidation after account/role changes
 
 **Production gate:** apply migration 003 to the configured Aiven database before using governance workflows.
+
+
+## Phase 6 — Spatial Analysis ✅ Baseline complete
+
+- [x] Coordinate/radius nearby search
+- [x] Device-GPS spatial query origin
+- [x] Cross-layer distance ranking for boreholes, assets, forests, rivers and open reports
+- [x] Analysis results map
+- [x] LGA intervention summary
+- [x] Forest area calculated from PostGIS geometries
+- [x] Verified river length calculated from PostGIS geometries
+- [x] Linked open-report workload by LGA
+
+**Next analytical extensions:** watershed/elevation layers, intervention coverage models, and satellite vegetation change once source datasets are configured.

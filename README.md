@@ -41,7 +41,7 @@ The repository now contains a working Next.js application and Aiven/PostGIS data
 - Field inspections with condition and GPS metadata
 - Site-photo uploads through Vercel Blob
 - Public-safe resource history summaries and photo galleries
-- Automated GIS data-quality checks and possible-duplicate detection
+- Automated GIS data-quality checks and possible-duplicate detection\n- Spatial Analysis workspace for nearby-feature queries using true PostGIS distances\n- LGA spatial summaries with mapped forest hectares and verified river kilometres
 
 ### Administration
 - Role-based users: registered community, staff, admin
@@ -105,7 +105,7 @@ Never expose database or session secrets through NEXT_PUBLIC variables.
 - GET/POST /api/resources/:kind/:id/photos
 - POST /api/gis/import
 - GET /api/gis/export
-- GET /api/gis/quality
+- GET /api/gis/quality\n- GET /api/gis/analysis/nearby\n- GET /api/gis/analysis/lgas
 - GET/POST /api/reports
 - PATCH /api/reports/:id/status
 - GET /api/reports/mine
