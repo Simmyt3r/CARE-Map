@@ -1,7 +1,7 @@
 # Roadmap
 
 **Status:** Core product implementation built
-**Last updated:** 2026-10-05
+**Last updated:** 2026-10-06
 
 ## Phase 0 — Planning & Design ✅
 - [x] Requirements
@@ -25,6 +25,12 @@
 - [x] LGA/type/status filtering
 - [x] Spatial GIST indexes
 - [x] Maintenance records API
+- [x] GPS accuracy and capture provenance
+- [x] Field inspections
+- [x] Bulk CSV/GeoJSON import
+- [x] QGIS-ready GeoJSON/CSV export
+- [x] Automated data-quality checks
+- [x] Public map point clustering
 
 Production gate: run the migration against the real Aiven service and field-test with validated coordinates.
 
@@ -37,6 +43,7 @@ Production gate: run the migration against the real Aiven service and field-test
 - [x] Verify/reject/resolve workflow
 - [x] Rate limiting
 - [x] Privacy retention/anonymization hook
+- [x] Offline community-report queue and retry
 
 ## Phase 3 — Risk Prediction ✅ Rule-based baseline complete
 - [x] Borehole maintenance-risk score
@@ -57,7 +64,8 @@ Production gate: run the migration against the real Aiven service and field-test
 - [x] CI workflow
 - [x] Admin user management
 - [ ] Validate offline behavior in target LGAs
-- [ ] Add photo object-storage provider and direct field uploads
+- [x] Vercel Blob field-photo storage integration
+- [x] Resource photo gallery
 - [ ] Add English/local-language translations
 - [ ] Evaluate satellite/Google Earth Engine integration
 - [ ] Complete formal NDPA/legal review

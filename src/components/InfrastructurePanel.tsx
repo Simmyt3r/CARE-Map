@@ -8,6 +8,7 @@ type Snapshot={
   caConfigured:boolean;
   sessionSecretConfigured:boolean;
   cronSecretConfigured:boolean;
+  blobConfigured:boolean;
   adminSeedConfigured:boolean;
   databaseHost:string|null;
   databaseName:string|null;
@@ -33,6 +34,7 @@ export default function InfrastructurePanel({snapshot}:{snapshot:Snapshot}){
   const[caCert,setCaCert]=useState("");
   const[sessionSecret,setSessionSecret]=useState(()=>randomSecret(32));
   const[cronSecret,setCronSecret]=useState(()=>randomSecret(32));
+  const[blobToken,setBlobToken]=useState("");
   const[adminName,setAdminName]=useState("CARE-Map Administrator");
   const[adminEmail,setAdminEmail]=useState("");
   const[adminPassword,setAdminPassword]=useState("");
@@ -45,10 +47,11 @@ export default function InfrastructurePanel({snapshot}:{snapshot:Snapshot}){
     if(caCert)lines.push('AIVEN_CA_CERT="'+escapeEnv(caCert.replaceAll("\n","\\n"))+'"');
     if(sessionSecret)lines.push('SESSION_SECRET="'+sessionSecret+'"');
     if(cronSecret)lines.push('CRON_SECRET="'+cronSecret+'"');
+    if(blobToken)lines.push('BLOB_READ_WRITE_TOKEN="'+escapeEnv(blobToken)+'"');
     if(adminEmail)lines.push('ADMIN_EMAIL="'+escapeEnv(adminEmail)+'"');
     if(adminPassword)lines.push('ADMIN_PASSWORD="'+escapeEnv(adminPassword)+'"');
     return lines.join("\n");
-  },[databaseUrl,caCert,sessionSecret,cronSecret,adminEmail,adminPassword]);
+  },[databaseUrl,caCert,sessionSecret,cronSecret,blobToken,adminEmail,adminPassword]);
 
   function run(fn:()=>Promise<InfraActionResult>){
     setResult(null);
@@ -68,6 +71,7 @@ export default function InfrastructurePanel({snapshot}:{snapshot:Snapshot}){
         <Status ok={snapshot.caConfigured} label="Aiven CA certificate"/>
         <Status ok={snapshot.sessionSecretConfigured} label="Session signing secret"/>
         <Status ok={snapshot.cronSecretConfigured} label="Cron secret"/>
+        <Status ok={snapshot.blobConfigured} label="Photo storage"/>
       </div>
       {snapshot.databaseConfigured&&<div className="notice">Configured database: <strong>{snapshot.databaseHost||"unknown host"}</strong> / {snapshot.databaseName||"unknown database"} · {snapshot.database.ok?"reachable":"unreachable"}{snapshot.database.postgisEnabled?" · PostGIS "+(snapshot.database.postgisVersion||""):""}</div>}
       {!snapshot.database.ok&&snapshot.database.error&&<div className="error">{snapshot.database.error}</div>}
@@ -88,6 +92,7 @@ export default function InfrastructurePanel({snapshot}:{snapshot:Snapshot}){
         <div><h2>2. Application secrets</h2><div className="muted">Generate strong values, then store them as Vercel Secret environment variables.</div></div>
         <div className="field"><label>SESSION_SECRET</label><div className="secret-row"><input readOnly value={sessionSecret}/><button className="btn" onClick={()=>setSessionSecret(randomSecret(32))}>Regenerate</button></div></div>
         <div className="field"><label>CRON_SECRET</label><div className="secret-row"><input readOnly value={cronSecret}/><button className="btn" onClick={()=>setCronSecret(randomSecret(32))}>Regenerate</button></div></div>
+        <div className="field"><label>Vercel Blob token</label><input type="password" autoComplete="off" value={blobToken} onChange={e=>setBlobToken(e.target.value)} placeholder="vercel_blob_rw_…"/></div>
       </div>
 
       <div className="card stack">

@@ -9,7 +9,7 @@ export default function StaffNav({role,name}:{role:string;name:string}){
     <div className="section-head"><div><strong>{name}</strong><div className="muted">{role}</div></div><button className="btn" onClick={logout}>Sign out</button></div>
     <div className="staff-tabs">
       <Link href="/staff">Dashboard</Link>
-      <Link href="/staff/data">GIS Data</Link>
+      <Link href="/staff/data">GIS Data</Link>\n      <Link href="/staff/gis">GIS Workbench</Link>
       <Link href="/staff/reports">Reports</Link>
       {role==="admin"&&<Link href="/staff/admin">Users</Link>}
       {role==="admin"&&<Link href="/staff/infrastructure">Infrastructure</Link>}
