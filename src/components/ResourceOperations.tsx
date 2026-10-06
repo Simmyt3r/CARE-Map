@@ -1,4 +1,5 @@
-/* eslint-disable @next/next/no-img-element */\n"use client";
+/* eslint-disable @next/next/no-img-element */
+"use client";
 import {useEffect,useState} from "react";
 
 type Kind="boreholes"|"assets"|"forest-sites"|"rivers";
@@ -19,7 +20,10 @@ export default function ResourceOperations({kind,row,onClose,onUpdated}:{kind:Ki
   });
   const[inspection,setInspection]=useState({condition:"good",notes:"",latitude:"",longitude:"",gpsAccuracy:""});
   const[inspections,setInspections]=useState<any[]>([]);
-  const[maintenance,setMaintenance]=useState({performedAt:new Date().toISOString().slice(0,10),notes:""});\n  const[photos,setPhotos]=useState<any[]>([]);\n  const[photoFile,setPhotoFile]=useState<File|null>(null);\n  const[photoCaption,setPhotoCaption]=useState("");
+  const[maintenance,setMaintenance]=useState({performedAt:new Date().toISOString().slice(0,10),notes:""});
+  const[photos,setPhotos]=useState<any[]>([]);
+  const[photoFile,setPhotoFile]=useState<File|null>(null);
+  const[photoCaption,setPhotoCaption]=useState("");
 
   async function loadInspections(){
     const r=await fetch("/api/resources/"+kind+"/"+row.id+"/inspections");
