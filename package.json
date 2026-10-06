@@ -1,6 +1,6 @@
 {
   "name":"care-map","version":"1.0.0","private":true,
   "scripts":{"dev":"next dev","build":"next build","start":"next start","lint":"eslint .","typecheck":"tsc --noEmit","test":"vitest run","db:migrate":"node scripts/migrate.mjs","db:seed-admin":"node scripts/seed-admin.mjs"},
-  "dependencies":{"bcryptjs":"^3.0.2","jose":"^6.1.0","maplibre-gl":"6.12.0","next":"16.3.8","pg":"^8.16.3","react":"^19.2.0","react-dom":"^19.2.0","zod":"^4.1.11"},
+  "dependencies":{"@vercel/blob":"2.8.0","bcryptjs":"^3.0.2","jose":"^6.1.0","maplibre-gl":"6.12.0","next":"16.3.8","pg":"^8.16.3","react":"^19.2.0","react-dom":"^19.2.0","zod":"^4.1.11"},
   "devDependencies":{"@types/node":"^24.7.0","@types/pg":"^8.15.5","@types/react":"^19.2.0","@types/react-dom":"^19.2.0","eslint":"^9.37.0","eslint-config-next":"16.3.8","typescript":"^5.9.3","vitest":"^3.2.4"}
 }
