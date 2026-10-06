@@ -5,6 +5,7 @@ import {useEffect,useState} from "react";
 export default function OperationsCenter(){
   const[data,setData]=useState<any|null>(null);
   const[message,setMessage]=useState("");
+  const[now,setNow]=useState<number|null>(null);
 
   async function load(){
     const r=await fetch("/api/operations/summary");
@@ -13,7 +14,7 @@ export default function OperationsCenter(){
     setData(j.data);
   }
 
-  useEffect(()=>{load();},[]);
+  useEffect(()=>{load();setNow(Date.now());const timer=window.setInterval(()=>setNow(Date.now()),60_000);return()=>window.clearInterval(timer);},[]);
 
   const s=data?.summary||{};
   return <div className="stack">
@@ -38,7 +39,7 @@ export default function OperationsCenter(){
           <td><strong>{r.type.replaceAll("_"," ")}</strong><div className="muted clamp-2">{r.description}</div><small>{new Date(r.submitted_at).toLocaleString()}</small></td>
           <td>{r.assigned_name||<span className="muted">Unassigned</span>}</td>
           <td><span className="badge">{r.status.replaceAll("_"," ")}</span></td>
-          <td className={r.due_at&&new Date(r.due_at).getTime()<Date.now()?"overdue-text":""}>{r.due_at?new Date(r.due_at).toLocaleString():"No deadline"}</td>
+          <td className={r.due_at&&now!==null&&new Date(r.due_at).getTime()<now?"overdue-text":""}>{r.due_at?new Date(r.due_at).toLocaleString():"No deadline"}</td>
         </tr>)}</tbody>
       </table></div>
     </section>
