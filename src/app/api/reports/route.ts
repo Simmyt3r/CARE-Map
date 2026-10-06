@@ -41,5 +41,6 @@ export async function GET(){
               r.submitted_at DESC
      LIMIT 500`
   );
-  return NextResponse.json({data:result.rows,total:result.rowCount});
+  const staff=await query("SELECT id,name,email,role,active FROM users WHERE role IN ('staff','admin') AND deleted_at IS NULL ORDER BY active DESC,name");
+  return NextResponse.json({data:result.rows,total:result.rowCount,staff:staff.rows});
 }
