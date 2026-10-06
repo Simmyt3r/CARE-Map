@@ -84,6 +84,15 @@ export default function PublicMap(){
         const meta=document.createElement("div");
         meta.textContent=[p.entityType?.replace("_"," "),p.lga,p.status,p.riskLevel&&("Risk: "+p.riskLevel)].filter(Boolean).join(" • ");
         div.append(title,meta);
+        const kindMap:Record<string,string>={borehole:"boreholes",asset:"assets",forest_site:"forest-sites",river:"rivers"};
+        const publicKind=kindMap[String(p.entityType||"")];
+        if(publicKind&&p.id){
+          const link=document.createElement("a");
+          link.href="/resource/"+publicKind+"/"+p.id;
+          link.textContent="View public record";
+          link.className="map-popup-link";
+          div.append(link);
+        }
         if(feature.geometry.type==="Point"){
           const c=(feature.geometry as GeoJSON.Point).coordinates;
           const coords=document.createElement("small");
