@@ -21,7 +21,7 @@ export default function LocalizationAdminCenter(){
   const[source,setSource]=useState("");
   const[version,setVersion]=useState("1");
   const[fileName,setFileName]=useState("");
-  const[translations,setTranslations]=useState<Record<string,string>>({});
+  const[translations,setTranslations]=useState<Record<string,unknown>>({});
   const[message,setMessage]=useState("");
   const[busy,setBusy]=useState(false);
 
@@ -46,7 +46,7 @@ export default function LocalizationAdminCenter(){
       const map=data?.translations&&typeof data.translations==="object"?data.translations:data;
       const checked=validateTranslationMap(map);
       if(!Object.keys(checked.translations).length)throw new Error("File contains no recognized CARE-Map translation keys.");
-      setTranslations(checked.translations);
+      setTranslations(map as Record<string,unknown>);
     }catch(e){
       setTranslations({});
       setMessage(e instanceof Error?e.message:"Could not read translation JSON.");
