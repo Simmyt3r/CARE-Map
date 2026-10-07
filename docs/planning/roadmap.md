@@ -357,3 +357,33 @@ Production gate: run the migration against the real Aiven service and field-test
 **Production gate:** apply migration 012 and import only GIS/M&E-approved catchment or watershed delineations with documented source and method. Verify landscape units before using them in integrated planning summaries.
 
 **Interpretation rule:** catchments are analytical landscape units and may cross LGA boundaries. Catchment summaries and LGA summaries describe different geographies and must not be treated as interchangeable administrative totals.
+
+
+## Phase 17 — Production Readiness Center ✅ Baseline complete
+
+- [x] Administrator-only live production-readiness dashboard
+- [x] Required vs optional capability gates
+- [x] Readiness score with ready/warning/blocked states
+- [x] Aiven database reachability gate
+- [x] Strict Aiven CA/TLS verification gate
+- [x] PostGIS capability gate
+- [x] SESSION_SECRET and CRON_SECRET security gates
+- [x] Active administrator gate
+- [x] Pilot-LGA boundary launch gate
+- [x] Separate statewide 23-LGA boundary capability gate
+- [x] Baseline intervention-data gate
+- [x] Optional settlement, river, hazard, catchment, photo and Copernicus gates
+- [x] Live database counts for configured GIS datasets
+- [x] Migration ledger with filename, SHA-256 checksum and applied timestamp
+- [x] Skip already-applied matching migrations
+- [x] Block migration checksum drift
+- [x] Web and CLI migration runners use the same ledger behavior
+- [x] Pending-migration display
+- [x] Administrator readiness JSON endpoint
+- [x] Exact remediation action for each incomplete gate
+- [x] Mobile-responsive readiness UI
+- [x] Regression tests for readiness scoring
+
+**Production gate:** a green software readiness score is necessary but not sufficient. Complete field acceptance testing, offline testing in target LGAs, formal privacy/NDPA review, staff training, and operational approval before public launch.
+
+**Migration rule:** never edit a migration after it has been recorded in production. Add schema changes as a new numbered migration.
