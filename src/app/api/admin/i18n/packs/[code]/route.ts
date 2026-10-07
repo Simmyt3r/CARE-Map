@@ -42,6 +42,10 @@ export async function PATCH(request:Request,context:{params:Promise<{code:string
         await client.query("ROLLBACK");
         return error("Review the translation pack before enabling it.");
       }
+      if(check.coverage!==100){
+        await client.query("ROLLBACK");
+        return error("The reviewed translation pack is no longer complete. Reimport and review it before enabling.");
+      }
       await client.query("UPDATE translation_packs SET enabled=TRUE,updated_by=$2 WHERE language_code=$1",[code,session.sub]);
     }else if(action==="disable"){
       await client.query("UPDATE translation_packs SET enabled=FALSE,updated_by=$2 WHERE language_code=$1",[code,session.sub]);
