@@ -9,6 +9,7 @@ type Snapshot={
   sessionSecretConfigured:boolean;
   cronSecretConfigured:boolean;
   blobConfigured:boolean;
+  remoteSensingConfigured:boolean;
   adminSeedConfigured:boolean;
   databaseHost:string|null;
   databaseName:string|null;
@@ -35,6 +36,8 @@ export default function InfrastructurePanel({snapshot}:{snapshot:Snapshot}){
   const[sessionSecret,setSessionSecret]=useState(()=>randomSecret(32));
   const[cronSecret,setCronSecret]=useState(()=>randomSecret(32));
   const[blobToken,setBlobToken]=useState("");
+  const[cdseClientId,setCdseClientId]=useState("");
+  const[cdseClientSecret,setCdseClientSecret]=useState("");
   const[adminName,setAdminName]=useState("CARE-Map Administrator");
   const[adminEmail,setAdminEmail]=useState("");
   const[adminPassword,setAdminPassword]=useState("");
@@ -48,10 +51,12 @@ export default function InfrastructurePanel({snapshot}:{snapshot:Snapshot}){
     if(sessionSecret)lines.push('SESSION_SECRET="'+sessionSecret+'"');
     if(cronSecret)lines.push('CRON_SECRET="'+cronSecret+'"');
     if(blobToken)lines.push('BLOB_READ_WRITE_TOKEN="'+escapeEnv(blobToken)+'"');
+    if(cdseClientId)lines.push('CDSE_CLIENT_ID="'+escapeEnv(cdseClientId)+'"');
+    if(cdseClientSecret)lines.push('CDSE_CLIENT_SECRET="'+escapeEnv(cdseClientSecret)+'"');
     if(adminEmail)lines.push('ADMIN_EMAIL="'+escapeEnv(adminEmail)+'"');
     if(adminPassword)lines.push('ADMIN_PASSWORD="'+escapeEnv(adminPassword)+'"');
     return lines.join("\n");
-  },[databaseUrl,caCert,sessionSecret,cronSecret,blobToken,adminEmail,adminPassword]);
+  },[databaseUrl,caCert,sessionSecret,cronSecret,blobToken,cdseClientId,cdseClientSecret,adminEmail,adminPassword]);
 
   function run(fn:()=>Promise<InfraActionResult>){
     setResult(null);
@@ -72,6 +77,7 @@ export default function InfrastructurePanel({snapshot}:{snapshot:Snapshot}){
         <Status ok={snapshot.sessionSecretConfigured} label="Session signing secret"/>
         <Status ok={snapshot.cronSecretConfigured} label="Cron secret"/>
         <Status ok={snapshot.blobConfigured} label="Photo storage"/>
+        <Status ok={snapshot.remoteSensingConfigured} label="Copernicus remote sensing"/>
       </div>
       {snapshot.databaseConfigured&&<div className="notice">Configured database: <strong>{snapshot.databaseHost||"unknown host"}</strong> / {snapshot.databaseName||"unknown database"} · {snapshot.database.ok?"reachable":"unreachable"}{snapshot.database.postgisEnabled?" · PostGIS "+(snapshot.database.postgisVersion||""):""}</div>}
       {!snapshot.database.ok&&snapshot.database.error&&<div className="error">{snapshot.database.error}</div>}
@@ -96,16 +102,24 @@ export default function InfrastructurePanel({snapshot}:{snapshot:Snapshot}){
       </div>
 
       <div className="card stack">
-        <div><h2>3. Administrator bootstrap</h2><div className="muted">Create the first administrator or rotate its password directly in the selected Aiven database.</div></div>
-        <div className="field"><label>Administrator name</label><input value={adminName} onChange={e=>setAdminName(e.target.value)}/></div>
-        <div className="field"><label>Administrator email</label><input type="email" value={adminEmail} onChange={e=>setAdminEmail(e.target.value)}/></div>
-        <div className="field"><label>Administrator password</label><input type="password" minLength={12} value={adminPassword} onChange={e=>setAdminPassword(e.target.value)} placeholder="12+ characters"/></div>
-        <button className="btn primary" disabled={pending||!databaseUrl||!adminEmail||adminPassword.length<12} onClick={()=>run(()=>bootstrapAdminAction({databaseUrl,caCert,email:adminEmail,password:adminPassword,name:adminName}))}>Create / rotate administrator</button>
+        <div><h2>3. Copernicus remote sensing</h2><div className="muted">Earth Search scene discovery works without credentials. These OAuth values enable Sentinel-2 NDVI statistics and preview processing through Copernicus Data Space.</div></div>
+        <div className="field"><label>CDSE_CLIENT_ID</label><input type="password" autoComplete="off" value={cdseClientId} onChange={e=>setCdseClientId(e.target.value)} placeholder="Copernicus OAuth client ID"/></div>
+        <div className="field"><label>CDSE_CLIENT_SECRET</label><input type="password" autoComplete="off" value={cdseClientSecret} onChange={e=>setCdseClientSecret(e.target.value)} placeholder="Copernicus OAuth client secret"/></div>
       </div>
     </section>
 
     <section className="card stack">
-      <div><h2>4. Vercel environment bundle</h2><div className="muted">Copy this into Vercel Project Settings → Environment Variables. Use Secret type for every value here. Redeploy after changing environment variables.</div></div>
+      <div><h2>4. Administrator bootstrap</h2><div className="muted">Create the first administrator or rotate its password directly in the selected Aiven database.</div></div>
+      <div className="grid two">
+        <div className="field"><label>Administrator name</label><input value={adminName} onChange={e=>setAdminName(e.target.value)}/></div>
+        <div className="field"><label>Administrator email</label><input type="email" value={adminEmail} onChange={e=>setAdminEmail(e.target.value)}/></div>
+      </div>
+      <div className="field"><label>Administrator password</label><input type="password" minLength={12} value={adminPassword} onChange={e=>setAdminPassword(e.target.value)} placeholder="12+ characters"/></div>
+      <button className="btn primary" disabled={pending||!databaseUrl||!adminEmail||adminPassword.length<12} onClick={()=>run(()=>bootstrapAdminAction({databaseUrl,caCert,email:adminEmail,password:adminPassword,name:adminName}))}>Create / rotate administrator</button>
+    </section>
+
+    <section className="card stack">
+      <div><h2>5. Vercel environment bundle</h2><div className="muted">Copy this into Vercel Project Settings → Environment Variables. Use Secret type for every value here. Redeploy after changing environment variables.</div></div>
       <textarea className="env-preview" readOnly value={envBundle} placeholder="Complete the fields above to generate the environment bundle."/>
       <div className="actions">
         <button className="btn primary" disabled={!envBundle} onClick={()=>copy(envBundle)}>Copy environment bundle</button>
@@ -114,13 +128,14 @@ export default function InfrastructurePanel({snapshot}:{snapshot:Snapshot}){
     </section>
 
     <section className="card stack">
-      <div><h2>5. Launch checklist</h2><div className="muted">The panel prepares and verifies infrastructure; Vercel environment changes take effect on a new deployment.</div></div>
+      <div><h2>6. Launch checklist</h2><div className="muted">The panel prepares and verifies infrastructure; Vercel environment changes take effect on a new deployment.</div></div>
       <div className="checklist">
         <div><span>1</span>Test the Aiven connection.</div>
         <div><span>2</span>Initialize PostGIS and CARE-Map tables.</div>
         <div><span>3</span>Create or rotate the administrator.</div>
-        <div><span>4</span>Copy the environment bundle into Vercel as Secret variables.</div>
-        <div><span>5</span>Redeploy CARE-Map and return here to verify green status.</div>
+        <div><span>4</span>Add Copernicus OAuth credentials if NDVI processing is required.</div>
+        <div><span>5</span>Copy the environment bundle into Vercel as Secret variables.</div>
+        <div><span>6</span>Redeploy CARE-Map and return here to verify green status.</div>
       </div>
     </section>
 
