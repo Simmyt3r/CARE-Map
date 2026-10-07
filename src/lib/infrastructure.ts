@@ -206,11 +206,15 @@ export async function currentInfrastructureSnapshot(){
         migrations=await migrationStatusOnClient(client);
 
         const tableCheck=await client.query<{
-          lgas:boolean;rivers:boolean;settlements:boolean;boreholes:boolean;assets:boolean;
+          lgas:boolean;lgaBoundary:boolean;rivers:boolean;settlements:boolean;boreholes:boolean;assets:boolean;
           hazards:boolean;catchments:boolean;users:boolean;
         }>(`
           SELECT
             to_regclass('public.lgas') IS NOT NULL lgas,
+            EXISTS(
+              SELECT 1 FROM information_schema.columns
+              WHERE table_schema='public' AND table_name='lgas' AND column_name='boundary'
+            ) "lgaBoundary",
             to_regclass('public.rivers') IS NOT NULL rivers,
             to_regclass('public.settlements') IS NOT NULL settlements,
             to_regclass('public.boreholes') IS NOT NULL boreholes,
@@ -222,9 +226,9 @@ export async function currentInfrastructureSnapshot(){
         const t=tableCheck.rows[0];
         const count=async(sql:string)=>Number((await client.query<{n:string}>(sql)).rows[0]?.n||0);
         data={
-          lgaBoundaries:t?.lgas?await count("SELECT count(*) n FROM lgas WHERE boundary IS NOT NULL"):0,
+          lgaBoundaries:t?.lgas&&t?.lgaBoundary?await count("SELECT count(*) n FROM lgas WHERE boundary IS NOT NULL"):0,
           totalLgas:t?.lgas?await count("SELECT count(*) n FROM lgas"):23,
-          pilotBoundaries:t?.lgas?await count("SELECT count(*) n FROM lgas WHERE pilot=TRUE AND boundary IS NOT NULL"):0,
+          pilotBoundaries:t?.lgas&&t?.lgaBoundary?await count("SELECT count(*) n FROM lgas WHERE pilot=TRUE AND boundary IS NOT NULL"):0,
           pilotLgas:t?.lgas?await count("SELECT count(*) n FROM lgas WHERE pilot=TRUE"):14,
           verifiedRivers:t?.rivers?await count("SELECT count(*) n FROM rivers WHERE verified"):0,
           verifiedSettlements:t?.settlements?await count("SELECT count(*) n FROM settlements WHERE verified"):0,
