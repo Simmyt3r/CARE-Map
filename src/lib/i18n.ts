@@ -3,8 +3,8 @@ export const DEFAULT_LOCALE="en";
 export const targetLanguages=[
   {code:"en",name:"English",nativeName:"English"},
   {code:"tiv",name:"Tiv",nativeName:"Tiv"},
-  {code:"idoma",name:"Idoma",nativeName:"Idoma"},
-  {code:"igede",name:"Igede",nativeName:"Igede"}
+  {code:"idu",name:"Idoma",nativeName:"Idoma"},
+  {code:"ige",name:"Igede",nativeName:"Igede"}
 ] as const;
 
 export type LocaleCode=(typeof targetLanguages)[number]["code"];
