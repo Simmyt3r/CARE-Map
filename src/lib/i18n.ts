@@ -67,6 +67,8 @@ export const englishCatalog={
   "report.gpsUnavailable":"Location capture is not available on this device.",
   "report.gpsReading":"Reading high-accuracy GPS…",
   "report.gpsFailed":"Could not read your location. Enter the coordinates manually.",
+  "report.gpsCapturedPrefix":"GPS captured. Reported accuracy:",
+  "report.reconnectSubmittedSuffix":"queued report(s) submitted after connection returned.",
   "report.privacyRequired":"Read and acknowledge the privacy notice before submitting.",
   "report.contactConsentRequired":"Consent is required if you choose to provide your name or contact details.",
   "report.offlineSaved":"No reliable connection. This report is saved on this device and will retry automatically when internet returns.",
