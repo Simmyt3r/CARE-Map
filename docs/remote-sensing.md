@@ -300,3 +300,55 @@ GET      /api/remote-sensing/alerts
 POST     /api/remote-sensing/alerts/:id/acknowledge
 GET      /api/internal/remote-sensing-monitor
 ```
+
+
+## Satellite alert → field verification
+
+A satellite alert is an analytical signal, not a final field conclusion. CARE-Map therefore provides a direct verification loop.
+
+From Operations or a vegetation monitor, staff can create a field-verification task. CARE-Map:
+
+1. Creates a standard `problem_report` at a point inside the monitored AOI.
+2. Marks the report origin as `satellite_alert`.
+3. Links the report and alert in both directions.
+4. Inherits the alert severity as report priority.
+5. Applies a default deadline:
+   - critical: 1 day
+   - high: 3 days
+   - medium: 7 days
+6. Sends the task into the existing report assignment and status workflow.
+7. Allows field evidence photos to be uploaded to the report.
+8. Requires a meaningful closure note.
+9. Requires at least one evidence photo before a satellite verification can be marked resolved.
+10. Automatically acknowledges the originating vegetation alert when the verification report is resolved or rejected.
+
+Database migration:
+
+```
+db/migrations/006_satellite_field_verification.sql
+```
+
+Field-verification APIs:
+
+```
+POST     /api/remote-sensing/alerts/:id/field-verification
+GET/POST /api/reports/:id/photos
+```
+
+This closes the operational loop:
+
+```
+Sentinel-2 change
+      ↓
+Vegetation alert
+      ↓
+Field-verification report
+      ↓
+Assignment + visit
+      ↓
+Evidence photo + field note
+      ↓
+Resolve/reject report
+      ↓
+Satellite alert acknowledged
+```
