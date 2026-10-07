@@ -16,7 +16,7 @@ export async function GET(){
       count(*) FILTER(WHERE status NOT IN ('resolved','rejected') AND priority='critical')::int critical,
       count(*) FILTER(WHERE status='submitted' AND submitted_at<now()-INTERVAL '7 days')::int waiting_over_7_days
       FROM reports`),
-    query(`SELECT r.id,r.type,r.description,r.status,r.priority,r.submitted_at,r.due_at,r.assigned_to,
+    query(`SELECT r.id,r.type,r.description,r.status,r.priority,r.submitted_at,r.due_at,r.assigned_to,r.origin,
                   u.name assigned_name,ST_Y(r.location) latitude,ST_X(r.location) longitude
            FROM reports r LEFT JOIN users u ON u.id=r.assigned_to
            WHERE r.status NOT IN ('resolved','rejected')
