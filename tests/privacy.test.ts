@@ -3,7 +3,8 @@ import {
   breachHoursRemaining,
   dataSubjectRequestLabel,
   isDataSubjectRequestStatus,
-  isDataSubjectRequestType
+  isDataSubjectRequestType,
+  privacyReference
 } from "../src/lib/privacy";
 
 describe("privacy governance helpers",()=>{
@@ -16,6 +17,10 @@ describe("privacy governance helpers",()=>{
 
   it("creates readable request labels",()=>{
     expect(dataSubjectRequestLabel("withdraw_consent")).toBe("Withdraw Consent");
+  });
+
+  it("creates non-sequential privacy references with a 12-hex suffix",()=>{
+    expect(privacyReference()).toMatch(/^PRV-\d{8}-[A-F0-9]{12}$/);
   });
 
   it("tracks the 72-hour breach notification window",()=>{
