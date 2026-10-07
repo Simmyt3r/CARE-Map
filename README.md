@@ -48,6 +48,7 @@ The repository now contains a working Next.js application and Aiven/PostGIS data
 - Provenance-aware settlement/community layer with audited CSV/GeoJSON imports, verification workflow and sourced optional population
 - Settlement-to-functional-borehole access-gap analysis with nearest-distance ranking and known-population completeness safeguards
 - Verified-river corridor exposure analysis for settlements, boreholes, assets and open reports with distance ranking and GeoJSON export
+- Provenance-aware verified hazard polygons with staff review, severity classification, exposure analysis, mapping and GeoJSON export
 - LGA spatial summaries with administrative area, mapped forest hectares, verified river kilometres and spatially located open reports
 - Remote Sensing workbench with click-to-draw AOIs and existing forest-boundary reuse
 - Sentinel-2 Level-2A scene discovery through Earth Search
@@ -96,7 +97,7 @@ Architecture decision: docs/architecture/decisions/0003-adopt-aiven-postgis-next
 
 ## Aiven migration
 
-db/migrations/001_init.sql enables PostGIS, pgcrypto, and citext; creates the operational schema; creates GIST spatial indexes; and seeds all 23 Benue LGAs with the 14 initial CARE-Map pilot LGAs marked. db/migrations/002_field_operations.sql adds GPS quality/provenance, inspections, import auditing, and GIS quality views. db/migrations/003_operations_governance.sql adds report ownership, priority/deadlines, status history, account governance metadata, and supporting indexes. db/migrations/004_remote_sensing.sql adds persisted Sentinel-2 vegetation analyses and spatial indexes. db/migrations/005_vegetation_monitoring.sql adds recurring vegetation watchlists, observation history, and acknowledgeable satellite alerts. db/migrations/006_satellite_field_verification.sql links satellite alerts to field-verification reports and records report origin. db/migrations/007_lga_boundaries.sql adds authoritative LGA polygons, source provenance, spatial indexes and boundary-import audit history. db/migrations/008_coverage_geography_indexes.sql adds functional GiST geography indexes for metre-based borehole and asset proximity analysis. db/migrations/009_settlements_access.sql adds verified settlement/community points, population provenance safeguards, spatial indexes and settlement-import audit history. db/migrations/010_river_corridor_indexes.sql adds geography indexes for verified river corridors and open-report proximity queries.
+db/migrations/001_init.sql enables PostGIS, pgcrypto, and citext; creates the operational schema; creates GIST spatial indexes; and seeds all 23 Benue LGAs with the 14 initial CARE-Map pilot LGAs marked. db/migrations/002_field_operations.sql adds GPS quality/provenance, inspections, import auditing, and GIS quality views. db/migrations/003_operations_governance.sql adds report ownership, priority/deadlines, status history, account governance metadata, and supporting indexes. db/migrations/004_remote_sensing.sql adds persisted Sentinel-2 vegetation analyses and spatial indexes. db/migrations/005_vegetation_monitoring.sql adds recurring vegetation watchlists, observation history, and acknowledgeable satellite alerts. db/migrations/006_satellite_field_verification.sql links satellite alerts to field-verification reports and records report origin. db/migrations/007_lga_boundaries.sql adds authoritative LGA polygons, source provenance, spatial indexes and boundary-import audit history. db/migrations/008_coverage_geography_indexes.sql adds functional GiST geography indexes for metre-based borehole and asset proximity analysis. db/migrations/009_settlements_access.sql adds verified settlement/community points, population provenance safeguards, spatial indexes and settlement-import audit history. db/migrations/010_river_corridor_indexes.sql adds geography indexes for verified river corridors and open-report proximity queries. db/migrations/011_hazard_zones.sql adds verified hazard polygons, provenance/verification metadata, spatial indexes and audited hazard imports.
 
 ## Environment variables
 
@@ -137,6 +138,9 @@ Never expose database or session secrets through NEXT_PUBLIC variables.
 - GET /api/gis/analysis/settlement-access
 - GET /api/gis/analysis/river-corridor
 - GET /api/gis/analysis/river-corridor/options
+- GET/POST /api/gis/hazard-zones
+- PATCH /api/gis/hazard-zones/:id
+- GET /api/gis/analysis/hazard-exposure
 - GET/POST /api/gis/lga-boundaries
 - POST /api/remote-sensing/scenes
 - GET/POST /api/remote-sensing/analyses
