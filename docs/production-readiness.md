@@ -23,6 +23,7 @@ Required pilot-launch gates include:
 - at least one active administrator
 - approved boundaries loaded for every pilot LGA
 - baseline borehole/asset data present
+- latest completed field acceptance run passes for every pilot LGA
 
 Advanced capability gates include:
 
@@ -128,7 +129,8 @@ It does not expose secret values.
 7. Import or collect baseline intervention coordinates.
 8. Configure optional Blob/Copernicus capabilities as needed.
 9. Redeploy and use Recheck readiness.
-10. Field-test GPS capture, reports, maps, and offline behavior before public launch.
+10. Use the Field Acceptance Test Center on target devices in every pilot LGA.
+11. Resolve failed/conditional runs and recheck readiness before public launch.
 
 ## What the panel does not prove
 
