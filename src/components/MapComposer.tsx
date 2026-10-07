@@ -11,6 +11,7 @@ import {
   type ComposerFeature,
   type ComposerLayer
 } from "@/lib/map-composer";
+import {geometryExtent} from "@/lib/geojson";
 
 type Lga={code:string;name:string};
 
@@ -26,12 +27,14 @@ export default function MapComposer(){
   const node=useRef<HTMLDivElement|null>(null);
   const mapRef=useRef<maplibregl.Map|null>(null);
   const lgaRef=useRef("");
+  const boundaryByCodeRef=useRef<Record<string,any>>({});
   const[lgas,setLgas]=useState<Lga[]>([]);
   const[rawFeatures,setRawFeatures]=useState<ComposerFeature[]>([]);
   const[layers,setLayers]=useState<ComposerLayer[]>([...composerLayerOrder]);
   const[lga,setLga]=useState("");
   const[risk,setRisk]=useState("");
   const[labels,setLabels]=useState(true);
+  const[showBoundaries,setShowBoundaries]=useState(true);
   const[title,setTitle]=useState("Benue ACReSAL Operational Map");
   const[subtitle,setSubtitle]=useState("CARE-Map GIS situation map");
   const[notes,setNotes]=useState("");
@@ -41,6 +44,24 @@ export default function MapComposer(){
   const visibleFeatures=useMemo(()=>filterComposerFeatures(rawFeatures,layers,risk),[rawFeatures,layers,risk]);
   const counts=useMemo(()=>composerFeatureCounts(visibleFeatures),[visibleFeatures]);
   const selectedLgaName=useMemo(()=>lgas.find(x=>x.code===lga)?.name||"All mapped areas",[lgas,lga]);
+
+  const loadBoundaries=useCallback(async(map=mapRef.current)=>{
+    if(!map)return;
+    try{
+      const r=await fetch("/api/gis/lga-boundaries");
+      if(!r.ok)return;
+      const data=await r.json();
+      const features=Array.isArray(data.features)?data.features:[];
+      boundaryByCodeRef.current=Object.fromEntries(features.map((feature:any)=>[feature.properties?.code,feature]));
+      (map.getSource("composer-lga-boundaries") as GeoJSONSource|undefined)?.setData({type:"FeatureCollection",features} as any);
+      const selected=lgaRef.current;
+      if(selected){
+        map.setFilter("composer-selected-lga",["==",["get","code"],selected]);
+        const extent=geometryExtent(boundaryByCodeRef.current[selected]?.geometry);
+        if(extent)map.fitBounds([[extent[0],extent[1]],[extent[2],extent[3]]],{padding:45,maxZoom:12});
+      }
+    }catch{}
+  },[]);
 
   const loadFeatures=useCallback(async(map=mapRef.current)=>{
     if(!map)return;
@@ -80,7 +101,22 @@ export default function MapComposer(){
     map.addControl(new maplibregl.ScaleControl({maxWidth:160,unit:"metric"}),"bottom-left");
 
     map.on("load",()=>{
+      map.addSource("composer-lga-boundaries",{type:"geojson",data:{type:"FeatureCollection",features:[]}});
       map.addSource("composer-data",{type:"geojson",data:{type:"FeatureCollection",features:[]}});
+
+      map.addLayer({
+        id:"composer-lga-fill",type:"fill",source:"composer-lga-boundaries",
+        paint:{"fill-color":"#244d35","fill-opacity":0.035}
+      });
+      map.addLayer({
+        id:"composer-selected-lga",type:"fill",source:"composer-lga-boundaries",
+        filter:["==",["get","code"],"__NONE__"],
+        paint:{"fill-color":"#244d35","fill-opacity":0.10}
+      });
+      map.addLayer({
+        id:"composer-lga-lines",type:"line",source:"composer-lga-boundaries",
+        paint:{"line-color":"#355f46","line-width":["interpolate",["linear"],["zoom"],6,1,12,2],"line-opacity":0.8}
+      });
       map.addLayer({
         id:"composer-polygons",type:"fill",source:"composer-data",
         filter:["in",["geometry-type"],["literal",["Polygon","MultiPolygon"]]],
@@ -130,6 +166,7 @@ export default function MapComposer(){
         new maplibregl.Popup({maxWidth:"320px"}).setLngLat(e.lngLat).setDOMContent(div).addTo(map);
       };
       ["composer-points","composer-lines","composer-polygons"].forEach(layer=>map.on("click",layer,popup));
+      void loadBoundaries(map);
       void loadFeatures(map);
     });
 
@@ -148,7 +185,7 @@ export default function MapComposer(){
       map.remove();
       mapRef.current=null;
     };
-  },[loadFeatures]);
+  },[loadBoundaries,loadFeatures]);
 
   useEffect(()=>{
     const map=mapRef.current;
@@ -162,7 +199,25 @@ export default function MapComposer(){
   },[labels]);
 
   useEffect(()=>{
+    const map=mapRef.current;
+    ["composer-lga-fill","composer-selected-lga","composer-lga-lines"].forEach(layer=>{
+      if(map?.getLayer(layer))map.setLayoutProperty(layer,"visibility",showBoundaries?"visible":"none");
+    });
+  },[showBoundaries]);
+
+  useEffect(()=>{
     lgaRef.current=lga;
+    const map=mapRef.current;
+    if(map?.getLayer("composer-selected-lga")){
+      map.setFilter("composer-selected-lga",["==",["get","code"],lga||"__NONE__"]);
+    }
+    if(lga&&map){
+      const extent=geometryExtent(boundaryByCodeRef.current[lga]?.geometry);
+      if(extent){
+        map.fitBounds([[extent[0],extent[1]],[extent[2],extent[3]]],{padding:45,maxZoom:12});
+        return;
+      }
+    }
     void loadFeatures();
   },[lga,loadFeatures]);
 
@@ -215,7 +270,10 @@ export default function MapComposer(){
       <div className="grid three">
         <div className="field"><label>LGA filter</label><select value={lga} onChange={e=>setLga(e.target.value)}><option value="">All mapped areas</option>{lgas.map(x=><option key={x.code} value={x.code}>{x.name}</option>)}</select></div>
         <div className="field"><label>Risk filter</label><select value={risk} onChange={e=>setRisk(e.target.value)}><option value="">All risk levels</option><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option><option value="critical">Critical</option></select></div>
-        <label className="check-field composer-label-toggle"><input type="checkbox" checked={labels} onChange={e=>setLabels(e.target.checked)}/> Show feature labels</label>
+        <div className="stack compact-stack composer-label-toggle">
+          <label className="check-field"><input type="checkbox" checked={labels} onChange={e=>setLabels(e.target.checked)}/> Show feature labels</label>
+          <label className="check-field"><input type="checkbox" checked={showBoundaries} onChange={e=>setShowBoundaries(e.target.checked)}/> Show LGA boundaries</label>
+        </div>
       </div>
 
       <div className="field"><label>Layers</label><div className="composer-layer-grid">
@@ -230,7 +288,6 @@ export default function MapComposer(){
         <button className="btn" disabled={!visibleFeatures.length} onClick={exportGeoJson}>Export visible GeoJSON</button>
         <button className="btn primary" onClick={printMap}>Print / Save PDF</button>
       </div>
-      {lga&&layers.includes("ndvi_change")&&<div className="notice">Published vegetation-change AOIs do not yet carry LGA metadata, so that layer is omitted while an LGA filter is active.</div>}
       {message&&<div className="error">{message}</div>}
     </section>
 
@@ -264,7 +321,7 @@ export default function MapComposer(){
         </div>
         <div className="composer-legends">
           <div><strong>Risk</strong><span><i className="legend-low"/>Low</span><span><i className="legend-medium"/>Medium</span><span><i className="legend-high"/>High</span><span><i className="legend-critical"/>Critical</span></div>
-          <div><strong>Geometry</strong><span><i className="legend-point"/>Point feature</span><span><i className="legend-line"/>River / line</span><span><i className="legend-area"/>Area / change zone</span></div>
+          <div><strong>Geometry</strong><span><i className="legend-point"/>Point feature</span><span><i className="legend-line"/>River / line</span><span><i className="legend-area"/>Area / change zone</span>{showBoundaries&&<span><i className="legend-boundary"/>LGA boundary</span>}</div>
         </div>
       </div>
 
