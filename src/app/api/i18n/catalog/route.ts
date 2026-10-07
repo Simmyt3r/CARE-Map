@@ -1,6 +1,6 @@
 import {NextResponse} from "next/server";
 import {query} from "@/lib/db";
-import {DEFAULT_LOCALE,englishCatalog,mergeCatalog,normalizeLocale} from "@/lib/i18n";
+import {DEFAULT_LOCALE,englishCatalog,mergeCatalog,normalizeLocale,validateTranslationMap} from "@/lib/i18n";
 
 export const dynamic="force-dynamic";
 
@@ -27,12 +27,14 @@ export async function GET(request:Request){
 
     const pack=result.rows[0]?.translations;
     if(!pack)throw new Error("reviewed pack unavailable");
+    const checked=validateTranslationMap(pack);
+    if(checked.coverage!==100)throw new Error("reviewed pack is incomplete");
 
     return NextResponse.json({
       locale,
       requested:locale,
       fallback:false,
-      translations:mergeCatalog(pack)
+      translations:mergeCatalog(checked.translations)
     },{headers:{"cache-control":"public, max-age=300"}});
   }catch{
     return NextResponse.json({
