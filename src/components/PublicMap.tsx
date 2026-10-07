@@ -10,6 +10,7 @@ type Filters={type:string;lga:string;status:string};
 
 export default function PublicMap(){
   const{t}=useI18n();
+  const tRef=useRef(t);
   const node=useRef<HTMLDivElement|null>(null);
   const mapRef=useRef<maplibregl.Map|null>(null);
   const filterRef=useRef<Filters>({type:"",lga:"",status:""});
@@ -17,6 +18,7 @@ export default function PublicMap(){
   const[type,setType]=useState(""),[lga,setLga]=useState(""),[status,setStatus]=useState("");
   const[lgas,setLgas]=useState<Lga[]>([]),[hasError,setHasError]=useState(false);
 
+  useEffect(()=>{tRef.current=t;},[t]);
   useEffect(()=>{fetch("/api/lgas").then(r=>r.json()).then(j=>setLgas(j.data||[])).catch(()=>{});},[]);
 
   async function loadBoundaries(map=mapRef.current){
@@ -106,16 +108,43 @@ export default function PublicMap(){
         const div=document.createElement("div");
         div.className="map-popup";
         const title=document.createElement("strong");
-        title.textContent=p.name||p.entityType||"CARE-Map item";
+        const tx=tRef.current;
+        const entityLabel=(value:string)=>{
+          if(value==="borehole")return tx("map.boreholes");
+          if(value==="asset")return tx("map.assets");
+          if(value==="forest_site")return tx("map.forests");
+          if(value==="river")return tx("map.rivers");
+          if(value==="ndvi_change")return tx("map.vegetationChange");
+          return value.replaceAll("_"," ");
+        };
+        const statusLabel=(value:string)=>{
+          if(value==="functional")return tx("map.functional");
+          if(value==="needs_maintenance")return tx("map.needsMaintenance");
+          if(value==="non_functional")return tx("map.nonFunctional");
+          return value.replaceAll("_"," ");
+        };
+        const riskLabel=(value:string)=>{
+          if(value==="low")return tx("map.low");
+          if(value==="medium")return tx("map.medium");
+          if(value==="high")return tx("map.high");
+          if(value==="critical")return tx("map.critical");
+          return value;
+        };
+        title.textContent=p.name||entityLabel(String(p.entityType||""))||tx("map.item");
         const meta=document.createElement("div");
-        meta.textContent=[p.entityType?.replace("_"," "),p.lga,p.status,p.riskLevel&&("Risk: "+p.riskLevel)].filter(Boolean).join(" • ");
+        meta.textContent=[
+          p.entityType&&entityLabel(String(p.entityType)),
+          p.lga,
+          p.status&&statusLabel(String(p.status)),
+          p.riskLevel&&(tx("map.risk")+": "+riskLabel(String(p.riskLevel)))
+        ].filter(Boolean).join(" • ");
         div.append(title,meta);
         const kindMap:Record<string,string>={borehole:"boreholes",asset:"assets",forest_site:"forest-sites",river:"rivers"};
         const publicKind=kindMap[String(p.entityType||"")];
         if(publicKind&&p.id){
           const link=document.createElement("a");
           link.href="/resource/"+publicKind+"/"+p.id;
-          link.textContent="View public record";
+          link.textContent=tx("map.viewRecord");
           link.className="map-popup-link";
           div.append(link);
         }
