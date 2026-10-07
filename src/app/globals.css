@@ -95,3 +95,13 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:
 .geojson-details{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#fbfdfb}
 .geojson-details summary{cursor:pointer;font-weight:800}
 @media(max-width:560px){.aoi-sketch-map{height:320px}}
+
+.monitor-history{display:grid;gap:10px}
+.monitor-observation{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff}
+.monitor-observation small{display:block;color:var(--muted);margin-top:3px}
+.monitor-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:9px}
+.monitor-metrics span{display:grid;gap:2px;padding:8px;border-radius:8px;background:#f5f7f5;color:var(--muted);font-size:11px}
+.monitor-metrics b{font-size:13px;color:var(--text)}
+.vegetation-alert-inline{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:10px;padding:10px;border:1px solid #efc1c1;border-radius:10px;background:#fff7f7}
+.vegetation-alert-inline p{margin:4px 0 0;color:var(--muted);font-size:12px}
+@media(max-width:650px){.monitor-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.vegetation-alert-inline{display:grid}}
