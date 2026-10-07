@@ -59,6 +59,10 @@ export async function PATCH(request:Request,context:{params:Promise<{id:string}>
   }|null;
   if(!body)return error("Invalid request body.");
 
+  const requestedCheckKey=body.checkKey===undefined?null:String(body.checkKey).trim();
+  if(body.checkKey!==undefined&&!requestedCheckKey)return error("Check key is required.");
+  if(body.checkKey!==undefined&&!isAcceptanceCheckStatus(body.status))return error("Invalid field acceptance check status.");
+
   const client=await pool().connect();
   try{
     await client.query("BEGIN");
@@ -86,9 +90,8 @@ export async function PATCH(request:Request,context:{params:Promise<{id:string}>
         await client.query("ROLLBACK");
         return error("Reopen the completed run before changing check results.",409,"RUN_COMPLETED");
       }
-      const key=String(body.checkKey).trim();
-      if(!key)return error("Check key is required.");
-      if(!isAcceptanceCheckStatus(body.status))return error("Invalid field acceptance check status.");
+      const key=requestedCheckKey as string;
+      const status=body.status as AcceptanceCheckStatus;
       const notes=body.checkNotes==null?null:String(body.checkNotes).trim().slice(0,3000)||null;
       const updated=await client.query(`
         UPDATE field_acceptance_checks
@@ -97,12 +100,12 @@ export async function PATCH(request:Request,context:{params:Promise<{id:string}>
           tested_by=CASE WHEN $3='not_run' THEN NULL ELSE $5::uuid END
         WHERE run_id=$1 AND check_key=$2
         RETURNING check_key,status
-      `,[id,key,body.status,notes,session.sub]);
+      `,[id,key,status,notes,session.sub]);
       if(!updated.rowCount){
         await client.query("ROLLBACK");
         return error("Acceptance check not found.",404);
       }
-      events.checkKey=key;events.checkStatus=body.status;
+      events.checkKey=key;events.checkStatus=status;
     }
 
     if(body.notes!==undefined){
