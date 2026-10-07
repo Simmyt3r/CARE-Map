@@ -1,5 +1,5 @@
 "use client";
-import {useEffect,useState} from "react";
+import {useEffect,useMemo,useState} from "react";
 import AoiSketchMap from "@/components/AoiSketchMap";
 import RemoteSensingResultDrawer from "@/components/RemoteSensingResultDrawer";
 
@@ -29,12 +29,12 @@ export default function RemoteSensingWorkbench(){
     if(forest?.geometry)setForm(x=>({...x,forestId:id,geometry:JSON.stringify(forest.geometry),name:x.name||forest.name+" vegetation change"}));
   }
 
-  function parsedGeometry(){
-    try{return JSON.parse(form.geometry);}catch{return null;}
-  }
+  const parsedAoi=useMemo(()=>{
+    try{return form.geometry?JSON.parse(form.geometry):null;}catch{return null;}
+  },[form.geometry]);
 
   async function searchScenes(){
-    const geometry=parsedGeometry();
+    const geometry=parsedAoi;
     if(!geometry||!form.baselineDate||!form.comparisonDate)return setMessage("Provide a valid AOI and both dates first.");
     setBusy(true);setMessage("");
     const req=(date:string)=>fetch("/api/remote-sensing/scenes",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({geometry,date,windowDays:Number(form.windowDays),maxCloud:60})}).then(async r=>({ok:r.ok,json:await r.json().catch(()=>({}))}));
@@ -46,7 +46,7 @@ export default function RemoteSensingWorkbench(){
   }
 
   async function createAndRun(){
-    const geometry=parsedGeometry();
+    const geometry=parsedAoi;
     if(!geometry)return setMessage("AOI geometry must be valid GeoJSON.");
     setBusy(true);setMessage("");
     const r=await fetch("/api/remote-sensing/analyses",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({
@@ -83,7 +83,7 @@ export default function RemoteSensingWorkbench(){
       </div>
 
       <div className="field"><label>Area of interest</label><div className="geometry-help">Choose an existing forest boundary, click the map to draw a polygon, or paste GeoJSON below.</div></div>
-      <AoiSketchMap geometry={parsedGeometry()} onChange={geometry=>setForm(x=>({...x,geometry:geometry?JSON.stringify(geometry):"",forestId:""}))}/>
+      <AoiSketchMap geometry={parsedAoi} onChange={geometry=>setForm(x=>({...x,geometry:geometry?JSON.stringify(geometry):"",forestId:""}))}/>
       <details className="geojson-details"><summary>Advanced: edit AOI GeoJSON</summary><div className="field"><textarea className="aoi-input" value={form.geometry} onChange={e=>setForm(x=>({...x,geometry:e.target.value,forestId:""}))} placeholder={polygonExample}/><div className="geometry-help">GeoJSON coordinate order is longitude, latitude.</div></div></details>
 
       <div className="grid four">
