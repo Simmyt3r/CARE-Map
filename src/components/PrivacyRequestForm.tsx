@@ -50,7 +50,7 @@ export default function PrivacyRequestForm(){
 
     <form className="card stack" onSubmit={checkStatus}>
       <div><h2>Check request status</h2><div className="muted">Use the request reference and the same email address used when submitting it.</div></div>
-      <div className="field"><label>Reference</label><input required value={lookup.reference} onChange={e=>setLookup(x=>({...x,reference:e.target.value.toUpperCase()}))} placeholder="PRV-YYYYMMDD-XXXXXXXX"/></div>
+      <div className="field"><label>Reference</label><input required value={lookup.reference} onChange={e=>setLookup(x=>({...x,reference:e.target.value.toUpperCase()}))} placeholder="PRV-YYYYMMDD-XXXXXXXXXXXX"/></div>
       <div className="field"><label>Email</label><input required type="email" value={lookup.email} onChange={e=>setLookup(x=>({...x,email:e.target.value}))}/></div>
       <button className="btn">Check status</button>
       {status&&<div className="resource-facts">
