@@ -217,6 +217,57 @@ export async function GET(request:Request){
       ) features
       FROM (SELECT * FROM report_rows ORDER BY submitted_at DESC LIMIT 1000) r
     ),
+    forest_features AS (
+      SELECT jsonb_build_object(
+        'type','FeatureCollection',
+        'features',COALESCE(jsonb_agg(
+          jsonb_build_object(
+            'type','Feature','id',f.id,'geometry',ST_AsGeoJSON(f.geom)::jsonb,
+            'properties',jsonb_build_object(
+              'id',f.id,'entityType','forest_site','name',f.name,'siteType',f.site_type,
+              'status',f.status,'riskLevel',f.risk_level
+            )
+          ) ORDER BY f.name
+        ),'[]'::jsonb)
+      ) features
+      FROM (
+        SELECT fs.id,fs.name,fs.site_type,fs.status,fs.risk_level,
+          ST_CollectionExtract(ST_MakeValid(ST_Intersection(fs.boundary,c.boundary)),3) geom
+        FROM forest_sites fs
+        CROSS JOIN c
+        WHERE ST_Intersects(fs.boundary,c.boundary)
+        ORDER BY fs.name
+        LIMIT 500
+      ) f
+      WHERE f.geom IS NOT NULL AND NOT ST_IsEmpty(f.geom)
+    ),
+    vegetation_features AS (
+      SELECT jsonb_build_object(
+        'type','FeatureCollection',
+        'features',COALESCE(jsonb_agg(
+          jsonb_build_object(
+            'type','Feature','id',v.id,'geometry',ST_AsGeoJSON(v.geom)::jsonb,
+            'properties',jsonb_build_object(
+              'id',v.id,'entityType','ndvi_change','name',v.name,
+              'comparisonDate',v.comparison_date,'changeLevel',v.change_level,
+              'vegetationChangeHa',v.vegetation_change_ha,'vegetationChangePct',v.vegetation_change_pct
+            )
+          ) ORDER BY v.comparison_date DESC,v.name
+        ),'[]'::jsonb)
+      ) features
+      FROM (
+        SELECT r.id,r.name,r.comparison_date,r.change_level,r.vegetation_change_ha,r.vegetation_change_pct,
+          ST_CollectionExtract(ST_MakeValid(ST_Intersection(r.aoi,c.boundary)),3) geom
+        FROM remote_sensing_analyses r
+        CROSS JOIN c
+        WHERE r.status='completed'
+          AND r.publish_to_map=TRUE
+          AND ST_Intersects(r.aoi,c.boundary)
+        ORDER BY r.comparison_date DESC,r.name
+        LIMIT 100
+      ) v
+      WHERE v.geom IS NOT NULL AND NOT ST_IsEmpty(v.geom)
+    ),
     river_features AS (
       SELECT jsonb_build_object(
         'type','FeatureCollection',
@@ -266,6 +317,8 @@ export async function GET(request:Request){
       bf.features boreholes_geojson,
       af.features assets_geojson,
       rf.features reports_geojson,
+      ff.features forests_geojson,
+      vf.features vegetation_geojson,
       rvf.features rivers_geojson,
       hf.features hazards_geojson
     FROM c
@@ -283,6 +336,8 @@ export async function GET(request:Request){
     CROSS JOIN borehole_features bf
     CROSS JOIN asset_features af
     CROSS JOIN report_features rf
+    CROSS JOIN forest_features ff
+    CROSS JOIN vegetation_features vf
     CROSS JOIN river_features rvf
     CROSS JOIN hazard_features hf
   `,[catchmentId]);
@@ -326,6 +381,8 @@ export async function GET(request:Request){
       boreholes:row.boreholes_geojson,
       assets:row.assets_geojson,
       reports:row.reports_geojson,
+      forests:row.forests_geojson,
+      vegetation:row.vegetation_geojson,
       rivers:row.rivers_geojson,
       hazards:row.hazards_geojson
     }
