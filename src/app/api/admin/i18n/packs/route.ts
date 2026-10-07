@@ -16,7 +16,7 @@ export async function GET(){
       p.status,p.enabled,p.reviewed_at,p.updated_at,u.name reviewed_by_name
     FROM translation_packs p
     LEFT JOIN users u ON u.id=p.reviewed_by
-    ORDER BY CASE p.language_code WHEN 'tiv' THEN 1 WHEN 'idoma' THEN 2 WHEN 'igede' THEN 3 ELSE 4 END,p.language_name
+    ORDER BY CASE p.language_code WHEN 'tiv' THEN 1 WHEN 'idu' THEN 2 WHEN 'ige' THEN 3 ELSE 4 END,p.language_name
   `);
 
   const imports=await query(`
