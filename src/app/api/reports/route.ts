@@ -33,10 +33,12 @@ export async function GET(){
 
   const result=await query(
     `SELECT r.*,ST_Y(r.location) latitude,ST_X(r.location) longitude,
-            u.name submitter_name,a.name assigned_name,a.email assigned_email
+            u.name submitter_name,a.name assigned_name,a.email assigned_email,
+            va.id satellite_alert_id,va.severity satellite_alert_severity
      FROM reports r
      LEFT JOIN users u ON u.id=r.submitted_by
      LEFT JOIN users a ON a.id=r.assigned_to
+     LEFT JOIN vegetation_alerts va ON va.verification_report_id=r.id
      ORDER BY CASE r.priority WHEN 'critical' THEN 1 WHEN 'high' THEN 2 WHEN 'medium' THEN 3 ELSE 4 END,
               r.submitted_at DESC
      LIMIT 500`
