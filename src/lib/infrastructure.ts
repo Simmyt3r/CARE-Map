@@ -23,6 +23,8 @@ export type MigrationStatus={
 export type DataReadiness={
   lgaBoundaries:number;
   totalLgas:number;
+  pilotBoundaries:number;
+  pilotLgas:number;
   verifiedRivers:number;
   verifiedSettlements:number;
   boreholes:number;
@@ -187,7 +189,7 @@ export async function currentInfrastructureSnapshot(){
     pending:migrationFiles().map(x=>x.filename),checksumMismatches:[],latestAppliedAt:null
   };
   let data:DataReadiness={
-    lgaBoundaries:0,totalLgas:23,verifiedRivers:0,verifiedSettlements:0,
+    lgaBoundaries:0,totalLgas:23,pilotBoundaries:0,pilotLgas:14,verifiedRivers:0,verifiedSettlements:0,
     boreholes:0,assets:0,verifiedHazardZones:0,verifiedCatchments:0,admins:0
   };
 
@@ -222,6 +224,8 @@ export async function currentInfrastructureSnapshot(){
         data={
           lgaBoundaries:t?.lgas?await count("SELECT count(*) n FROM lgas WHERE boundary IS NOT NULL"):0,
           totalLgas:t?.lgas?await count("SELECT count(*) n FROM lgas"):23,
+          pilotBoundaries:t?.lgas?await count("SELECT count(*) n FROM lgas WHERE pilot=TRUE AND boundary IS NOT NULL"):0,
+          pilotLgas:t?.lgas?await count("SELECT count(*) n FROM lgas WHERE pilot=TRUE"):14,
           verifiedRivers:t?.rivers?await count("SELECT count(*) n FROM rivers WHERE verified"):0,
           verifiedSettlements:t?.settlements?await count("SELECT count(*) n FROM settlements WHERE verified"):0,
           boreholes:t?.boreholes?await count("SELECT count(*) n FROM boreholes"):0,
@@ -248,6 +252,12 @@ export async function currentInfrastructureSnapshot(){
       state:database.ok?"ready":"blocked",required:true,
       detail:database.ok?"Database connection succeeds.":database.error||"DATABASE_URL is not configured.",
       action:"Configure DATABASE_URL and AIVEN_CA_CERT, then test the Aiven connection."
+    },
+    {
+      id:"aiven-ca",label:"Aiven TLS certificate verification",category:"security",
+      state:process.env.AIVEN_CA_CERT?"ready":"blocked",required:true,
+      detail:process.env.AIVEN_CA_CERT?"Aiven CA certificate is configured.":"AIVEN_CA_CERT is missing; database TLS cannot be strictly verified.",
+      action:"Add the Aiven CA certificate as AIVEN_CA_CERT in Vercel."
     },
     {
       id:"postgis",label:"PostGIS enabled",category:"database",
@@ -288,10 +298,16 @@ export async function currentInfrastructureSnapshot(){
       action:"Use Administrator bootstrap to create or rotate the first admin account."
     },
     {
-      id:"boundaries",label:"Benue LGA boundaries",category:"data",
-      state:data.lgaBoundaries===data.totalLgas&&data.totalLgas>0?"ready":data.lgaBoundaries>0?"warning":"blocked",required:true,
-      detail:data.lgaBoundaries+" of "+data.totalLgas+" LGA boundaries loaded.",
-      action:"Import the project-approved Benue LGA boundary GeoJSON in GIS Workbench."
+      id:"pilot-boundaries",label:"Pilot LGA boundaries",category:"data",
+      state:data.pilotLgas>0&&data.pilotBoundaries===data.pilotLgas?"ready":data.pilotBoundaries>0?"warning":"blocked",required:true,
+      detail:data.pilotBoundaries+" of "+data.pilotLgas+" pilot LGA boundaries loaded.",
+      action:"Import project-approved boundaries for every pilot LGA before field rollout."
+    },
+    {
+      id:"statewide-boundaries",label:"Statewide LGA boundary coverage",category:"data",
+      state:data.totalLgas>0&&data.lgaBoundaries===data.totalLgas?"ready":"warning",required:false,
+      detail:data.lgaBoundaries+" of "+data.totalLgas+" Benue LGA boundaries loaded.",
+      action:"Load all 23 approved LGA boundaries before statewide public reporting."
     },
     {
       id:"interventions",label:"Baseline intervention data",category:"data",
