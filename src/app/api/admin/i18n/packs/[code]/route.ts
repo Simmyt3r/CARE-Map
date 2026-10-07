@@ -28,14 +28,20 @@ export async function PATCH(request:Request,context:{params:Promise<{code:string
     const check=validateTranslationMap(pack.translations);
 
     if(action==="review"){
-      if(check.coverage!==100)return error("A translation pack must cover 100% of required public keys before review approval.");
+      if(check.coverage!==100){
+        await client.query("ROLLBACK");
+        return error("A translation pack must cover 100% of required public keys before review approval.");
+      }
       await client.query(`
         UPDATE translation_packs
         SET status='reviewed',reviewed_by=$2,reviewed_at=now(),updated_by=$2
         WHERE language_code=$1
       `,[code,session.sub]);
     }else if(action==="enable"){
-      if(pack.status!=="reviewed")return error("Review the translation pack before enabling it.");
+      if(pack.status!=="reviewed"){
+        await client.query("ROLLBACK");
+        return error("Review the translation pack before enabling it.");
+      }
       await client.query("UPDATE translation_packs SET enabled=TRUE,updated_by=$2 WHERE language_code=$1",[code,session.sub]);
     }else if(action==="disable"){
       await client.query("UPDATE translation_packs SET enabled=FALSE,updated_by=$2 WHERE language_code=$1",[code,session.sub]);
