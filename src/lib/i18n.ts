@@ -32,6 +32,28 @@ export const englishCatalog={
   "home.liveMapTitle":"Live intervention map",
   "home.liveMapBody":"Zoom or move the map to query the visible area.",
 
+  "map.layer":"Layer",
+  "map.allInterventions":"All interventions",
+  "map.boreholes":"Boreholes",
+  "map.assets":"Assets",
+  "map.forests":"Forests",
+  "map.rivers":"Rivers",
+  "map.vegetationChange":"Vegetation change",
+  "map.lga":"LGA",
+  "map.allLgas":"All LGAs",
+  "map.status":"Status",
+  "map.anyStatus":"Any status",
+  "map.functional":"Functional",
+  "map.needsMaintenance":"Needs maintenance",
+  "map.nonFunctional":"Non-functional",
+  "map.legend":"Legend",
+  "map.low":"Low",
+  "map.medium":"Medium",
+  "map.high":"High",
+  "map.critical":"Critical",
+  "map.dataError":"Map data could not be loaded.",
+  "map.aria":"CARE-Map interactive intervention map",
+
   "register.title":"Community account",
   "register.subtitle":"Registration is optional. It gives you an identity for submitted reports and future tracking features.",
   "register.fullName":"Full name",
@@ -96,7 +118,7 @@ export function validateTranslationMap(value:unknown){
   const translations:Record<string,string>={};
   const unknown:string[]=[];
   for(const[key,raw]of Object.entries(source)){
-    if(!(key in englishCatalog)){unknown.push(key);continue;}
+    if(!Object.prototype.hasOwnProperty.call(englishCatalog,key)){unknown.push(key);continue;}
     const text=String(raw??"").trim();
     if(text)translations[key]=text.slice(0,2000);
   }
