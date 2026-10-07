@@ -180,7 +180,9 @@ export async function GET(request:Request){
     methodology:{
       measure:"territorial_area",
       populationCoverage:false,
-      note:"Coverage represents LGA land area within the selected straight-line radius of qualifying mapped resources. It does not estimate population served, travel time, road access, hydraulic capacity or service reliability."
+      note:scenarioValue==="functional"
+        ?"Coverage represents LGA land area within the selected straight-line radius of resources currently marked functional. It does not estimate population served, travel time, road access, hydraulic capacity or service reliability."
+        :"This is an infrastructure proximity footprint using all non-decommissioned mapped resources, including records that may be non-functional or need maintenance. It is not an active-service coverage estimate."
     }
   });
 }
