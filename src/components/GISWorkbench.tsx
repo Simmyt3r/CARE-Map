@@ -1,5 +1,6 @@
 "use client";
 import {useEffect,useMemo,useState} from "react";
+import LgaBoundaryManager from "@/components/LgaBoundaryManager";
 
 type ImportKind="boreholes"|"assets"|"forest-sites"|"rivers";
 type Quality={
@@ -107,6 +108,8 @@ export default function GISWorkbench(){
       <div className="actions"><button className="btn primary" disabled={busy||!total||total>1000} onClick={importData}>{busy?"Importing…":"Validate & import"}</button>{total>1000&&<span className="error">Split this file into batches of 1,000 or fewer.</span>}</div>
       {message&&<div className={message.startsWith("Imported")?"success":"notice"}>{message}</div>}
     </section>
+
+    <LgaBoundaryManager/>
 
     <section className="card stack">
       <div className="section-head"><div><h2>GIS data quality</h2><div className="muted">Automated checks for weak GPS accuracy, missing maintenance, possible duplicate boreholes, unverified rivers, and stale community reports.</div></div><button className="btn" onClick={loadQuality}>Refresh checks</button></div>
