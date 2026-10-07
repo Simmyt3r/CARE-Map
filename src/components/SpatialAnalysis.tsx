@@ -3,6 +3,7 @@ import {useEffect,useMemo,useState} from "react";
 import SpatialAnalysisMap from "@/components/SpatialAnalysisMap";
 import CoverageAnalysis from "@/components/CoverageAnalysis";
 import SettlementAccessAnalysis from "@/components/SettlementAccessAnalysis";
+import EnvironmentalExposureAnalysis from "@/components/EnvironmentalExposureAnalysis";
 
 export default function SpatialAnalysis(){
   const[latitude,setLatitude]=useState("");
@@ -70,6 +71,8 @@ export default function SpatialAnalysis(){
     <CoverageAnalysis lgas={lgas}/>
 
     <SettlementAccessAnalysis lgas={lgas}/>
+
+    <EnvironmentalExposureAnalysis lgas={lgas}/>
 
     <section className="card stack">
       <div className="section-head"><div><h2>LGA spatial summary</h2><div className="muted">Authoritative counts plus administrative area, forest area, river length and report location calculated from stored PostGIS geometries.</div></div><button className="btn" onClick={loadLgas}>Refresh</button></div>
