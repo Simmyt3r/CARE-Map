@@ -65,13 +65,23 @@ export async function PATCH(request:Request,context:{params:Promise<{id:string}>
     await client.query("BEGIN");
 
     if(body.parentId){
-      const parent=await client.query(
-        "SELECT id FROM catchments WHERE id=$1 AND id<>$2",
-        [body.parentId,id]
-      );
+      const parent=await client.query<{id:string;coverage:number|string}>(`
+        SELECT p.id,
+          CASE
+            WHEN ST_Area(ch.boundary::geography)=0 THEN 0
+            ELSE ST_Area(ST_Intersection(ch.boundary,p.boundary)::geography)/ST_Area(ch.boundary::geography)
+          END coverage
+        FROM catchments p
+        JOIN catchments ch ON ch.id=$2
+        WHERE p.id=$1 AND p.id<>ch.id
+      `,[body.parentId,id]);
       if(!parent.rowCount){
         await client.query("ROLLBACK");
         return error("Parent catchment not found.",400);
+      }
+      if(Number(parent.rows[0].coverage||0)<0.99){
+        await client.query("ROLLBACK");
+        return error("A child catchment must fall at least 99% inside its parent boundary.",400);
       }
       const cycle=await client.query(`
         WITH RECURSIVE descendants AS (
