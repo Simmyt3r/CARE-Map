@@ -48,6 +48,17 @@ export async function PATCH(request:Request,context:{params:Promise<{id:string}>
       "INSERT INTO audit_logs(actor_id,action,entity_type,entity_id,metadata) VALUES($1,'status_change','report',$2,$3)",
       [session.sub,id,JSON.stringify({from:fromStatus,to:body.status,note:body.notes||null})]
     );
+
+    if(body.status==="resolved"||body.status==="rejected"){
+      await client.query(
+        `UPDATE vegetation_alerts
+         SET acknowledged_at=COALESCE(acknowledged_at,now()),
+             acknowledged_by=COALESCE(acknowledged_by,$1)
+         WHERE verification_report_id=$2`,
+        [session.sub,id]
+      );
+    }
+
     await client.query("COMMIT");
 
     return NextResponse.json({data:result.rows[0]});
