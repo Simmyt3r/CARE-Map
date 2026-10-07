@@ -1,4 +1,5 @@
 import PrivacyRequestForm from "@/components/PrivacyRequestForm";
+import {PRIVACY_NOTICE_VERSION} from "@/lib/privacy";
 
 export const dynamic="force-dynamic";
 
@@ -11,7 +12,7 @@ export default function PrivacyPage(){
 
   return <div className="stack privacy-page">
     <section className="card stack">
-      <span className="badge">Privacy notice · version 2026-10-07</span>
+      <span className="badge">Privacy notice · version {PRIVACY_NOTICE_VERSION}</span>
       <h1>CARE-Map privacy notice</h1>
       <p>CARE-Map processes limited personal data so community members and staff can submit, follow up, verify, and manage environmental and infrastructure reports. This notice explains what is collected, why it is used, how long it is kept, and how to exercise your rights.</p>
       <div className="resource-facts">
