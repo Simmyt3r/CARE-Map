@@ -73,6 +73,20 @@ export async function PATCH(request:Request,context:{params:Promise<{id:string}>
         await client.query("ROLLBACK");
         return error("Parent catchment not found.",400);
       }
+      const cycle=await client.query(`
+        WITH RECURSIVE descendants AS (
+          SELECT id,parent_id FROM catchments WHERE parent_id=$1
+          UNION ALL
+          SELECT c.id,c.parent_id
+          FROM catchments c
+          JOIN descendants d ON c.parent_id=d.id
+        )
+        SELECT 1 FROM descendants WHERE id=$2 LIMIT 1
+      `,[id,body.parentId]);
+      if(cycle.rowCount){
+        await client.query("ROLLBACK");
+        return error("Parent assignment would create a catchment hierarchy cycle.",400);
+      }
     }
 
     params.push(session.sub);sets.push("updated_by=$"+params.length);
