@@ -2,7 +2,7 @@ import {NextResponse} from "next/server";
 import {getSession,isAdmin} from "@/lib/auth";
 import {error} from "@/lib/http";
 import {pool,query} from "@/lib/db";
-import {normalizeLocale,targetLanguages,validateTranslationMap} from "@/lib/i18n";
+import {targetLanguages,validateTranslationMap} from "@/lib/i18n";
 
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
@@ -45,11 +45,11 @@ export async function POST(request:Request){
     languageCode?:string;source?:string;version?:string;translations?:unknown;
   }|null;
 
-  const languageCode=normalizeLocale(body?.languageCode);
-  if(languageCode==="en")return error("English is the built-in fallback and cannot be replaced through translation packs.");
-
-  const target=targetLanguages.find(x=>x.code===languageCode);
+  const rawLanguageCode=String(body?.languageCode||"").trim().toLowerCase();
+  const target=targetLanguages.find(x=>x.code===rawLanguageCode);
   if(!target)return error("Unsupported translation language.");
+  if(target.code==="en")return error("English is the built-in fallback and cannot be replaced through translation packs.");
+  const languageCode=target.code;
 
   const source=String(body?.source||"").trim().slice(0,300);
   const version=String(body?.version||"").trim().slice(0,120);
