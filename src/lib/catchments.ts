@@ -12,6 +12,6 @@ export function catchmentLevelLabel(value:CatchmentLevel){
 }
 
 export function normalizeCatchmentCode(value:unknown){
-  const text=String(value??"").trim().toUpperCase().replace(/[^A-Z0-9._-]+/g,"-").replace(/^-+|-+$/g,"");
+  const text=String(value??"").trim().toUpperCase().replace(/[^A-Z0-9._-]+/g,"-").replace(/^-+|-+$/g,"").slice(0,120);
   return text||null;
 }
