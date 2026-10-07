@@ -96,10 +96,12 @@ export default function FieldAcceptanceCenter(){
     }catch{
       results.push({label:"Local storage queue",state:"blocked",detail:"Local storage is unavailable; offline report queuing cannot be trusted."});
     }
+    const runtimeMedia=(navigator as unknown as {mediaDevices?:{getUserMedia?:unknown}}).mediaDevices;
+    const cameraApiAvailable=typeof runtimeMedia?.getUserMedia==="function";
     results.push({
       label:"Camera/media API",
-      state:navigator.mediaDevices?.getUserMedia?"ready":"warning",
-      detail:navigator.mediaDevices?.getUserMedia?"Camera/media APIs are exposed. Actual permission and photo upload still require a field test.":"Camera media API is not exposed in this browser."
+      state:cameraApiAvailable?"ready":"warning",
+      detail:cameraApiAvailable?"Camera/media APIs are exposed. Actual permission and photo upload still require a field test.":"Camera media API is not exposed in this browser."
     });
     setDiagnostics(results);
   }
