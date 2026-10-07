@@ -237,7 +237,9 @@ Production gate: run the migration against the real Aiven service and field-test
 - [x] Explicit distinction between territorial coverage and population served
 - [x] Regression tests for resource/scenario/radius validation
 
-**Production gate:** apply migration 008 after migration 007, then validate chosen radii and resource statuses with the GIS/M&E team before using coverage percentages in management reporting.\n\n**Interpretation rule:** this baseline measures land-area proximity to mapped point resources. It does not estimate population served, walking/driving time, road access, hydraulic capacity, actual service reliability or demand. Those require validated population/settlement/network data.
+**Production gate:** apply migration 008 after migration 007, then validate chosen radii and resource statuses with the GIS/M&E team before using coverage percentages in management reporting.
+
+**Interpretation rule:** this baseline measures land-area proximity to mapped point resources. It does not estimate population served, walking/driving time, road access, hydraulic capacity, actual service reliability or demand. Those require validated population/settlement/network data.
 
 
 ## Phase 13 — Settlements & Borehole Access Gaps ✅ Baseline complete
@@ -421,3 +423,34 @@ Production gate: run the migration against the real Aiven service and field-test
 **Real-world production gate remains open:** actually perform the acceptance protocol on target field devices in every pilot LGA. Tooling completion is not the same thing as operational acceptance.
 
 **Retest rule:** repeat field acceptance after major releases or material changes to authentication, offline storage/sync, GPS capture, report workflows, maps, service workers, or target field devices.
+
+
+## Phase 19 — Privacy & Data Governance ✅ Product baseline complete
+
+- [x] Public privacy notice
+- [x] Deployment-configurable controller identity, address and privacy contact
+- [x] Deployment-configurable lawful-basis wording for report/account processing
+- [x] Versioned privacy-notice acknowledgement records
+- [x] Separate explicit consent for optional reporter identity/contact fields
+- [x] Public data-subject request intake and status lookup
+- [x] Access, rectification, erasure, restriction, objection, portability, consent-withdrawal and complaint request types
+- [x] 30-day operational target date
+- [x] Administrator rights-request case queue
+- [x] Identity-verification and resolution notes
+- [x] Community self-service personal-data JSON export
+- [x] Community self-service account identity anonymization
+- [x] Reporter identity/contact removal during self-erasure
+- [x] Existing two-year old-report anonymization extended to detach privacy user links
+- [x] Personal-data breach register
+- [x] 72-hour NDPC notification countdown when incident is assessed as likely risk
+- [x] Separate affected-person notification tracking for high-risk assessment
+- [x] Audited privacy-case and breach updates
+- [x] Admin Privacy & Data Governance Center
+- [x] Production-readiness gates for privacy configuration, formal review attestation and overdue cases
+- [x] Privacy/legal deployment settings in Infrastructure environment-bundle builder
+- [x] Regression tests for privacy request validation and breach timing
+- [x] NDPA/GAID-oriented privacy planning documentation
+
+**Formal legal gate remains open:** the software implementation does not itself complete the legal review. The responsible ACReSAL privacy/legal function or qualified Nigerian data-protection professional must approve controller roles, lawful bases, retention, DPIA need, processor/transfers, NDPC registration/filing obligations, DPO/DPCO requirements, cookies/storage, minors, breach SOP and the final public notice.
+
+**Production rule:** only set `PRIVACY_LEGAL_REVIEWED_AT` and `PRIVACY_REVIEWER` after that real review is completed.
