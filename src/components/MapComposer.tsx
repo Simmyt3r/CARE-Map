@@ -225,6 +225,7 @@ export default function MapComposer(){
         <button className="btn" disabled={!visibleFeatures.length} onClick={exportGeoJson}>Export visible GeoJSON</button>
         <button className="btn primary" onClick={()=>window.print()}>Print / Save PDF</button>
       </div>
+      {lga&&layers.includes("ndvi_change")&&<div className="notice">Published vegetation-change AOIs do not yet carry LGA metadata, so that layer is omitted while an LGA filter is active.</div>}
       {message&&<div className="error">{message}</div>}
     </section>
 
