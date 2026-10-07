@@ -57,7 +57,7 @@ export default function ReportsQueue(){
       <div className="table-wrap"><table>
         <thead><tr><th>Report</th><th>Priority</th><th>Owner</th><th>Status</th><th>Deadline</th><th>Action</th></tr></thead>
         <tbody>{visible.map(r=><tr key={r.id} className={r.priority==="critical"?"critical-row":""}>
-          <td><strong>{r.type.replaceAll("_"," ")}</strong><div className="muted clamp-2">{r.description}</div><small>{new Date(r.submitted_at).toLocaleString()}</small></td>
+          <td><strong>{r.type.replaceAll("_"," ")}</strong>{r.origin==="satellite_alert"&&<span className="badge satellite-badge">Satellite verification</span>}<div className="muted clamp-2">{r.description}</div><small>{new Date(r.submitted_at).toLocaleString()}</small></td>
           <td><span className={"priority-badge priority-"+r.priority}>{r.priority}</span></td>
           <td>{r.assigned_name||<span className="muted">Unassigned</span>}</td>
           <td><span className="badge">{r.status.replaceAll("_"," ")}</span></td>
