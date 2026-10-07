@@ -51,6 +51,8 @@ The repository now contains a working Next.js application and Aiven/PostGIS data
 - Publishable vegetation-change AOI layer on the public map
 - Scheduled Sentinel-2 vegetation monitoring plans with configurable cadence and clear-pixel quality gates
 - Automatic vegetation-loss alerts surfaced in the Operations Center
+- One-click satellite-alert field verification tasks in the normal report workflow
+- Evidence-photo capture and automatic satellite-alert closure after field verification
 
 ### Administration
 - Role-based users: registered community, staff, admin
@@ -88,7 +90,7 @@ Architecture decision: docs/architecture/decisions/0003-adopt-aiven-postgis-next
 
 ## Aiven migration
 
-db/migrations/001_init.sql enables PostGIS, pgcrypto, and citext; creates the operational schema; creates GIST spatial indexes; and seeds all 23 Benue LGAs with the 14 initial CARE-Map pilot LGAs marked. db/migrations/002_field_operations.sql adds GPS quality/provenance, inspections, import auditing, and GIS quality views. db/migrations/003_operations_governance.sql adds report ownership, priority/deadlines, status history, account governance metadata, and supporting indexes. db/migrations/004_remote_sensing.sql adds persisted Sentinel-2 vegetation analyses and spatial indexes. db/migrations/005_vegetation_monitoring.sql adds recurring vegetation watchlists, observation history, and acknowledgeable satellite alerts.
+db/migrations/001_init.sql enables PostGIS, pgcrypto, and citext; creates the operational schema; creates GIST spatial indexes; and seeds all 23 Benue LGAs with the 14 initial CARE-Map pilot LGAs marked. db/migrations/002_field_operations.sql adds GPS quality/provenance, inspections, import auditing, and GIS quality views. db/migrations/003_operations_governance.sql adds report ownership, priority/deadlines, status history, account governance metadata, and supporting indexes. db/migrations/004_remote_sensing.sql adds persisted Sentinel-2 vegetation analyses and spatial indexes. db/migrations/005_vegetation_monitoring.sql adds recurring vegetation watchlists, observation history, and acknowledgeable satellite alerts. db/migrations/006_satellite_field_verification.sql links satellite alerts to field-verification reports and records report origin.
 
 ## Environment variables
 
@@ -133,6 +135,8 @@ Never expose database or session secrets through NEXT_PUBLIC variables.
 - GET /api/remote-sensing/monitors/:id/observations
 - GET /api/remote-sensing/alerts
 - POST /api/remote-sensing/alerts/:id/acknowledge
+- POST /api/remote-sensing/alerts/:id/field-verification
+- GET/POST /api/reports/:id/photos
 - GET/POST /api/reports
 - PATCH /api/reports/:id/status
 - GET /api/reports/mine
