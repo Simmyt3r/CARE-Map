@@ -1,6 +1,7 @@
 "use client";
 import {useEffect,useRef} from "react";
 import * as maplibregl from "maplibre-gl";
+import {geometryExtent} from "@/lib/geojson";
 
 function visitCoordinates(value:any,bounds:maplibregl.LngLatBounds){
   if(Array.isArray(value)&&value.length>=2&&typeof value[0]==="number"&&typeof value[1]==="number"){
@@ -16,7 +17,10 @@ export default function EnvironmentalExposureMap({result}:{result:any|null}){
   useEffect(()=>{
     if(!node.current||!result||!result.zones?.features?.length)return;
     const first=result.zones.features[0];
-    const start=(first.geometry?.coordinates?.[0]?.[0]?.[0]||first.geometry?.coordinates?.[0]?.[0]||[8.7,7.35]) as [number,number];
+    const firstExtent=geometryExtent(first.geometry);
+    const start:[number,number]=firstExtent
+      ?[(firstExtent[0]+firstExtent[2])/2,(firstExtent[1]+firstExtent[3])/2]
+      :[8.7,7.35];
     const map=new maplibregl.Map({
       container:node.current,center:start,zoom:8,
       style:{version:8,sources:{osm:{type:"raster",tiles:["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],tileSize:256,attribution:"© OpenStreetMap contributors"}},layers:[{id:"osm",type:"raster",source:"osm"}]}
