@@ -153,3 +153,22 @@ Production gate: run the migration against the real Aiven service and field-test
 - [x] Clear-pixel-normalized vegetation-area estimates for comparable monitoring
 
 **Production gate:** apply migration 005, configure CDSE OAuth and CRON_SECRET, then validate monitoring thresholds against known field sites before treating satellite alerts as operational evidence.
+
+
+## Phase 9 — Satellite Field Verification ✅ Baseline complete
+
+- [x] Create a field-verification report directly from a vegetation alert
+- [x] Use the alert AOI point-on-surface as the field task location
+- [x] Inherit medium/high/critical urgency from the satellite alert
+- [x] Automatic default deadlines: critical 1 day, high 3 days, medium 7 days
+- [x] Reuse existing report assignment, deadline and status workflow
+- [x] Preserve satellite-alert → field-report traceability
+- [x] Label satellite-generated reports in the report queue
+- [x] Display satellite trigger context in report governance
+- [x] Upload field evidence photos to verification reports
+- [x] Require a meaningful closure note for satellite verification
+- [x] Require at least one evidence photo before resolving a satellite verification
+- [x] Automatically acknowledge the originating satellite alert when the verification report is resolved or rejected
+- [x] Audit field-verification creation and evidence uploads
+
+**Production gate:** apply migration 006 and configure BLOB_READ_WRITE_TOKEN before using evidence-photo closure in the field. Validate the workflow with a known site before operational rollout.
