@@ -90,3 +90,8 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:
 .ndvi-water{background:#5e6fb1;color:#fff}.ndvi-sparse{background:#c7ad6b}.ndvi-mid{background:#b7d657}.ndvi-high{background:#267a34;color:#fff}
 @media(max-width:900px){.grid.four{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){.grid.four,.ndvi-preview-grid,.ndvi-legend{grid-template-columns:1fr}}
+
+.aoi-sketch-map{height:390px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#e9eee9}
+.geojson-details{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#fbfdfb}
+.geojson-details summary{cursor:pointer;font-weight:800}
+@media(max-width:560px){.aoi-sketch-map{height:320px}}
