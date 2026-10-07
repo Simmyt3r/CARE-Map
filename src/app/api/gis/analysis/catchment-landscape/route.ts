@@ -29,6 +29,7 @@ export async function GET(request:Request){
       CROSS JOIN c
       WHERE l.boundary IS NOT NULL
         AND ST_Intersects(l.boundary,c.boundary)
+        AND ST_Area(ST_Intersection(l.boundary,c.boundary)::geography)>1000
     ),
     lga_summary AS (
       SELECT
