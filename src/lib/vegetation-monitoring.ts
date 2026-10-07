@@ -34,6 +34,10 @@ function alertSeverity(changePct:number){
   return level==="low"?"medium":level;
 }
 
+export function shouldRaiseVegetationAlert(changePct:number|null,clearFraction:number|null,minimumClearFraction:number,alertLossPct:number){
+  return changePct!=null&&clearFraction!=null&&clearFraction>=minimumClearFraction&&changePct<=-alertLossPct;
+}
+
 export async function runVegetationMonitor(monitorId:string,actorId:string|null=null,observedAt=new Date()){
   const result=await query<VegetationMonitorRow>(`
     SELECT m.*,ST_AsGeoJSON(m.aoi)::json aoi_geometry,
@@ -92,7 +96,7 @@ export async function runVegetationMonitor(monitorId:string,actorId:string|null=
     `,[monitor.id,status,nextDue.toISOString()]);
 
     let alertId:string|null=null;
-    if(!lowCoverage&&changePct!=null&&changePct<=-Number(monitor.alert_loss_pct)){
+    if(shouldRaiseVegetationAlert(changePct,clearFraction,minimumClear,Number(monitor.alert_loss_pct))){
       const severityForAlert=alertSeverity(changePct);
       const title=severityForAlert.charAt(0).toUpperCase()+severityForAlert.slice(1)+" vegetation loss: "+monitor.name;
       const message=
