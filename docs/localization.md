@@ -6,9 +6,9 @@ English is the built-in default and permanent safe fallback.
 
 Initial Benue target packs:
 
-- Tiv
-- Idoma
-- Igede
+- Tiv — language tag `tiv`
+- Idoma — language tag `idu`
+- Igede — language tag `ige`
 
 These are target languages, not pre-approved translations. CARE-Map does not ship guessed local-language wording.
 
@@ -157,7 +157,7 @@ A future decision can promote local-language availability to a required launch g
 
 ## Content-quality rule
 
-CARE-Map intentionally contains no machine-guessed Tiv, Idoma, or Igede strings.
+CARE-Map intentionally contains no machine-guessed Tiv, Idoma, or Igede strings. Display names remain human-readable while stored/public language tags use `tiv`, `idu`, and `ige`.
 
 Human language review should check:
 
