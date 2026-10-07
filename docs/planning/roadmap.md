@@ -237,3 +237,32 @@ Production gate: run the migration against the real Aiven service and field-test
 - [x] Regression tests for resource/scenario/radius validation
 
 **Production gate:** apply migration 008 after migration 007, then validate chosen radii and resource statuses with the GIS/M&E team before using coverage percentages in management reporting.\n\n**Interpretation rule:** this baseline measures land-area proximity to mapped point resources. It does not estimate population served, walking/driving time, road access, hydraulic capacity, actual service reliability or demand. Those require validated population/settlement/network data.
+
+
+## Phase 13 — Settlements & Borehole Access Gaps ✅ Baseline complete
+
+- [x] PostGIS settlement/community point layer
+- [x] Settlement code, type, LGA, GPS accuracy and source provenance
+- [x] Optional population value with mandatory population-source provenance
+- [x] Optional population year tied to a recorded population value
+- [x] Verified/unverified settlement workflow with audit logging
+- [x] Audited CSV and GeoJSON settlement imports
+- [x] Row-level import failures and 2,000-record batch limit
+- [x] Optional spatial LGA assignment from imported administrative boundaries
+- [x] Staff settlement GeoJSON export
+- [x] Verified settlements used by access analysis by default
+- [x] Straight-line nearest functional borehole search using PostGIS geography
+- [x] Documented 50–150 km nearest-borehole search horizon
+- [x] Settlement access threshold from 100 m to 50 km
+- [x] Within-threshold, access-gap and beyond-search-horizon classification
+- [x] Settlement access percentage
+- [x] Population-data completeness percentage
+- [x] Known-population access percentage calculated only from sourced population records
+- [x] Top 25 access-gap settlements
+- [x] Functional borehole / settlement / gap-line map
+- [x] GeoJSON export of access analysis
+- [x] Explicit disclaimer that straight-line proximity is not walking/network/service-capacity analysis
+
+**Production gate:** apply migration 009 and import a GIS/M&E-approved settlement inventory. Keep imported records unverified until source, coordinates and LGA assignment have been reviewed. Population-based statistics should not be published without documented population provenance and acceptable completeness.
+
+**Interpretation rule:** settlement access percentage is a count of mapped/verified settlements within a distance threshold. Known-population access percentage uses only settlement records with sourced population values; it is not automatically the population access rate for the whole LGA.
