@@ -44,8 +44,8 @@ CREATE INDEX IF NOT EXISTS idx_translation_pack_imports_language
 INSERT INTO translation_packs(language_code,language_name,native_name,status,enabled,translations,source,version)
 VALUES
   ('tiv','Tiv','Tiv','draft',FALSE,'{}'::jsonb,'Benue CARE-Map target language','1'),
-  ('idoma','Idoma','Idoma','draft',FALSE,'{}'::jsonb,'Benue CARE-Map target language','1'),
-  ('igede','Igede','Igede','draft',FALSE,'{}'::jsonb,'Benue CARE-Map target language','1')
+  ('idu','Idoma','Idoma','draft',FALSE,'{}'::jsonb,'Benue CARE-Map target language','1'),
+  ('ige','Igede','Igede','draft',FALSE,'{}'::jsonb,'Benue CARE-Map target language','1')
 ON CONFLICT(language_code) DO NOTHING;
 
 COMMIT;
