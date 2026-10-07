@@ -134,3 +134,22 @@ Production gate: run the migration against the real Aiven service and field-test
 **Production gate:** apply migration 004 and configure CDSE OAuth credentials for processing. Scene discovery remains available without those credentials.
 
 **Interpretation rule:** compare like seasons whenever possible. A vegetation decrease may represent seasonality, harvest, fire, cloud contamination, land clearing, drought, or genuine degradation; remote-sensing output must be interpreted with field context.
+
+
+## Phase 8 — Vegetation Monitoring & Alerts ✅ Baseline complete
+
+- [x] Promote a completed NDVI analysis into a fixed-reference monitoring plan
+- [x] Configurable 7–90 day monitoring cadence
+- [x] Configurable minimum clear-pixel coverage
+- [x] Configurable vegetation-loss alert threshold
+- [x] Daily due-monitor scheduler with per-plan cadence
+- [x] Low-clear-coverage retry without false vegetation alerts
+- [x] Observation history with scene, NDVI, clear coverage and vegetation change
+- [x] Medium/high/critical vegetation-loss alerts
+- [x] Operations Center satellite-alert queue
+- [x] Staff alert acknowledgement
+- [x] Manual Check Now control
+- [x] Pause/reactivate monitoring plans
+- [x] Clear-pixel-normalized vegetation-area estimates for comparable monitoring
+
+**Production gate:** apply migration 005, configure CDSE OAuth and CRON_SECRET, then validate monitoring thresholds against known field sites before treating satellite alerts as operational evidence.
