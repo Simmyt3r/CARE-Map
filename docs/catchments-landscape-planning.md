@@ -33,7 +33,7 @@ Each catchment stores:
 - creator/updater
 - timestamps
 
-Catchments support optional hierarchy. A basin can contain watersheds; a watershed can contain subcatchments; subcatchments can contain microcatchments. CARE-Map prevents direct self-parenting and hierarchy cycles.
+Catchments support optional hierarchy. A basin can contain watersheds; a watershed can contain subcatchments; subcatchments can contain microcatchments. CARE-Map prevents direct self-parenting and hierarchy cycles. A child must also fall at least 99% inside the proposed parent polygon before the relationship is accepted.
 
 ## Import and review
 
@@ -57,6 +57,7 @@ Import limits:
 - polygons only
 - normalized area from 0.001 km² to 500,000 km²
 - duplicate non-empty catchment codes rejected
+- normalized catchment codes are capped at 120 characters
 
 Imported records are unverified by default unless the operator deliberately marks an already approved dataset verified on import.
 
