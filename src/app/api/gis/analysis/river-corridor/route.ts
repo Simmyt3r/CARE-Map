@@ -18,6 +18,7 @@ export async function GET(request:Request){
 
   if(!lga)return error("LGA code is required.");
   if(radius==null)return error("River corridor radius must be between 50 m and 20 km.");
+  if(riverId&&!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(riverId))return error("Invalid river ID.");
 
   const result=await query(`
     WITH selected_lga AS (
@@ -35,6 +36,7 @@ export async function GET(request:Request){
       WHERE r.verified=TRUE
         AND l.boundary IS NOT NULL
         AND ST_Intersects(r.course,l.boundary)
+        AND NOT ST_IsEmpty(ST_CollectionExtract(ST_Intersection(r.course,l.boundary),2))
         AND ($3::uuid IS NULL OR r.id=$3::uuid)
     ),
     river_union AS (
