@@ -77,7 +77,8 @@ export const englishCatalog={
 
   "common.loading":"Loading…",
   "common.privacyNotice":"Privacy notice",
-  "common.englishFallback":"English fallback"
+  "common.englishFallback":"English fallback",
+  "privacy.englishOnly":"The legal privacy notice remains in English until a separately reviewed legal translation is approved."
 } as const;
 
 export type TranslationKey=keyof typeof englishCatalog;
