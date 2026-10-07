@@ -1,1 +1,1 @@
-{"name":"CARE-Map","short_name":"CARE-Map","start_url":"/","display":"standalone","background_color":"#f7faf7","theme_color":"#1f6b3b","icons":[]}
+{"name":"CARE-Map","short_name":"CARE-Map","description":"Benue ACReSAL smart GIS tracking and field reporting","start_url":"/","scope":"/","display":"standalone","background_color":"#f7faf7","theme_color":"#1f6b3b","icons":[{"src":"/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]}
