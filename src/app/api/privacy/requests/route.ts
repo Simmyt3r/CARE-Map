@@ -59,7 +59,7 @@ export async function GET(request:Request){
   const reference=String(url.searchParams.get("reference")||"").trim().toUpperCase();
   const email=String(url.searchParams.get("email")||"").trim().toLowerCase();
 
-  if(!/^PRV-\d{8}-[A-F0-9]{8}$/.test(reference))return error("Provide a valid privacy request reference.");
+  if(!/^PRV-\d{8}-[A-F0-9]{12}$/.test(reference))return error("Provide a valid privacy request reference.");
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return error("Provide the email used for the request.");
 
   const result=await query(`
