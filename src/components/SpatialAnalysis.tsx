@@ -74,6 +74,8 @@ export default function SpatialAnalysis(){
     <section className="card stack">
       <div className="section-head"><div><h2>LGA spatial summary</h2><div className="muted">Authoritative counts plus administrative area, forest area, river length and report location calculated from stored PostGIS geometries.</div></div><button className="btn" onClick={loadLgas}>Refresh</button></div>
       <div className="stats">
+        <div className="stat"><strong>{totals?.settlements??"–"}</strong><span>Settlements</span></div>
+        <div className="stat"><strong>{totals?.verified_settlements??"–"}</strong><span>Verified settlements</span></div>
         <div className="stat"><strong>{totals?.boreholes??"–"}</strong><span>Boreholes</span></div>
         <div className="stat"><strong>{totals?.assets??"–"}</strong><span>Assets</span></div>
         <div className="stat"><strong>{totals?.forest_area_ha!=null?Number(totals.forest_area_ha).toLocaleString(undefined,{maximumFractionDigits:1}):"–"}</strong><span>Forest hectares mapped</span></div>
@@ -81,8 +83,8 @@ export default function SpatialAnalysis(){
         <div className="stat"><strong>{totals?.lga_boundaries??"–"}/23</strong><span>LGA boundaries loaded</span></div>
       </div>
       <div className="table-wrap"><table>
-        <thead><tr><th>LGA</th><th>Boundary km²</th><th>Boreholes</th><th>Functional</th><th>Needs attention</th><th>Assets</th><th>Forest ha</th><th>River km</th><th>Open reports in boundary</th><th>Linked reports</th></tr></thead>
-        <tbody>{lgas.map(l=><tr key={l.code}><td><strong>{l.name}</strong>{l.pilot&&<span className="badge" style={{marginLeft:6}}>Pilot</span>}<div className="muted">{l.boundary_loaded?"Boundary loaded":"Boundary missing"}</div></td><td>{l.boundary_area_km2==null?"—":Number(l.boundary_area_km2).toLocaleString(undefined,{maximumFractionDigits:1})}</td><td>{l.boreholes}</td><td>{l.functional_boreholes}</td><td className={Number(l.boreholes_needing_attention)>0?"overdue-text":""}>{l.boreholes_needing_attention}</td><td>{l.assets}</td><td>{Number(l.forest_area_ha).toLocaleString(undefined,{maximumFractionDigits:1})}</td><td>{Number(l.river_length_km).toLocaleString(undefined,{maximumFractionDigits:1})}</td><td className={Number(l.spatial_critical_reports)>0?"overdue-text":""}>{l.spatial_open_reports}{Number(l.spatial_critical_reports)>0?<div className="muted">{l.spatial_critical_reports} critical</div>:null}</td><td>{l.linked_open_reports}</td></tr>)}</tbody>
+        <thead><tr><th>LGA</th><th>Boundary km²</th><th>Settlements</th><th>Verified</th><th>Boreholes</th><th>Functional</th><th>Needs attention</th><th>Assets</th><th>Forest ha</th><th>River km</th><th>Open reports in boundary</th><th>Linked reports</th></tr></thead>
+        <tbody>{lgas.map(l=><tr key={l.code}><td><strong>{l.name}</strong>{l.pilot&&<span className="badge" style={{marginLeft:6}}>Pilot</span>}<div className="muted">{l.boundary_loaded?"Boundary loaded":"Boundary missing"}</div></td><td>{l.boundary_area_km2==null?"—":Number(l.boundary_area_km2).toLocaleString(undefined,{maximumFractionDigits:1})}</td><td>{l.settlements}</td><td>{l.verified_settlements}</td><td>{l.boreholes}</td><td>{l.functional_boreholes}</td><td className={Number(l.boreholes_needing_attention)>0?"overdue-text":""}>{l.boreholes_needing_attention}</td><td>{l.assets}</td><td>{Number(l.forest_area_ha).toLocaleString(undefined,{maximumFractionDigits:1})}</td><td>{Number(l.river_length_km).toLocaleString(undefined,{maximumFractionDigits:1})}</td><td className={Number(l.spatial_critical_reports)>0?"overdue-text":""}>{l.spatial_open_reports}{Number(l.spatial_critical_reports)>0?<div className="muted">{l.spatial_critical_reports} critical</div>:null}</td><td>{l.linked_open_reports}</td></tr>)}</tbody>
       </table></div>
     </section>
   </div>;
