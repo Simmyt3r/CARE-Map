@@ -23,7 +23,7 @@ uncovered = LGA boundary - covered
 coverage_percent = area(covered) / area(LGA boundary) × 100
 ```
 
-Distances are evaluated with PostGIS geography in metres.
+Distances are evaluated with PostGIS geography in metres. Migration 008 adds functional GiST indexes on `location::geography` for boreholes and assets so `ST_DWithin` can scale more cleanly as point counts grow.
 
 ## Cross-boundary resources
 
@@ -109,11 +109,10 @@ The radius is a straight-line distance, not network travel distance.
 Coverage analysis requires:
 
 1. migration 007 applied
-2. an imported LGA boundary for the selected LGA
-3. mapped boreholes or assets with valid point geometry
-4. meaningful resource status values
-
-No extra database migration is required for Phase 12.
+2. migration 008 applied for indexed geography distance queries
+3. an imported LGA boundary for the selected LGA
+4. mapped boreholes or assets with valid point geometry
+5. meaningful resource status values
 
 ## Spatial workflow
 
