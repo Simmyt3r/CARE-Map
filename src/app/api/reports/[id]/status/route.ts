@@ -16,13 +16,29 @@ export async function PATCH(request:Request,context:{params:Promise<{id:string}>
   const client=await pool().connect();
   try{
     await client.query("BEGIN");
-    const current=await client.query<{status:string}>("SELECT status FROM reports WHERE id=$1 FOR UPDATE",[id]);
+    const current=await client.query<{status:string;origin:string}>("SELECT status,origin FROM reports WHERE id=$1 FOR UPDATE",[id]);
     if(!current.rowCount){
       await client.query("ROLLBACK");
       return error("Report not found",404);
     }
 
     const fromStatus=current.rows[0].status;
+    const origin=current.rows[0].origin;
+
+    if(origin==="satellite_alert"&&(body.status==="resolved"||body.status==="rejected")){
+      if(!body.notes||body.notes.trim().length<10){
+        await client.query("ROLLBACK");
+        return error("Field verification closure requires a clear status note of at least 10 characters.",400);
+      }
+      if(body.status==="resolved"){
+        const evidence=await client.query("SELECT count(*)::int count FROM photos WHERE entity_type='report' AND entity_id=$1",[id]);
+        if(Number(evidence.rows[0]?.count||0)<1){
+          await client.query("ROLLBACK");
+          return error("Add at least one field evidence photo before resolving a satellite verification task.",400);
+        }
+      }
+    }
+
     const result=await client.query(
       `UPDATE reports
        SET status=$1,
