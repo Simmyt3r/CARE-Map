@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
-import pg from "pg";
+import pg,{type Client} from "pg";
 import bcrypt from "bcryptjs";
 import {readinessSummary,type ReadinessItem} from "@/lib/readiness";
 
@@ -82,7 +82,7 @@ function migrationFiles(){
   });
 }
 
-async function ensureMigrationLedger(client:pg.Client){
+async function ensureMigrationLedger(client:Client){
   await client.query(`
     CREATE TABLE IF NOT EXISTS care_map_schema_migrations(
       filename TEXT PRIMARY KEY,
@@ -92,7 +92,7 @@ async function ensureMigrationLedger(client:pg.Client){
   `);
 }
 
-async function migrationStatusOnClient(client:pg.Client):Promise<MigrationStatus>{
+async function migrationStatusOnClient(client:Client):Promise<MigrationStatus>{
   const files=migrationFiles();
   const exists=await client.query<{present:boolean}>(
     "SELECT to_regclass('public.care_map_schema_migrations') IS NOT NULL present"
