@@ -69,7 +69,7 @@ export default function MapComposer(){
       container:node.current,
       center:[8.7,7.35],
       zoom:6.5,
-      preserveDrawingBuffer:true,
+      canvasContextAttributes:{preserveDrawingBuffer:true},
       style:{
         version:8,
         sources:{osm:{type:"raster",tiles:["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],tileSize:256,attribution:"© OpenStreetMap contributors"}},
