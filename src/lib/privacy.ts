@@ -24,7 +24,7 @@ export function dataSubjectRequestLabel(value:DataSubjectRequestType){
 
 export function privacyReference(){
   const date=new Date().toISOString().slice(0,10).replaceAll("-","");
-  const random=crypto.randomUUID().replaceAll("-","").slice(0,8).toUpperCase();
+  const random=crypto.randomUUID().replaceAll("-","").slice(0,12).toUpperCase();
   return "PRV-"+date+"-"+random;
 }
 
