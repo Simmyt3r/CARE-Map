@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#1f6b3b"/>
+  <path d="M106 350c44-80 93-130 148-150 51-18 102-12 152 18-35 9-67 25-96 49-30 25-55 58-75 99-47-22-90-27-129-16Z" fill="#eaf5ed"/>
+  <path d="M256 94c42 50 62 96 59 139-3 47-33 90-89 129-4-56 4-107 24-153 18-42 20-80 6-115Z" fill="#ffffff" opacity=".94"/>
+  <circle cx="256" cy="258" r="24" fill="#1f6b3b"/>
+  <text x="256" y="438" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="62" font-weight="800" fill="#ffffff">CARE</text>
+</svg>
