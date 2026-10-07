@@ -6,6 +6,8 @@ export default function PrivacyPage(){
   const controller=process.env.DATA_CONTROLLER_NAME||"Benue ACReSAL / CARE-Map";
   const email=process.env.PRIVACY_CONTACT_EMAIL||"Privacy contact pending formal launch configuration";
   const address=process.env.DATA_CONTROLLER_ADDRESS||"Controller address pending formal launch configuration";
+  const reportsBasis=process.env.PRIVACY_LAWFUL_BASIS_REPORTS||"Lawful basis pending formal legal review";
+  const accountsBasis=process.env.PRIVACY_LAWFUL_BASIS_ACCOUNTS||"Lawful basis pending formal legal review";
 
   return <div className="stack privacy-page">
     <section className="card stack">
@@ -17,13 +19,15 @@ export default function PrivacyPage(){
         <div><span>Privacy contact</span><strong>{email}</strong></div>
         <div><span>Controller address</span><strong>{address}</strong></div>
       </div>
-      {(!process.env.PRIVACY_CONTACT_EMAIL||!process.env.DATA_CONTROLLER_ADDRESS)&&<div className="notice">CARE-Map is still in pre-production compliance review. The final controller contact/address must be configured and legally reviewed before public launch.</div>}
+      {(!process.env.PRIVACY_CONTACT_EMAIL||!process.env.DATA_CONTROLLER_ADDRESS||!process.env.PRIVACY_LAWFUL_BASIS_REPORTS||!process.env.PRIVACY_LAWFUL_BASIS_ACCOUNTS)&&<div className="notice">CARE-Map is still in pre-production compliance review. The final controller contact/address must be configured and legally reviewed before public launch.</div>}
     </section>
 
     <section className="grid two">
       <div className="card stack"><h2>What we collect</h2>
         <p><strong>Community reports:</strong> report description, geographic coordinates, capture metadata, and any optional name/contact information you choose to provide.</p>
+        <p><strong>Configured lawful basis for core report processing:</strong> {reportsBasis}.</p>
         <p><strong>Community accounts:</strong> name, email, password hash, account status, and reports linked to the account.</p>
+        <p><strong>Configured lawful basis for account processing:</strong> {accountsBasis}.</p>
         <p><strong>Field evidence:</strong> photos, captions, inspection records, GPS accuracy, and other operational evidence where staff workflows require them.</p>
         <p>CARE-Map does not ask anonymous reporters to provide a name or contact detail.</p>
       </div>
