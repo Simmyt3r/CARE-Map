@@ -387,3 +387,37 @@ Production gate: run the migration against the real Aiven service and field-test
 **Production gate:** a green software readiness score is necessary but not sufficient. Complete field acceptance testing, offline testing in target LGAs, formal privacy/NDPA review, staff training, and operational approval before public launch.
 
 **Migration rule:** never edit a migration after it has been recorded in production. Add schema changes as a new numbered migration.
+
+
+## Phase 18 — Field Acceptance Test Center ✅ Tooling complete
+
+- [x] Staff field-acceptance workspace
+- [x] One run per real LGA/device test session
+- [x] Device, network and optional deployment/build metadata
+- [x] Canonical required workflow checklist snapshot per run
+- [x] Staff login/session acceptance check
+- [x] Public mobile map acceptance check
+- [x] Real device-GPS acceptance check
+- [x] Staff point-intervention acceptance check
+- [x] Online community-report acceptance check
+- [x] Offline app-shell acceptance check
+- [x] Offline report-queue acceptance check
+- [x] Reconnect/queued-report synchronization acceptance check
+- [x] Staff report-review acceptance check
+- [x] Mobile navigation/forms acceptance check
+- [x] Optional photo/QR/GIS export/Map Composer checks
+- [x] Browser preflight diagnostics for HTTPS, online state, geolocation, service worker, local storage and media APIs
+- [x] Pass/fail/blocked/not-applicable check states
+- [x] Required-check completion enforcement
+- [x] Deterministic pass/fail/conditional final result
+- [x] Explicit reopen workflow preserving test history
+- [x] Dedicated Vercel Blob acceptance-evidence storage
+- [x] Audited run creation, updates and evidence uploads
+- [x] Latest-result-per-pilot-LGA summary
+- [x] Production Readiness gate requires latest passing run for every pilot LGA
+- [x] Regression tests for acceptance result logic
+- [x] Field acceptance operations runbook
+
+**Real-world production gate remains open:** actually perform the acceptance protocol on target field devices in every pilot LGA. Tooling completion is not the same thing as operational acceptance.
+
+**Retest rule:** repeat field acceptance after major releases or material changes to authentication, offline storage/sync, GPS capture, report workflows, maps, service workers, or target field devices.

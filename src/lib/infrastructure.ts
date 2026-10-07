@@ -31,6 +31,8 @@ export type DataReadiness={
   assets:number;
   verifiedHazardZones:number;
   verifiedCatchments:number;
+  pilotAcceptanceTested:number;
+  pilotAcceptancePassed:number;
   admins:number;
 };
 
@@ -190,7 +192,7 @@ export async function currentInfrastructureSnapshot(){
   };
   let data:DataReadiness={
     lgaBoundaries:0,totalLgas:23,pilotBoundaries:0,pilotLgas:14,verifiedRivers:0,verifiedSettlements:0,
-    boreholes:0,assets:0,verifiedHazardZones:0,verifiedCatchments:0,admins:0
+    boreholes:0,assets:0,verifiedHazardZones:0,verifiedCatchments:0,pilotAcceptanceTested:0,pilotAcceptancePassed:0,admins:0
   };
 
   if(databaseUrl){
@@ -207,7 +209,7 @@ export async function currentInfrastructureSnapshot(){
 
         const tableCheck=await client.query<{
           lgas:boolean;lgaBoundary:boolean;rivers:boolean;settlements:boolean;boreholes:boolean;assets:boolean;
-          hazards:boolean;catchments:boolean;users:boolean;
+          hazards:boolean;catchments:boolean;acceptance:boolean;users:boolean;
         }>(`
           SELECT
             to_regclass('public.lgas') IS NOT NULL lgas,
@@ -221,6 +223,7 @@ export async function currentInfrastructureSnapshot(){
             to_regclass('public.assets') IS NOT NULL assets,
             to_regclass('public.hazard_zones') IS NOT NULL hazards,
             to_regclass('public.catchments') IS NOT NULL catchments,
+            to_regclass('public.field_acceptance_runs') IS NOT NULL acceptance,
             to_regclass('public.users') IS NOT NULL users
         `);
         const t=tableCheck.rows[0];
@@ -236,6 +239,25 @@ export async function currentInfrastructureSnapshot(){
           assets:t?.assets?await count("SELECT count(*) n FROM assets"):0,
           verifiedHazardZones:t?.hazards?await count("SELECT count(*) n FROM hazard_zones WHERE verified"):0,
           verifiedCatchments:t?.catchments?await count("SELECT count(*) n FROM catchments WHERE verified"):0,
+          pilotAcceptanceTested:t?.acceptance?await count(`
+            SELECT count(*) n FROM (
+              SELECT DISTINCT ON (r.lga_code) r.lga_code,r.result
+              FROM field_acceptance_runs r
+              JOIN lgas l ON l.code=r.lga_code
+              WHERE l.pilot=TRUE AND r.status='completed'
+              ORDER BY r.lga_code,r.completed_at DESC,r.id DESC
+            ) latest
+          `):0,
+          pilotAcceptancePassed:t?.acceptance?await count(`
+            SELECT count(*) n FROM (
+              SELECT DISTINCT ON (r.lga_code) r.lga_code,r.result
+              FROM field_acceptance_runs r
+              JOIN lgas l ON l.code=r.lga_code
+              WHERE l.pilot=TRUE AND r.status='completed'
+              ORDER BY r.lga_code,r.completed_at DESC,r.id DESC
+            ) latest
+            WHERE result='pass'
+          `):0,
           admins:t?.users?await count("SELECT count(*) n FROM users WHERE role='admin' AND active=TRUE AND deleted_at IS NULL"):0
         };
       }catch{
@@ -318,6 +340,15 @@ export async function currentInfrastructureSnapshot(){
       state:(data.boreholes+data.assets)>0?"ready":"warning",required:true,
       detail:data.boreholes+" boreholes and "+data.assets+" assets mapped.",
       action:"Import or collect verified intervention coordinates before operational launch."
+    },
+    {
+      id:"field-acceptance",label:"Pilot field acceptance",category:"operations",
+      state:data.pilotLgas>0&&data.pilotAcceptancePassed===data.pilotLgas
+        ?"ready"
+        :data.pilotAcceptanceTested>0?"warning":"blocked",
+      required:true,
+      detail:data.pilotAcceptancePassed+" of "+data.pilotLgas+" pilot LGAs have a passing latest completed field acceptance run; "+data.pilotAcceptanceTested+" have any completed run.",
+      action:"Run the Field Acceptance Test Center on target devices in each pilot LGA and resolve every required failed/blocked check."
     },
     {
       id:"settlements",label:"Verified settlement inventory",category:"data",
