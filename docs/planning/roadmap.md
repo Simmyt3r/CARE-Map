@@ -1,7 +1,7 @@
 # Roadmap
 
 **Status:** Core product implementation built
-**Last updated:** 2026-10-06
+**Last updated:** 2026-10-07
 
 ## Phase 0 — Planning & Design ✅
 - [x] Requirements
@@ -67,7 +67,7 @@ Production gate: run the migration against the real Aiven service and field-test
 - [x] Vercel Blob field-photo storage integration
 - [x] Resource photo gallery
 - [ ] Add English/local-language translations
-- [ ] Evaluate satellite/Google Earth Engine integration
+- [x] Sentinel-2 remote-sensing integration baseline
 - [ ] Complete formal NDPA/legal review
 - [ ] Field acceptance testing and production launch
 
@@ -111,3 +111,26 @@ Production gate: run the migration against the real Aiven service and field-test
 - [x] Linked open-report workload by LGA
 
 **Next analytical extensions:** watershed/elevation layers, intervention coverage models, and satellite vegetation change once source datasets are configured.
+
+
+## Phase 7 — Remote Sensing & Vegetation Change ✅ Baseline complete
+
+- [x] Sentinel-2 Level-2A scene discovery through public Earth Search STAC
+- [x] Click-to-draw Polygon AOI
+- [x] Reuse existing forest/afforestation boundaries as AOIs
+- [x] Baseline and comparison observation windows
+- [x] Least-cloud Sentinel-2 mosaicking
+- [x] NDVI from B08 and B04
+- [x] SCL-based cloud/shadow masking
+- [x] Clear-pixel coverage reporting
+- [x] Configurable vegetation threshold
+- [x] Vegetated-area estimate in hectares
+- [x] Vegetation gain/loss in hectares and percent
+- [x] NDVI map preview for both periods
+- [x] Persist analyses in PostGIS
+- [x] Publish completed vegetation-change AOIs to the public map
+- [x] Copernicus OAuth configuration in Infrastructure panel
+
+**Production gate:** apply migration 004 and configure CDSE OAuth credentials for processing. Scene discovery remains available without those credentials.
+
+**Interpretation rule:** compare like seasons whenever possible. A vegetation decrease may represent seasonality, harvest, fire, cloud contamination, land clearing, drought, or genuine degradation; remote-sensing output must be interpreted with field context.
