@@ -323,3 +323,37 @@ Production gate: run the migration against the real Aiven service and field-test
 **Production gate:** apply migration 011 and import only GIS/M&E-approved hazard polygon datasets with documented source, date/version and method. Keep uncertain datasets unverified until reviewed.
 
 **Interpretation rule:** CARE-Map verification means staff accepted the imported polygon for operational use; it does not mean CARE-Map independently validated the scientific model that produced the hazard dataset.
+
+
+## Phase 16 — Catchments & Landscape Planning ✅ Baseline complete
+
+- [x] PostGIS MultiPolygon catchment/landscape layer
+- [x] Basin, watershed, subcatchment, microcatchment, project-landscape and other levels
+- [x] Optional unique catchment codes
+- [x] Optional parent-child landscape hierarchy
+- [x] Hierarchy-cycle prevention
+- [x] Required source/provenance and optional source date/method
+- [x] Verified/unverified workflow with verifier and timestamp
+- [x] Audited GeoJSON imports with row-level failures
+- [x] Geometry normalization and area safeguards
+- [x] Duplicate catchment-code rejection
+- [x] GIS Workbench catchment review, level editing and parent assignment
+- [x] Catchment GeoJSON export
+- [x] Staff-only catchment landscape summary
+- [x] Cross-LGA overlap area and catchment-share calculation
+- [x] Verified settlement and sourced-population summary
+- [x] Borehole and asset status summaries
+- [x] Unioned forest area to avoid polygon-overlap double counting
+- [x] Verified river length inside catchment
+- [x] Open/critical/high report workload
+- [x] Unioned verified hazard area and high/critical hazard counts
+- [x] Published vegetation-analysis count and latest comparison date
+- [x] Open vegetation-alert count by monitored AOI intersection
+- [x] Integrated catchment map with settlements, interventions, forests, rivers, hazards, reports and vegetation-change AOIs
+- [x] Landscape GeoJSON export
+- [x] Regression tests for landscape levels, labels and catchment-code normalization
+- [x] Explicit rule against summing incompatible/overlapping vegetation-change analyses
+
+**Production gate:** apply migration 012 and import only GIS/M&E-approved catchment or watershed delineations with documented source and method. Verify landscape units before using them in integrated planning summaries.
+
+**Interpretation rule:** catchments are analytical landscape units and may cross LGA boundaries. Catchment summaries and LGA summaries describe different geographies and must not be treated as interchangeable administrative totals.
