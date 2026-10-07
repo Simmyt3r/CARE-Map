@@ -47,7 +47,8 @@ export async function GET(request:Request){
       WHERE code=$1
     ),
     qualifying_points AS (
-      SELECT p.id,p.${config.name} name,p.status,p.${config.geom} location
+      SELECT p.id,p.${config.name} name,p.status,p.${config.geom} location,
+             ST_Intersects(p.${config.geom},l.boundary) inside_lga
       FROM ${config.table} p
       CROSS JOIN selected_lga l
       WHERE l.boundary IS NOT NULL
@@ -98,6 +99,8 @@ export async function GET(request:Request){
     point_features AS (
       SELECT
         count(*)::int resource_count,
+        count(*) FILTER(WHERE q.inside_lga)::int inside_resource_count,
+        count(*) FILTER(WHERE NOT q.inside_lga)::int external_supporting_count,
         jsonb_build_object(
           'type','FeatureCollection',
           'features',COALESCE(
@@ -110,7 +113,8 @@ export async function GET(request:Request){
                   'id',q.id,
                   'name',q.name,
                   'status',q.status,
-                  'entityType',$3::text
+                  'entityType',$3::text,
+                  'insideLga',q.inside_lga
                 )
               )
               ORDER BY q.name
@@ -122,7 +126,7 @@ export async function GET(request:Request){
     )
     SELECT
       m.code,m.name,m.boundary_source,
-      p.resource_count,
+      p.resource_count,p.inside_resource_count,p.external_supporting_count,
       round((ST_Area(m.boundary::geography)/1000000.0)::numeric,3) lga_area_km2,
       round((
         CASE WHEN m.covered IS NULL OR ST_IsEmpty(m.covered)
@@ -162,6 +166,8 @@ export async function GET(request:Request){
       scenario:scenarioValue,
       radiusM:radius,
       resourceCount:Number(row.resource_count||0),
+      insideResourceCount:Number(row.inside_resource_count||0),
+      externalSupportingCount:Number(row.external_supporting_count||0),
       lgaAreaKm2:Number(row.lga_area_km2||0),
       coveredAreaKm2:Number(row.covered_area_km2||0),
       uncoveredAreaKm2:Number(row.uncovered_area_km2||0),
