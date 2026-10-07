@@ -212,3 +212,17 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:
 @media(max-width:1000px){.settlement-access-stats{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:700px){.settlement-access-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.settlement-access-map{height:430px}}
 @media(max-width:560px){.settlement-access-stats{grid-template-columns:1fr}.settlement-access-map{height:360px}}
+
+.risk-verified-check,.risk-review-check{align-self:end;min-height:44px}
+.environmental-exposure-map{height:540px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#e9eee9}
+.environmental-exposure-stats{grid-template-columns:repeat(6,minmax(0,1fr))}
+.risk-zone-key{background:rgba(214,166,0,.45)}
+.risk-settlement-key,.risk-borehole-key,.risk-asset-key,.risk-report-key{border-radius:50%!important}
+.risk-settlement-key{background:#7b2cbf}
+.risk-borehole-key{background:#2878a8}
+.risk-asset-key{background:#1f6b3b}
+.risk-report-key{background:#b42318}
+.risk-forest-key{background:rgba(84,55,125,.35)}
+@media(max-width:1000px){.environmental-exposure-stats{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:700px){.environmental-exposure-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.environmental-exposure-map{height:430px}}
+@media(max-width:560px){.environmental-exposure-stats{grid-template-columns:1fr}.environmental-exposure-map{height:360px}}
