@@ -44,13 +44,14 @@ export default function SettlementManager(){
   const[fileName,setFileName]=useState("");
   const[summary,setSummary]=useState<any|null>(null);
   const[recent,setRecent]=useState<any[]>([]);
+  const[imports,setImports]=useState<any[]>([]);
   const[message,setMessage]=useState("");
   const[busy,setBusy]=useState(false);
 
   const load=useCallback(async()=>{
     const r=await fetch("/api/gis/settlements");
     const j=await r.json().catch(()=>({}));
-    if(r.ok){setSummary(j.summary||null);setRecent(j.data||[]);}
+    if(r.ok){setSummary(j.summary||null);setRecent(j.data||[]);setImports(j.imports||[]);}
   },[]);
 
   useEffect(()=>{void load();},[load]);
@@ -185,6 +186,23 @@ export default function SettlementManager(){
     </table></div>}
 
     {message&&<div className={message.startsWith("Imported")||message.includes("verified")?"success":"notice"}>{message}</div>}
+
+    {!!imports.length&&<div className="stack">
+      <div className="section-head"><h3>Recent settlement imports</h3><span className="badge">{imports.length}</span></div>
+      <div className="table-wrap"><table>
+        <thead><tr><th>Date</th><th>Source</th><th>Format</th><th>Imported</th><th>Failed</th><th>Spatial LGA assignments</th><th>Verified on import</th><th>By</th></tr></thead>
+        <tbody>{imports.map(job=><tr key={job.id}>
+          <td>{new Date(job.created_at).toLocaleString()}</td>
+          <td>{job.source}</td>
+          <td>{String(job.format).toUpperCase()}</td>
+          <td>{job.imported_rows}/{job.total_rows}</td>
+          <td className={Number(job.failed_rows)>0?"overdue-text":""}>{job.failed_rows}</td>
+          <td>{job.auto_assigned_lga_rows}</td>
+          <td>{job.verified_on_import?"Yes":"No"}</td>
+          <td>{job.created_by_name||"Unknown"}</td>
+        </tr>)}</tbody>
+      </table></div>
+    </div>}
 
     {!!recent.length&&<div className="stack">
       <div className="section-head"><h3>Recent settlement records</h3><span className="badge">{recent.length}</span></div>
