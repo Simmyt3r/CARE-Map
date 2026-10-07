@@ -1,5 +1,6 @@
 "use client";
 import {useEffect,useState} from "react";
+import SatelliteVerificationAction from "@/components/SatelliteVerificationAction";
 
 export default function VegetationMonitorDrawer({monitor,configured,onClose,onUpdated}:{monitor:any;configured:boolean;onClose:()=>void;onUpdated:()=>void}){
   const[observations,setObservations]=useState<any[]>([]);
@@ -96,7 +97,7 @@ export default function VegetationMonitorDrawer({monitor,configured,onClose,onUp
               </div>
               <div className="monitor-metrics"><span>NDVI <b>{fmt(o.mean_ndvi,3)}</b></span><span>Clear <b>{o.clear_fraction==null?"—":fmt(Number(o.clear_fraction)*100,0)+"%"}</b></span><span>Vegetation <b>{fmt(o.vegetation_ha)} ha</b></span><span>Change <b className={Number(o.change_pct)<0?"overdue-text":""}>{o.change_pct==null?"—":fmt(o.change_pct)+"%"}</b></span></div>
               {o.error_message&&<div className="error">{o.error_message}</div>}
-              {o.alert_id&&<div className="vegetation-alert-inline"><div><strong>{o.alert_title}</strong><p>{o.alert_message}</p></div>{o.acknowledged_at?<span className="badge">Acknowledged</span>:<button className="btn" disabled={busy} onClick={()=>acknowledge(o.alert_id)}>Acknowledge</button>}</div>}
+              {o.alert_id&&<div className="vegetation-alert-inline"><div><strong>{o.alert_title}</strong><p>{o.alert_message}</p>{o.verification_report_id&&<small>Field verification: {(o.verification_status||"submitted").replaceAll("_"," ")}{o.verification_assigned_name?" · "+o.verification_assigned_name:""}</small>}</div><div className="stack compact-stack"><SatelliteVerificationAction alert={{id:o.alert_id,verification_report_id:o.verification_report_id,verification_status:o.verification_status,verification_priority:o.verification_priority}} onUpdated={async()=>{await load();await onUpdated();}}/>{o.acknowledged_at?<span className="badge">Acknowledged</span>:<button className="btn" disabled={busy} onClick={()=>acknowledge(o.alert_id)}>Acknowledge alert</button>}</div></div>}
             </div>)}
             {!observations.length&&<div className="muted">No satellite observations have been run for this monitor yet.</div>}
           </div>
