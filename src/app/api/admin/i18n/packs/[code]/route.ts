@@ -9,7 +9,7 @@ export async function PATCH(request:Request,context:{params:Promise<{code:string
   if(!isAdmin(session))return error("Administrator access required.",403,"FORBIDDEN");
 
   const{code}=await context.params;
-  if(!["tiv","idoma","igede"].includes(code))return error("Unsupported translation language.");
+  if(!["tiv","idu","ige"].includes(code))return error("Unsupported translation language.");
 
   const body=await request.json().catch(()=>null) as {action?:string}|null;
   const action=String(body?.action||"").trim();
