@@ -47,6 +47,7 @@ export default function CoverageAnalysis({lgas}:{lgas:any[]}){
     setBusy(false);
     if(!r.ok){
       setResult(null);
+      setMethodology(null);
       return setMessage(j.error?.message||"Coverage analysis failed.");
     }
     setResult(j.data);
@@ -158,7 +159,7 @@ export default function CoverageAnalysis({lgas}:{lgas:any[]}){
 
     <CoverageAnalysisMap result={result}/>
 
-    {methodology&&<div className="notice">
+    {result&&methodology&&<div className="notice">
       <strong>Interpretation:</strong> {methodology.note}
       <div className="muted">This is territorial geometry, not a population-served estimate.</div>
     </div>}
