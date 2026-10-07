@@ -30,6 +30,6 @@ describe("coverage analysis helpers",()=>{
 
   it("labels scenarios without overstating what they mean",()=>{
     expect(coverageScenarioLabel("functional")).toBe("Functional only");
-    expect(coverageScenarioLabel("non_decommissioned")).toBe("All non-decommissioned");
+    expect(coverageScenarioLabel("non_decommissioned")).toBe("Mapped footprint (non-decommissioned)");
   });
 });
