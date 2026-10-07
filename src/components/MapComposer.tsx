@@ -186,6 +186,11 @@ export default function MapComposer(){
     if(bounds)map.fitBounds(bounds,{padding:55,maxZoom:15});
   }
 
+  function printMap(){
+    mapRef.current?.resize();
+    window.setTimeout(()=>window.print(),75);
+  }
+
   function exportGeoJson(){
     const blob=new Blob([JSON.stringify(featureCollection(visibleFeatures),null,2)],{type:"application/geo+json"});
     const url=URL.createObjectURL(blob);
@@ -223,7 +228,7 @@ export default function MapComposer(){
         <button className="btn" onClick={fitToData}>Fit visible data</button>
         <button className="btn" onClick={()=>void loadFeatures()}>Refresh data</button>
         <button className="btn" disabled={!visibleFeatures.length} onClick={exportGeoJson}>Export visible GeoJSON</button>
-        <button className="btn primary" onClick={()=>window.print()}>Print / Save PDF</button>
+        <button className="btn primary" onClick={printMap}>Print / Save PDF</button>
       </div>
       {lga&&layers.includes("ndvi_change")&&<div className="notice">Published vegetation-change AOIs do not yet carry LGA metadata, so that layer is omitted while an LGA filter is active.</div>}
       {message&&<div className="error">{message}</div>}
