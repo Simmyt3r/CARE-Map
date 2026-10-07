@@ -26,7 +26,7 @@ type Snapshot={
   databaseName:string|null;
   database:{ok:boolean;postgresVersion?:string;postgisEnabled?:boolean;postgisVersion?:string|null;tables?:number;error?:string};
   migrations:{historyAvailable:boolean;expected:number;applied:number;pending:string[];checksumMismatches:string[];latestAppliedAt:string|null};
-  data:{lgaBoundaries:number;totalLgas:number;verifiedRivers:number;verifiedSettlements:number;boreholes:number;assets:number;verifiedHazardZones:number;verifiedCatchments:number;admins:number};
+  data:{lgaBoundaries:number;totalLgas:number;pilotBoundaries:number;pilotLgas:number;verifiedRivers:number;verifiedSettlements:number;boreholes:number;assets:number;verifiedHazardZones:number;verifiedCatchments:number;admins:number};
   readinessItems:ReadinessItem[];
   readiness:{score:number;required:number;ready:number;warnings:number;blockers:number;optionalReady:number;optionalTotal:number};
 };
@@ -118,7 +118,7 @@ export default function InfrastructurePanel({snapshot}:{snapshot:Snapshot}){
           <div className="stat"><strong>{snapshot.readiness.ready}/{snapshot.readiness.required}</strong><span>Required gates ready</span></div>
           <div className="stat"><strong>{snapshot.readiness.blockers}</strong><span>Blocking items</span></div>
           <div className="stat"><strong>{snapshot.migrations.applied}/{snapshot.migrations.expected}</strong><span>Migrations recorded</span></div>
-          <div className="stat"><strong>{snapshot.data.lgaBoundaries}/{snapshot.data.totalLgas}</strong><span>LGA boundaries</span></div>
+          <div className="stat"><strong>{snapshot.data.pilotBoundaries}/{snapshot.data.pilotLgas}</strong><span>Pilot LGA boundaries</span></div>
           <div className="stat"><strong>{snapshot.data.boreholes+snapshot.data.assets}</strong><span>Mapped interventions</span></div>
         </div>
       </div>
@@ -208,7 +208,7 @@ export default function InfrastructurePanel({snapshot}:{snapshot:Snapshot}){
         <div><span>1</span>Configure and test the Aiven connection.</div>
         <div><span>2</span>Initialize or upgrade PostGIS and record every migration checksum.</div>
         <div><span>3</span>Create the administrator and configure SESSION_SECRET / CRON_SECRET.</div>
-        <div><span>4</span>Import all 23 approved Benue LGA boundaries and baseline intervention coordinates.</div>
+        <div><span>4</span>Import approved boundaries for every pilot LGA and baseline intervention coordinates.</div>
         <div><span>5</span>Configure photo storage and Copernicus credentials when those advanced workflows are required.</div>
         <div><span>6</span>Redeploy, recheck readiness, then field-test GPS/report workflows before public launch.</div>
       </div>
