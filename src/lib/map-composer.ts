@@ -9,10 +9,18 @@ export type ComposerFeature={
     lga?:string|null;
     status?:string|null;
     riskLevel?:string|null;
+    severity?:string|null;
+    hazardType?:string|null;
+    level?:string|null;
+    source?:string|null;
+    population?:number|null;
   };
 };
 
-export const composerLayerOrder=["borehole","asset","forest_site","river","ndvi_change"] as const;
+export const composerLayerOrder=[
+  "borehole","asset","forest_site","river","ndvi_change",
+  "settlement","hazard_zone","catchment"
+] as const;
 export type ComposerLayer=(typeof composerLayerOrder)[number];
 
 export function filterComposerFeatures(features:ComposerFeature[],layers:ComposerLayer[],risk:string){
@@ -20,7 +28,7 @@ export function filterComposerFeatures(features:ComposerFeature[],layers:Compose
   return features.filter(feature=>{
     const p=feature.properties||{};
     if(!p.entityType||!enabled.has(p.entityType as ComposerLayer))return false;
-    if(risk&&p.riskLevel!==risk)return false;
+    if(risk&&p.riskLevel&&p.riskLevel!==risk)return false;
     return true;
   });
 }
