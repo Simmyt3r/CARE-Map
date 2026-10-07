@@ -24,6 +24,9 @@ Required pilot-launch gates include:
 - approved boundaries loaded for every pilot LGA
 - baseline borehole/asset data present
 - latest completed field acceptance run passes for every pilot LGA
+- final data-controller identity, address, privacy contact and lawful-basis wording configured
+- formal privacy/legal review attested with review date and reviewer
+- privacy-governance tables present with no overdue rights request or tracked NDPC breach-notification clock
 
 Advanced capability gates include:
 
@@ -127,10 +130,12 @@ It does not expose secret values.
 5. Bootstrap the administrator account.
 6. Import approved pilot-LGA boundaries.
 7. Import or collect baseline intervention coordinates.
-8. Configure optional Blob/Copernicus capabilities as needed.
-9. Redeploy and use Recheck readiness.
-10. Use the Field Acceptance Test Center on target devices in every pilot LGA.
-11. Resolve failed/conditional runs and recheck readiness before public launch.
+8. Complete formal privacy/legal review and configure controller/contact/lawful-basis/reviewer settings.
+9. Apply migration 014 and verify the Privacy Center has no overdue cases.
+10. Configure optional Blob/Copernicus capabilities as needed.
+11. Redeploy and use Recheck readiness.
+12. Use the Field Acceptance Test Center on target devices in every pilot LGA.
+13. Resolve failed/conditional runs and recheck readiness before public launch.
 
 ## What the panel does not prove
 
