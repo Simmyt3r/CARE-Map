@@ -5,7 +5,6 @@ import {
   hazardSeverities,
   hazardTypeLabel,
   hazardTypes,
-  type HazardSeverity,
   type HazardType
 } from "@/lib/hazard-zones";
 
@@ -143,7 +142,7 @@ export default function HazardExposureAnalysis({lgas}:{lgas:any[]}){
         <tbody>{includedZones.map((f:any)=>{const p=f.properties||{};return <tr key={p.id}>
           <td><strong>{p.name}</strong></td>
           <td>{p.hazardType?hazardTypeLabel(p.hazardType as HazardType):"—"}</td>
-          <td><span className={"priority-badge priority-"+(p.severity==="unknown"?"medium":p.severity)}>{p.severity||"unknown"}</span></td>
+          <td>{p.severity==="unknown"?<span className="badge">unknown</span>:<span className={"priority-badge priority-"+p.severity}>{p.severity}</span>}</td>
           <td>{p.source||"—"}</td><td>{p.sourceDate||"—"}</td><td>{p.method||"—"}</td>
         </tr>;})}</tbody>
       </table></div>
