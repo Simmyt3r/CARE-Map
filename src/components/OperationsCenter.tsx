@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import {useEffect,useState} from "react";
+import SatelliteVerificationAction from "@/components/SatelliteVerificationAction";
 
 export default function OperationsCenter(){
   const[data,setData]=useState<any|null>(null);
@@ -50,7 +51,7 @@ export default function OperationsCenter(){
           <td>{String(a.observed_for).slice(0,10)}<div className="muted">{a.monitor_name}</div></td>
           <td className="overdue-text">{Number(a.vegetation_change_pct).toFixed(1)}%<div className="muted">{Number(a.vegetation_change_ha).toFixed(1)} ha</div></td>
           <td>{a.clear_fraction==null?"—":(Number(a.clear_fraction)*100).toFixed(0)+"%"}</td>
-          <td><button className="btn" onClick={()=>acknowledgeVegetation(a.id)}>Acknowledge</button></td>
+          <td><div className="stack compact-stack"><SatelliteVerificationAction alert={a} onUpdated={load}/><button className="btn" onClick={()=>acknowledgeVegetation(a.id)}>Acknowledge alert</button></div></td>
         </tr>)}</tbody>
       </table></div>
     </section>}
@@ -64,7 +65,7 @@ export default function OperationsCenter(){
         <thead><tr><th>Priority</th><th>Report</th><th>Owner</th><th>Status</th><th>Due</th></tr></thead>
         <tbody>{(data?.queue||[]).map((r:any)=><tr key={r.id} className={r.priority==="critical"?"critical-row":""}>
           <td><span className={"priority-badge priority-"+r.priority}>{r.priority}</span></td>
-          <td><strong>{r.type.replaceAll("_"," ")}</strong><div className="muted clamp-2">{r.description}</div><small>{new Date(r.submitted_at).toLocaleString()}</small></td>
+          <td><strong>{r.type.replaceAll("_"," ")}</strong>{r.origin==="satellite_alert"&&<span className="badge satellite-badge">Satellite verification</span>}<div className="muted clamp-2">{r.description}</div><small>{new Date(r.submitted_at).toLocaleString()}</small></td>
           <td>{r.assigned_name||<span className="muted">Unassigned</span>}</td>
           <td><span className="badge">{r.status.replaceAll("_"," ")}</span></td>
           <td className={r.due_at&&now!==null&&new Date(r.due_at).getTime()<now?"overdue-text":""}>{r.due_at?new Date(r.due_at).toLocaleString():"No deadline"}</td>

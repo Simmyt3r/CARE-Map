@@ -13,10 +13,15 @@ export async function GET(_:Request,context:{params:Promise<{id:string}>}){
     SELECT o.id,o.observed_for,o.scene,o.mean_ndvi,o.clear_fraction,o.vegetation_ha,
       o.change_ha,o.change_pct,o.severity,o.status,o.error_message,o.created_at,
       a.id alert_id,a.severity alert_severity,a.title alert_title,a.message alert_message,
-      a.acknowledged_at,au.name acknowledged_by_name
+      a.acknowledged_at,au.name acknowledged_by_name,
+      a.verification_report_id,a.verification_requested_at,
+      vr.status verification_status,vr.priority verification_priority,vr.due_at verification_due_at,
+      vu.name verification_assigned_name
     FROM vegetation_monitor_observations o
     LEFT JOIN vegetation_alerts a ON a.observation_id=o.id
     LEFT JOIN users au ON au.id=a.acknowledged_by
+    LEFT JOIN reports vr ON vr.id=a.verification_report_id
+    LEFT JOIN users vu ON vu.id=vr.assigned_to
     WHERE o.monitor_id=$1
     ORDER BY o.created_at DESC LIMIT 100
   `,[id]);

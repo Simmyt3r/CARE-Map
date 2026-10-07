@@ -25,6 +25,7 @@ export default function ReportsQueue(){
     if(filter==="unassigned")return !["resolved","rejected"].includes(r.status)&&!r.assigned_to;
     if(filter==="overdue")return !["resolved","rejected"].includes(r.status)&&r.due_at&&now!==null&&new Date(r.due_at).getTime()<now;
     if(filter==="critical")return !["resolved","rejected"].includes(r.status)&&r.priority==="critical";
+    if(filter==="satellite")return r.origin==="satellite_alert";
     if(filter==="closed")return ["resolved","rejected"].includes(r.status);
     return true;
   }),[rows,filter,now]);
@@ -42,6 +43,7 @@ export default function ReportsQueue(){
       <button className="btn" onClick={()=>setFilter("unassigned")}>Unassigned</button>
       <button className="btn" onClick={()=>setFilter("overdue")}>Overdue</button>
       <button className="btn" onClick={()=>setFilter("critical")}>Critical</button>
+      <button className="btn" onClick={()=>setFilter("satellite")}>Satellite</button>
       <button className="btn" onClick={()=>setFilter("closed")}>Closed</button>
       <button className="btn" onClick={()=>setFilter("all")}>All</button>
     </div>
@@ -57,7 +59,7 @@ export default function ReportsQueue(){
       <div className="table-wrap"><table>
         <thead><tr><th>Report</th><th>Priority</th><th>Owner</th><th>Status</th><th>Deadline</th><th>Action</th></tr></thead>
         <tbody>{visible.map(r=><tr key={r.id} className={r.priority==="critical"?"critical-row":""}>
-          <td><strong>{r.type.replaceAll("_"," ")}</strong><div className="muted clamp-2">{r.description}</div><small>{new Date(r.submitted_at).toLocaleString()}</small></td>
+          <td><strong>{r.type.replaceAll("_"," ")}</strong>{r.origin==="satellite_alert"&&<span className="badge satellite-badge">Satellite verification</span>}<div className="muted clamp-2">{r.description}</div><small>{new Date(r.submitted_at).toLocaleString()}</small></td>
           <td><span className={"priority-badge priority-"+r.priority}>{r.priority}</span></td>
           <td>{r.assigned_name||<span className="muted">Unassigned</span>}</td>
           <td><span className="badge">{r.status.replaceAll("_"," ")}</span></td>

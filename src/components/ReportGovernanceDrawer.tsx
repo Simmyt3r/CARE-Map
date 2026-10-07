@@ -1,5 +1,6 @@
 "use client";
 import {useEffect,useState} from "react";
+import ReportEvidencePhotos from "@/components/ReportEvidencePhotos";
 
 type Staff={id:string;name:string;email:string;role:string;active:boolean};
 
@@ -67,6 +68,14 @@ export default function ReportGovernanceDrawer({report,staff,onClose,onUpdated}:
           </div>
         </section>
 
+        {details?.report?.origin==="satellite_alert"&&<section className="drawer-section stack satellite-context">
+          <div className="section-head"><h3>Satellite trigger</h3><span className={"priority-badge priority-"+(details.report.satellite_alert_severity||"medium")}>{details.report.satellite_alert_severity||"alert"}</span></div>
+          <strong>{details.report.satellite_alert_title||"Vegetation-loss alert"}</strong>
+          {details.report.satellite_alert_message&&<p>{details.report.satellite_alert_message}</p>}
+          {details.report.satellite_monitor_name&&<div className="muted">Monitor: {details.report.satellite_monitor_name}</div>}
+          <div className="notice">This report closes the satellite alert when the field task is resolved or rejected.</div>
+        </section>}
+
         <section className="drawer-section stack">
           <h3>Ownership & urgency</h3>
           <div className="grid two">
@@ -77,10 +86,13 @@ export default function ReportGovernanceDrawer({report,staff,onClose,onUpdated}:
           <button className="btn primary" disabled={busy} onClick={saveGovernance}>Save assignment</button>
         </section>
 
+        <ReportEvidencePhotos reportId={report.id}/>
+
         <section className="drawer-section stack">
           <h3>Workflow update</h3>
           <div className="field"><label>New status</label><select value={status} onChange={e=>setStatus(e.target.value)}><option value="submitted">Submitted</option><option value="under_review">Under review</option><option value="verified">Verified</option><option value="resolved">Resolved</option><option value="rejected">Rejected</option></select></div>
           <div className="field"><label>Status note</label><textarea value={note} onChange={e=>setNote(e.target.value)} placeholder="What changed, what was verified, or why this was resolved/rejected?"/></div>
+          {details?.report?.origin==="satellite_alert"&&<div className="notice">Closing a satellite verification requires a clear status note. Resolving it also requires at least one field evidence photo.</div>}
           <button className="btn primary" disabled={busy} onClick={changeStatus}>Update status</button>
         </section>
 
