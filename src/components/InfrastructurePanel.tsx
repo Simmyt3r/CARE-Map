@@ -26,7 +26,7 @@ type Snapshot={
   databaseName:string|null;
   database:{ok:boolean;postgresVersion?:string;postgisEnabled?:boolean;postgisVersion?:string|null;tables?:number;error?:string};
   migrations:{historyAvailable:boolean;expected:number;applied:number;pending:string[];checksumMismatches:string[];latestAppliedAt:string|null};
-  data:{lgaBoundaries:number;totalLgas:number;pilotBoundaries:number;pilotLgas:number;verifiedRivers:number;verifiedSettlements:number;boreholes:number;assets:number;verifiedHazardZones:number;verifiedCatchments:number;admins:number};
+  data:{lgaBoundaries:number;totalLgas:number;pilotBoundaries:number;pilotLgas:number;verifiedRivers:number;verifiedSettlements:number;boreholes:number;assets:number;verifiedHazardZones:number;verifiedCatchments:number;pilotAcceptanceTested:number;pilotAcceptancePassed:number;admins:number};
   readinessItems:ReadinessItem[];
   readiness:{score:number;required:number;ready:number;warnings:number;blockers:number;optionalReady:number;optionalTotal:number};
 };
@@ -120,6 +120,7 @@ export default function InfrastructurePanel({snapshot}:{snapshot:Snapshot}){
           <div className="stat"><strong>{snapshot.migrations.applied}/{snapshot.migrations.expected}</strong><span>Migrations recorded</span></div>
           <div className="stat"><strong>{snapshot.data.pilotBoundaries}/{snapshot.data.pilotLgas}</strong><span>Pilot LGA boundaries</span></div>
           <div className="stat"><strong>{snapshot.data.boreholes+snapshot.data.assets}</strong><span>Mapped interventions</span></div>
+          <div className="stat"><strong>{snapshot.data.pilotAcceptancePassed}/{snapshot.data.pilotLgas}</strong><span>Pilot LGAs field-accepted</span></div>
         </div>
       </div>
 
