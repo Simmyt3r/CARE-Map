@@ -109,8 +109,11 @@ Before storage CARE-Map:
 - converts the result to MultiPolygon
 - rejects empty geometry
 - rejects geometry smaller than 1 km²
+- rejects geometry larger than 50,000 km²
+- rejects duplicate features that resolve to the same LGA within one batch
+- rejects boundary payloads larger than 10 MB
 
-This validation prevents accidental point/line uploads and many common invalid-polygon failures.
+This validation prevents accidental point/line uploads, duplicate-LGA overwrites, wildly implausible polygons, and many common invalid-polygon failures.
 
 ## API
 
