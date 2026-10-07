@@ -5,7 +5,9 @@ import {
   parseOptionalPopulation,
   parseOptionalPopulationYear,
   parseSettlementAccessRadius,
-  populationProvenanceError
+  populationProvenanceError,
+  classifySettlementAccess,
+  settlementNearestSearchRadius
 } from "../src/lib/settlements";
 
 describe("settlement helpers",()=>{
@@ -35,6 +37,17 @@ describe("settlement helpers",()=>{
     expect(populationProvenanceError(null,null,2024)).toMatch(/without population/i);
     expect(populationProvenanceError(500,"NPC estimate",2024)).toBeNull();
     expect(populationProvenanceError(null,null,null)).toBeNull();
+  });
+
+  it("classifies settlement access without inventing unknown nearest distances",()=>{
+    expect(classifySettlementAccess(1500,2000)).toBe("within_threshold");
+    expect(classifySettlementAccess(3500,2000)).toBe("access_gap");
+    expect(classifySettlementAccess(null,2000)).toBe("beyond_search_radius");
+  });
+
+  it("uses a bounded nearest-borehole search horizon",()=>{
+    expect(settlementNearestSearchRadius(2000)).toBe(50_000);
+    expect(settlementNearestSearchRadius(50_000)).toBe(150_000);
   });
 
   it("validates straight-line access thresholds",()=>{
