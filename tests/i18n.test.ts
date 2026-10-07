@@ -10,7 +10,9 @@ import {
 describe("localization helpers",()=>{
   it("normalizes supported public locales and falls back to English",()=>{
     expect(normalizeLocale("TIV")).toBe("tiv");
-    expect(normalizeLocale("idoma")).toBe("idoma");
+    expect(normalizeLocale("idu")).toBe("idu");
+    expect(normalizeLocale("ige")).toBe("ige");
+    expect(normalizeLocale("idoma")).toBe("en");
     expect(normalizeLocale("unknown")).toBe("en");
   });
 
