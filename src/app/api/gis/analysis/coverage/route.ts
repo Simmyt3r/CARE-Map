@@ -96,6 +96,46 @@ export async function GET(request:Request){
         END uncovered
       FROM clipped c
     ),
+    gap_parts AS (
+      SELECT
+        d.geom,
+        ST_Area(d.geom::geography)/1000000.0 area_km2
+      FROM metrics m
+      CROSS JOIN LATERAL ST_Dump(m.uncovered) d
+      WHERE m.uncovered IS NOT NULL
+        AND NOT ST_IsEmpty(m.uncovered)
+        AND ST_Area(d.geom::geography)>1000
+    ),
+    gap_ranked AS (
+      SELECT
+        row_number() OVER(ORDER BY g.area_km2 DESC)::int gap_rank,
+        g.geom,g.area_km2
+      FROM gap_parts g
+      ORDER BY g.area_km2 DESC
+      LIMIT 25
+    ),
+    gap_features AS (
+      SELECT jsonb_build_object(
+        'type','FeatureCollection',
+        'features',COALESCE(
+          jsonb_agg(
+            jsonb_build_object(
+              'type','Feature',
+              'geometry',ST_AsGeoJSON(g.geom)::jsonb,
+              'properties',jsonb_build_object(
+                'rank',g.gap_rank,
+                'areaKm2',round(g.area_km2::numeric,3),
+                'longitude',ST_X(ST_PointOnSurface(g.geom)),
+                'latitude',ST_Y(ST_PointOnSurface(g.geom))
+              )
+            )
+            ORDER BY g.gap_rank
+          ),
+          '[]'::jsonb
+        )
+      ) gaps
+      FROM gap_ranked g
+    ),
     point_features AS (
       SELECT
         count(*)::int resource_count,
@@ -150,9 +190,10 @@ export async function GET(request:Request){
       ST_AsGeoJSON(m.boundary)::json boundary,
       CASE WHEN m.covered IS NULL OR ST_IsEmpty(m.covered) THEN NULL ELSE ST_AsGeoJSON(m.covered)::json END covered,
       CASE WHEN m.uncovered IS NULL OR ST_IsEmpty(m.uncovered) THEN NULL ELSE ST_AsGeoJSON(m.uncovered)::json END uncovered,
-      p.resources
+      p.resources,g.gaps
     FROM metrics m
     CROSS JOIN point_features p
+    CROSS JOIN gap_features g
   `,[lga,radius,typeValue]);
 
   if(!result.rowCount)return error("LGA not found.",404);
@@ -175,7 +216,8 @@ export async function GET(request:Request){
       boundary:row.boundary,
       covered:row.covered,
       uncovered:row.uncovered,
-      resources:row.resources
+      resources:row.resources,
+      gaps:row.gaps
     },
     methodology:{
       measure:"territorial_area",
