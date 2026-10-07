@@ -212,3 +212,16 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:
 @media(max-width:1000px){.settlement-access-stats{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:700px){.settlement-access-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.settlement-access-map{height:430px}}
 @media(max-width:560px){.settlement-access-stats{grid-template-columns:1fr}.settlement-access-map{height:360px}}
+
+.river-corridor-map{height:520px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#e9eee9}
+.river-corridor-stats{grid-template-columns:repeat(6,minmax(0,1fr))}
+.river-corridor-key{background:rgba(40,120,168,.28)!important;border-radius:3px!important}
+.river-line-key{width:18px!important;height:3px!important;border:0!important;border-radius:2px!important;background:#17639a!important}
+.river-settlement-key,.river-borehole-key,.river-asset-key,.river-report-key{border-radius:50%!important}
+.river-settlement-key{background:#7b5b00!important}
+.river-borehole-key{background:#1f6b3b!important}
+.river-asset-key{background:#6b4aa5!important}
+.river-report-key{background:#a61b1b!important}
+@media(max-width:1000px){.river-corridor-stats{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:700px){.river-corridor-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.river-corridor-map{height:430px}}
+@media(max-width:560px){.river-corridor-stats{grid-template-columns:1fr}.river-corridor-map{height:360px}}
