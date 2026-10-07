@@ -2,6 +2,7 @@ import {NextResponse} from "next/server";
 import {getSession,isStaff} from "@/lib/auth";
 import {error} from "@/lib/http";
 import {pool} from "@/lib/db";
+import {fieldVerificationDueAt} from "@/lib/satellite-verification";
 
 type AlertRow={
   id:string;
@@ -16,13 +17,6 @@ type AlertRow={
   latitude:number;
   longitude:number;
 };
-
-function defaultDueAt(severity:string){
-  const due=new Date();
-  const days=severity==="critical"?1:severity==="high"?3:7;
-  due.setUTCDate(due.getUTCDate()+days);
-  return due.toISOString();
-}
 
 export async function POST(request:Request,context:{params:Promise<{id:string}>}){
   const session=await getSession();
@@ -70,7 +64,7 @@ export async function POST(request:Request,context:{params:Promise<{id:string}>}
       }
     }
 
-    const dueAt=body.dueAt||defaultDueAt(a.severity);
+    const dueAt=body.dueAt||fieldVerificationDueAt(a.severity).toISOString();
     const priority=a.severity;
     const description=
       "Satellite vegetation alert requires field verification.\n\n"+
