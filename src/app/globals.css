@@ -326,3 +326,24 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:
 .success-inline{color:#1f6b3b;font-weight:800}
 @media(max-width:900px){.privacy-governance-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.privacy-checklist{grid-template-columns:1fr}}
 @media(max-width:560px){.privacy-governance-stats{grid-template-columns:1fr}.privacy-request-grid{grid-template-columns:1fr}.privacy-case-editor{min-width:0;width:100%}}
+
+.sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+.language-switcher{display:inline-flex;align-items:center}
+.language-switcher select{min-height:36px;border:1px solid var(--line);border-radius:9px;background:#fff;padding:7px 28px 7px 9px;color:var(--text);font-weight:700}
+.localization-stats{grid-template-columns:repeat(4,minmax(0,1fr))}
+.translation-preview{display:grid;gap:12px;padding:14px;border:1px solid var(--line);border-radius:12px;background:#fbfdfb}
+.translation-preview>div:first-child{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.translation-preview span{color:var(--muted);font-size:12px}
+.translation-meter{height:10px;border:1px solid var(--line);border-radius:999px;background:#edf1ee;overflow:hidden}
+.translation-meter span{display:block;height:100%;background:var(--brand);border-radius:999px}
+.translation-key-list{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;max-height:180px;overflow:auto}
+.translation-key-list code{padding:4px 6px;border:1px solid var(--line);border-radius:6px;background:#fff}
+.translation-pack-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.translation-pack-card{display:grid;gap:12px;padding:15px;border:1px solid var(--line);border-radius:14px;background:#fff}
+.translation-pack-card h3{margin:0}
+.translation-status{display:inline-flex;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:900;text-transform:uppercase}
+.translation-status.draft{background:#fff0bf;color:#805c00}
+.translation-status.reviewed{background:#dceee1;color:#1f6b3b}
+@media(max-width:1000px){.translation-pack-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){.localization-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.translation-pack-grid{grid-template-columns:1fr}.language-switcher{width:100%}.language-switcher select{width:100%}}
+@media(max-width:480px){.localization-stats{grid-template-columns:1fr}}
