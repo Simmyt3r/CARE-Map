@@ -38,6 +38,8 @@ export type DataReadiness={
   overduePrivacyRequests:number;
   openPrivacyBreaches:number;
   overdueNdpcBreachNotifications:number;
+  translationTablesReady:boolean;
+  reviewedEnabledTranslationPacks:number;
   admins:number;
 };
 
@@ -198,7 +200,8 @@ export async function currentInfrastructureSnapshot(){
   let data:DataReadiness={
     lgaBoundaries:0,totalLgas:23,pilotBoundaries:0,pilotLgas:14,verifiedRivers:0,verifiedSettlements:0,
     boreholes:0,assets:0,verifiedHazardZones:0,verifiedCatchments:0,pilotAcceptanceTested:0,pilotAcceptancePassed:0,
-    privacyTablesReady:false,openPrivacyRequests:0,overduePrivacyRequests:0,openPrivacyBreaches:0,overdueNdpcBreachNotifications:0,admins:0
+    privacyTablesReady:false,openPrivacyRequests:0,overduePrivacyRequests:0,openPrivacyBreaches:0,overdueNdpcBreachNotifications:0,
+    translationTablesReady:false,reviewedEnabledTranslationPacks:0,admins:0
   };
 
   if(databaseUrl){
@@ -215,7 +218,7 @@ export async function currentInfrastructureSnapshot(){
 
         const tableCheck=await client.query<{
           lgas:boolean;lgaBoundary:boolean;rivers:boolean;settlements:boolean;boreholes:boolean;assets:boolean;
-          hazards:boolean;catchments:boolean;acceptance:boolean;privacyRequests:boolean;privacyBreaches:boolean;users:boolean;
+          hazards:boolean;catchments:boolean;acceptance:boolean;privacyRequests:boolean;privacyBreaches:boolean;translations:boolean;users:boolean;
         }>(`
           SELECT
             to_regclass('public.lgas') IS NOT NULL lgas,
@@ -232,6 +235,7 @@ export async function currentInfrastructureSnapshot(){
             to_regclass('public.field_acceptance_runs') IS NOT NULL acceptance,
             to_regclass('public.data_subject_requests') IS NOT NULL "privacyRequests",
             to_regclass('public.privacy_breach_register') IS NOT NULL "privacyBreaches",
+            to_regclass('public.translation_packs') IS NOT NULL translations,
             to_regclass('public.users') IS NOT NULL users
         `);
         const t=tableCheck.rows[0];
@@ -271,6 +275,8 @@ export async function currentInfrastructureSnapshot(){
           overduePrivacyRequests:t?.privacyRequests?await count("SELECT count(*) n FROM data_subject_requests WHERE status NOT IN ('completed','rejected') AND due_at<now()"):0,
           openPrivacyBreaches:t?.privacyBreaches?await count("SELECT count(*) n FROM privacy_breach_register WHERE status<>'closed'"):0,
           overdueNdpcBreachNotifications:t?.privacyBreaches?await count("SELECT count(*) n FROM privacy_breach_register WHERE ndpc_notification_required=TRUE AND ndpc_notified_at IS NULL AND detected_at<now()-INTERVAL '72 hours'"):0,
+          translationTablesReady:Boolean(t?.translations),
+          reviewedEnabledTranslationPacks:t?.translations?await count("SELECT count(*) n FROM translation_packs WHERE status='reviewed' AND enabled=TRUE"):0,
           admins:t?.users?await count("SELECT count(*) n FROM users WHERE role='admin' AND active=TRUE AND deleted_at IS NULL"):0
         };
       }catch{
@@ -388,6 +394,16 @@ export async function currentInfrastructureSnapshot(){
       action:!data.privacyTablesReady
         ?"Apply migration 014."
         :"Open Admin → Privacy and resolve overdue rights requests or breach-notification actions."
+    },
+    {
+      id:"localization",label:"Reviewed local-language pack",category:"operations",
+      state:!data.translationTablesReady?"warning":data.reviewedEnabledTranslationPacks>0?"ready":"warning",required:false,
+      detail:!data.translationTablesReady
+        ?"Localization schema is not applied yet."
+        :data.reviewedEnabledTranslationPacks+" reviewed and publicly enabled local-language pack(s).",
+      action:!data.translationTablesReady
+        ?"Apply migration 015."
+        :"Open Admin → Localization, import a human-reviewed Tiv, Idoma or Igede pack, approve it at 100% key coverage, then enable it."
     },
     {
       id:"settlements",label:"Verified settlement inventory",category:"data",
