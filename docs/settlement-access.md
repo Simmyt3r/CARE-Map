@@ -90,6 +90,8 @@ The import records:
 - importing staff member
 - timestamp
 
+The GIS Workbench shows recent settlement import jobs, including imported/failed counts, spatial LGA assignments, verification-on-import state and operator.
+
 ## CSV fields
 
 The downloadable template includes:
@@ -111,6 +113,8 @@ notes
 `population`, `populationYear`, `populationSource`, `gpsAccuracy`, `notes`, and `settlementCode` are optional subject to validation rules.
 
 ## Spatial LGA assignment
+
+If `lgaCode` is supplied and an imported boundary exists for that LGA, CARE-Map checks that the settlement point is covered by the supplied LGA polygon. A mismatch fails the row for review.
 
 If `lgaCode` is missing and CARE-Map has imported LGA boundaries, the importer tries to assign the point with:
 
