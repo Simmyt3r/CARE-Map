@@ -1,6 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
-import {useEffect,useRef,useState} from "react";
+import {useCallback,useEffect,useRef,useState} from "react";
 
 export default function ReportEvidencePhotos({reportId}:{reportId:string}){
   const[photos,setPhotos]=useState<any[]>([]);
@@ -10,13 +10,13 @@ export default function ReportEvidencePhotos({reportId}:{reportId:string}){
   const[message,setMessage]=useState("");
   const inputRef=useRef<HTMLInputElement|null>(null);
 
-  async function load(){
+  const load=useCallback(async()=>{
     const r=await fetch("/api/reports/"+reportId+"/photos");
     const j=await r.json().catch(()=>({}));
     if(r.ok)setPhotos(j.data||[]);
-  }
+  },[reportId]);
 
-  useEffect(()=>{void load();},[reportId]);
+  useEffect(()=>{void load();},[load]);
 
   async function upload(e:React.FormEvent){
     e.preventDefault();
