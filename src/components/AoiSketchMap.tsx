@@ -6,11 +6,11 @@ type Point=[number,number];
 type Polygon={type:"Polygon";coordinates:Point[][]};
 
 function pointsFromGeometry(value:any):Point[]{
-  if(value?.type==="Polygon"&&Array.isArray(value.coordinates?.[0])){
-    const ring=value.coordinates[0] as Point[];
-    return ring.length>1&&ring[0][0]===ring[ring.length-1][0]&&ring[0][1]===ring[ring.length-1][1]?ring.slice(0,-1):ring;
-  }
-  return [];
+  let ring:Point[]|null=null;
+  if(value?.type==="Polygon"&&Array.isArray(value.coordinates?.[0]))ring=value.coordinates[0] as Point[];
+  if(value?.type==="MultiPolygon"&&Array.isArray(value.coordinates?.[0]?.[0]))ring=value.coordinates[0][0] as Point[];
+  if(!ring)return [];
+  return ring.length>1&&ring[0][0]===ring[ring.length-1][0]&&ring[0][1]===ring[ring.length-1][1]?ring.slice(0,-1):ring;
 }
 
 function featureCollection(points:Point[]){
