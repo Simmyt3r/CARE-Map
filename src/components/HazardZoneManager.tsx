@@ -1,6 +1,6 @@
 "use client";
 import {useCallback,useEffect,useMemo,useState} from "react";
-import {hazardSeverities,hazardTypeLabel,type HazardSeverity,type HazardType} from "@/lib/hazard-zones";
+import {hazardSeverities,hazardTypeLabel,type HazardType} from "@/lib/hazard-zones";
 
 type Feature={
   type?:string;
