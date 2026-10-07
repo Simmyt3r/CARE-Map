@@ -1,5 +1,5 @@
 "use client";
-import {useEffect,useRef,useState} from "react";
+import {useEffect,useRef} from "react";
 import * as maplibregl from "maplibre-gl";
 
 type Point=[number,number];
@@ -13,27 +13,34 @@ function pointsFromGeometry(value:any):Point[]{
   return [];
 }
 
+function featureCollection(points:Point[]){
+  const features:any[]=[];
+  if(points.length){
+    features.push(...points.map((coordinates,i)=>({type:"Feature",properties:{index:i+1},geometry:{type:"Point",coordinates}})));
+    if(points.length>=2)features.push({type:"Feature",properties:{},geometry:{type:"LineString",coordinates:points}});
+    if(points.length>=3)features.push({type:"Feature",properties:{},geometry:{type:"Polygon",coordinates:[[...points,points[0]]]}});
+  }
+  return {type:"FeatureCollection",features} as any;
+}
+
+function polygonFromPoints(points:Point[]):Polygon|null{
+  return points.length>=3?{type:"Polygon",coordinates:[[...points,points[0]]]}:null;
+}
+
 export default function AoiSketchMap({geometry,onChange}:{geometry:any;onChange:(geometry:Polygon|null)=>void}){
   const node=useRef<HTMLDivElement|null>(null);
   const mapRef=useRef<maplibregl.Map|null>(null);
-  const sourceReady=useRef(false);
-  const[points,setPoints]=useState<Point[]>(()=>pointsFromGeometry(geometry));
+  const geometryRef=useRef(geometry);
+  const onChangeRef=useRef(onChange);
+  geometryRef.current=geometry;
+  onChangeRef.current=onChange;
 
-  function collection(next:Point[]){
-    const features:any[]=[];
-    if(next.length){
-      features.push(...next.map((coordinates,i)=>({type:"Feature",properties:{index:i+1},geometry:{type:"Point",coordinates}})));
-      if(next.length>=2)features.push({type:"Feature",properties:{},geometry:{type:"LineString",coordinates:next}});
-      if(next.length>=3)features.push({type:"Feature",properties:{},geometry:{type:"Polygon",coordinates:[[...next,next[0]]]}});
-    }
-    return {type:"FeatureCollection",features} as any;
-  }
+  const points=pointsFromGeometry(geometry);
 
-  function sync(next:Point[]){
-    setPoints(next);
+  function apply(next:Point[]){
     const source=mapRef.current?.getSource("aoi-sketch") as maplibregl.GeoJSONSource|undefined;
-    source?.setData(collection(next));
-    onChange(next.length>=3?{type:"Polygon",coordinates:[[...next,next[0]]]}:null);
+    source?.setData(featureCollection(next));
+    onChangeRef.current(polygonFromPoints(next));
   }
 
   useEffect(()=>{
@@ -46,39 +53,39 @@ export default function AoiSketchMap({geometry,onChange}:{geometry:any;onChange:
     });
     map.addControl(new maplibregl.NavigationControl(),"top-right");
     map.on("load",()=>{
-      map.addSource("aoi-sketch",{type:"geojson",data:collection(points)});
+      const initial=pointsFromGeometry(geometryRef.current);
+      map.addSource("aoi-sketch",{type:"geojson",data:featureCollection(initial)});
       map.addLayer({id:"aoi-fill",type:"fill",source:"aoi-sketch",filter:["==",["geometry-type"],"Polygon"],paint:{"fill-color":"#2f855a","fill-opacity":0.22}});
       map.addLayer({id:"aoi-line",type:"line",source:"aoi-sketch",filter:["in",["geometry-type"],["literal",["LineString","Polygon"]]],paint:{"line-color":"#1f6b3b","line-width":3}});
       map.addLayer({id:"aoi-points",type:"circle",source:"aoi-sketch",filter:["==",["geometry-type"],"Point"],paint:{"circle-radius":6,"circle-color":"#d97706","circle-stroke-color":"#fff","circle-stroke-width":2}});
-      sourceReady.current=true;
-      if(points.length>=3){
-        const bounds=new maplibregl.LngLatBounds(points[0],points[0]);points.forEach(p=>bounds.extend(p));map.fitBounds(bounds,{padding:40,maxZoom:15});
+      if(initial.length>=3){
+        const bounds=new maplibregl.LngLatBounds(initial[0],initial[0]);
+        initial.forEach(p=>bounds.extend(p));
+        map.fitBounds(bounds,{padding:40,maxZoom:15});
       }
     });
     map.on("click",e=>{
-      const p:[number,number]=[Number(e.lngLat.lng.toFixed(6)),Number(e.lngLat.lat.toFixed(6))];
-      setPoints(current=>{
-        const next=[...current,p];
-        const source=map.getSource("aoi-sketch") as maplibregl.GeoJSONSource|undefined;
-        source?.setData(collection(next));
-        onChange(next.length>=3?{type:"Polygon",coordinates:[[...next,next[0]]]}:null);
-        return next;
-      });
+      const current=pointsFromGeometry(geometryRef.current);
+      const point:Point=[Number(e.lngLat.lng.toFixed(6)),Number(e.lngLat.lat.toFixed(6))];
+      const next=[...current,point];
+      const source=map.getSource("aoi-sketch") as maplibregl.GeoJSONSource|undefined;
+      source?.setData(featureCollection(next));
+      onChangeRef.current(polygonFromPoints(next));
     });
     mapRef.current=map;
-    return()=>{map.remove();mapRef.current=null;sourceReady.current=false;};
+    return()=>{map.remove();mapRef.current=null;};
   },[]);
 
   useEffect(()=>{
+    const map=mapRef.current;
+    if(!map?.isStyleLoaded())return;
     const incoming=pointsFromGeometry(geometry);
-    if(!sourceReady.current)return;
-    if(JSON.stringify(incoming)!==JSON.stringify(points)){
-      setPoints(incoming);
-      const source=mapRef.current?.getSource("aoi-sketch") as maplibregl.GeoJSONSource|undefined;
-      source?.setData(collection(incoming));
-      if(incoming.length>=3&&mapRef.current){
-        const bounds=new maplibregl.LngLatBounds(incoming[0],incoming[0]);incoming.forEach(p=>bounds.extend(p));mapRef.current.fitBounds(bounds,{padding:40,maxZoom:15});
-      }
+    const source=map.getSource("aoi-sketch") as maplibregl.GeoJSONSource|undefined;
+    source?.setData(featureCollection(incoming));
+    if(incoming.length>=3){
+      const bounds=new maplibregl.LngLatBounds(incoming[0],incoming[0]);
+      incoming.forEach(p=>bounds.extend(p));
+      map.fitBounds(bounds,{padding:40,maxZoom:15});
     }
   },[geometry]);
 
@@ -88,8 +95,8 @@ export default function AoiSketchMap({geometry,onChange}:{geometry:any;onChange:
       <div className="muted">Click the map to add vertices. Three or more points create a closed polygon.</div>
       <div className="actions">
         <span className="badge">{points.length} vertices</span>
-        <button type="button" className="btn" disabled={!points.length} onClick={()=>sync(points.slice(0,-1))}>Undo</button>
-        <button type="button" className="btn danger" disabled={!points.length} onClick={()=>sync([])}>Clear</button>
+        <button type="button" className="btn" disabled={!points.length} onClick={()=>apply(points.slice(0,-1))}>Undo</button>
+        <button type="button" className="btn danger" disabled={!points.length} onClick={()=>apply([])}>Clear</button>
       </div>
     </div>
   </div>;
