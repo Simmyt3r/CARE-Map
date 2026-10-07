@@ -36,6 +36,7 @@ export default function MapComposer(){
   const[subtitle,setSubtitle]=useState("CARE-Map GIS situation map");
   const[notes,setNotes]=useState("");
   const[message,setMessage]=useState("");
+  const[generatedAt,setGeneratedAt]=useState("");
 
   const visibleFeatures=useMemo(()=>filterComposerFeatures(rawFeatures,layers,risk),[rawFeatures,layers,risk]);
   const counts=useMemo(()=>composerFeatureCounts(visibleFeatures),[visibleFeatures]);
@@ -58,6 +59,7 @@ export default function MapComposer(){
   },[]);
 
   useEffect(()=>{
+    setGeneratedAt(new Date().toLocaleString());
     fetch("/api/lgas").then(r=>r.json()).then(j=>setLgas(j.data||[])).catch(()=>{});
   },[]);
 
@@ -192,7 +194,6 @@ export default function MapComposer(){
     window.setTimeout(()=>URL.revokeObjectURL(url),500);
   }
 
-  const generatedAt=new Date().toLocaleString();
 
   return <div className="map-composer-page stack">
     <section className="card composer-controls print-hide stack">
