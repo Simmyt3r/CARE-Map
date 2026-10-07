@@ -92,6 +92,7 @@ export default function ReportGovernanceDrawer({report,staff,onClose,onUpdated}:
           <h3>Workflow update</h3>
           <div className="field"><label>New status</label><select value={status} onChange={e=>setStatus(e.target.value)}><option value="submitted">Submitted</option><option value="under_review">Under review</option><option value="verified">Verified</option><option value="resolved">Resolved</option><option value="rejected">Rejected</option></select></div>
           <div className="field"><label>Status note</label><textarea value={note} onChange={e=>setNote(e.target.value)} placeholder="What changed, what was verified, or why this was resolved/rejected?"/></div>
+          {details?.report?.origin==="satellite_alert"&&<div className="notice">Closing a satellite verification requires a clear status note. Resolving it also requires at least one field evidence photo.</div>}
           <button className="btn primary" disabled={busy} onClick={changeStatus}>Update status</button>
         </section>
 
