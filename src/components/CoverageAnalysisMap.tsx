@@ -108,6 +108,7 @@ export default function CoverageAnalysisMap({result}:{result:any|null}){
         title.textContent=p.name||"Mapped resource";
         const meta=document.createElement("div");
         meta.textContent=[
+          p.assetType,
           p.status,
           p.insideLga?"Inside selected LGA":"Outside LGA, contributes cross-boundary coverage"
         ].filter(Boolean).join(" • ");

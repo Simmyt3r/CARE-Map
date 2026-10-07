@@ -61,11 +61,14 @@ This is still only a proximity proxy. A borehole being marked functional does no
 
 ### Assets
 
-Asset mode combines all mapped asset types in the current baseline.
+Asset mode supports two interpretations:
 
-This can be useful for general infrastructure-footprint analysis, but staff should not interpret heterogeneous assets as one service class.
+- **All asset types** for a broad infrastructure-footprint view.
+- **Specific asset type** for a more defensible comparison within one mapped asset class.
 
-A later extension can add asset-type-specific coverage scenarios.
+The interface loads distinct `asset_type` values from CARE-Map and allows staff to restrict the analysis to one class.
+
+All-asset mode should still be treated carefully because heterogeneous infrastructure does not automatically represent one comparable service.
 
 ## Scenarios
 
@@ -142,12 +145,15 @@ Query parameters:
 | `lga` | CARE-Map LGA code |
 | `type` | `borehole` or `asset` |
 | `scenario` | `functional` or `non_decommissioned` |
+| `assetType` | optional exact asset type when `type=asset` |
 | `radius` | metres, 100–50,000 |
 
 Example:
 
 ```
 /api/gis/analysis/coverage?lga=MAKURDI&type=borehole&scenario=functional&radius=2000
+
+/api/gis/analysis/coverage?lga=MAKURDI&type=asset&assetType=Water%20Tank&scenario=functional&radius=2000
 ```
 
 ## Output
@@ -156,6 +162,7 @@ The response includes:
 
 - LGA code/name/boundary source
 - resource type
+- selected asset type when applicable
 - scenario
 - radius
 - total contributing resources
@@ -214,3 +221,27 @@ For a more defensible access model, combine CARE-Map with validated:
 - facility capacity or borehole yield
 
 That would allow CARE-Map to progress from **territorial proximity coverage** to **population and accessibility analysis**.
+
+
+## Coverage options API
+
+The staff UI loads distinct asset classes from:
+
+```
+GET /api/gis/analysis/coverage/options
+```
+
+Response example:
+
+```json
+{
+  "data": {
+    "assetTypes": [
+      "Water Tank",
+      "Weather Station"
+    ]
+  }
+}
+```
+
+The main coverage API validates a supplied asset type against existing CARE-Map asset records before running the spatial analysis.

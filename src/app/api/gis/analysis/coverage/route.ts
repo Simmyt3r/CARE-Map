@@ -31,6 +31,7 @@ export async function GET(request:Request){
   const typeValue=url.searchParams.get("type")||"borehole";
   const scenarioValue=url.searchParams.get("scenario")||"functional";
   const radius=parseCoverageRadius(url.searchParams.get("radius")||"2000");
+  const assetType=typeValue==="asset"?String(url.searchParams.get("assetType")||"").trim().slice(0,160):"";
 
   if(!lga)return error("LGA code is required.");
   if(!isCoverageResourceType(typeValue))return error("Coverage type must be borehole or asset.");
@@ -39,6 +40,12 @@ export async function GET(request:Request){
 
   const config=resourceConfig[typeValue];
   const status=statusClause(scenarioValue);
+  if(typeValue==="asset"&&assetType){
+    const exists=await query("SELECT 1 FROM assets WHERE asset_type=$1 LIMIT 1",[assetType]);
+    if(!exists.rowCount)return error("Unknown asset type.");
+  }
+  const assetFilter=typeValue==="asset"&&assetType?"AND p.asset_type=$4":"";
+  const assetSelect=typeValue==="asset"?"p.asset_type":"NULL::text";
 
   const result=await query(`
     WITH selected_lga AS (
@@ -47,12 +54,13 @@ export async function GET(request:Request){
       WHERE code=$1
     ),
     qualifying_points AS (
-      SELECT p.id,p.${config.name} name,p.status,p.${config.geom} location,
+      SELECT p.id,p.${config.name} name,p.status,${assetSelect} asset_type,p.${config.geom} location,
              ST_Intersects(p.${config.geom},l.boundary) inside_lga
       FROM ${config.table} p
       CROSS JOIN selected_lga l
       WHERE l.boundary IS NOT NULL
         AND ${status}
+        ${assetFilter}
         AND ST_DWithin(p.${config.geom}::geography,l.boundary::geography,$2)
     ),
     service_union AS (
@@ -153,6 +161,7 @@ export async function GET(request:Request){
                   'id',q.id,
                   'name',q.name,
                   'status',q.status,
+                  'assetType',q.asset_type,
                   'entityType',$3::text,
                   'insideLga',q.inside_lga
                 )
@@ -194,7 +203,7 @@ export async function GET(request:Request){
     FROM metrics m
     CROSS JOIN point_features p
     CROSS JOIN gap_features g
-  `,[lga,radius,typeValue]);
+  `,typeValue==="asset"&&assetType?[lga,radius,typeValue,assetType]:[lga,radius,typeValue]);
 
   if(!result.rowCount)return error("LGA not found.",404);
   const row=result.rows[0];
@@ -204,6 +213,7 @@ export async function GET(request:Request){
     data:{
       lga:{code:row.code,name:row.name,boundarySource:row.boundary_source},
       resourceType:typeValue,
+      assetType:assetType||null,
       scenario:scenarioValue,
       radiusM:radius,
       resourceCount:Number(row.resource_count||0),
@@ -223,8 +233,8 @@ export async function GET(request:Request){
       measure:"territorial_area",
       populationCoverage:false,
       note:scenarioValue==="functional"
-        ?"Coverage represents LGA land area within the selected straight-line radius of resources currently marked functional. It does not estimate population served, travel time, road access, hydraulic capacity or service reliability."
-        :"This is an infrastructure proximity footprint using all non-decommissioned mapped resources, including records that may be non-functional or need maintenance. It is not an active-service coverage estimate."
+        ?("Coverage represents LGA land area within the selected straight-line radius of resources currently marked functional"+(assetType?" and belonging to asset type '" + assetType + "'":"")+". It does not estimate population served, travel time, road access, hydraulic capacity or service reliability.")
+        :("This is an infrastructure proximity footprint using all non-decommissioned mapped resources"+(assetType?" belonging to asset type '" + assetType + "'":"")+", including records that may be non-functional or need maintenance. It is not an active-service coverage estimate.")
     }
   });
 }

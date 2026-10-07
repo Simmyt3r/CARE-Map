@@ -21,12 +21,18 @@ export default function CoverageAnalysis({lgas}:{lgas:any[]}){
   const boundaryLgas=useMemo(()=>lgas.filter(l=>l.boundary_loaded),[lgas]);
   const[lga,setLga]=useState("");
   const[type,setType]=useState<CoverageResourceType>("borehole");
+  const[assetTypes,setAssetTypes]=useState<string[]>([]);
+  const[assetType,setAssetType]=useState("");
   const[scenario,setScenario]=useState<CoverageScenario>("functional");
   const[radius,setRadius]=useState("2000");
   const[result,setResult]=useState<any|null>(null);
   const[methodology,setMethodology]=useState<any|null>(null);
   const[busy,setBusy]=useState(false);
   const[message,setMessage]=useState("");
+
+  useEffect(()=>{
+    fetch("/api/gis/analysis/coverage/options").then(r=>r.json()).then(j=>setAssetTypes(j.data?.assetTypes||[])).catch(()=>{});
+  },[]);
 
   useEffect(()=>{
     if(!lga&&boundaryLgas.length)setLga(boundaryLgas[0].code);
@@ -48,6 +54,7 @@ export default function CoverageAnalysis({lgas}:{lgas:any[]}){
       scenario,
       radius
     });
+    if(type==="asset"&&assetType)qs.set("assetType",assetType);
     const r=await fetch("/api/gis/analysis/coverage?"+qs);
     const j=await r.json().catch(()=>({}));
     setBusy(false);
@@ -80,12 +87,12 @@ export default function CoverageAnalysis({lgas}:{lgas:any[]}){
     if(result.covered)features.push({
       type:"Feature",
       geometry:result.covered,
-      properties:{role:"covered_area",radiusM:result.radiusM,coveragePct:result.coveragePct}
+      properties:{role:"covered_area",radiusM:result.radiusM,coveragePct:result.coveragePct,assetType:result.assetType||null}
     });
     if(result.uncovered)features.push({
       type:"Feature",
       geometry:result.uncovered,
-      properties:{role:"uncovered_area",radiusM:result.radiusM,coveragePct:result.coveragePct}
+      properties:{role:"uncovered_area",radiusM:result.radiusM,coveragePct:result.coveragePct,assetType:result.assetType||null}
     });
     for(const feature of result.gaps?.features||[]){
       features.push({
@@ -100,12 +107,14 @@ export default function CoverageAnalysis({lgas}:{lgas:any[]}){
       });
     }
     const km=Number(result.radiusM)/1000;
+    const assetSlug=result.assetType?String(result.assetType).toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,50):"";
     const file=[
       result.lga.code.toLowerCase(),
       result.resourceType,
+      assetSlug,
       String(km).replace(".","-")+"km",
       "coverage.geojson"
-    ].join("-");
+    ].filter(Boolean).join("-");
     downloadGeoJson(file,{type:"FeatureCollection",features});
   }
 
@@ -124,15 +133,19 @@ export default function CoverageAnalysis({lgas}:{lgas:any[]}){
 
     {!boundaryLgas.length&&<div className="notice">No LGA boundaries are loaded yet. Import approved boundaries in GIS Workbench before using territorial coverage analysis.</div>}
 
-    <div className="grid four">
+    <div className="grid coverage-controls">
       <div className="field"><label>LGA</label><select value={lga} onChange={e=>{setLga(e.target.value);invalidate();}}>
         <option value="">Choose LGA</option>
         {boundaryLgas.map(x=><option key={x.code} value={x.code}>{x.name}</option>)}
       </select></div>
-      <div className="field"><label>Resource</label><select value={type} onChange={e=>{setType(e.target.value as CoverageResourceType);invalidate();}}>
+      <div className="field"><label>Resource</label><select value={type} onChange={e=>{const next=e.target.value as CoverageResourceType;setType(next);if(next!=="asset")setAssetType("");invalidate();}}>
         <option value="borehole">Boreholes</option>
-        <option value="asset">Assets (all asset types)</option>
+        <option value="asset">Assets</option>
       </select></div>
+      {type==="asset"&&<div className="field"><label>Asset type</label><select value={assetType} onChange={e=>{setAssetType(e.target.value);invalidate();}}>
+        <option value="">All asset types</option>
+        {assetTypes.map(value=><option key={value} value={value}>{value}</option>)}
+      </select></div>}
       <div className="field"><label>Scenario</label><select value={scenario} onChange={e=>{setScenario(e.target.value as CoverageScenario);invalidate();}}>
         <option value="functional">Functional only</option>
         <option value="non_decommissioned">Mapped footprint (non-decommissioned)</option>
@@ -147,7 +160,8 @@ export default function CoverageAnalysis({lgas}:{lgas:any[]}){
       </select></div>
     </div>
 
-    {type==="asset"&&<div className="notice">Asset mode currently combines all mapped asset types. Treat the result as an infrastructure proximity footprint unless the selected assets represent one comparable service class.</div>}
+    {type==="asset"&&!assetType&&<div className="notice">All-asset mode combines every mapped asset class. Use a specific asset type for a more defensible service-class comparison.</div>}
+    {type==="asset"&&assetType&&<div className="notice">Coverage is restricted to asset type <strong>{assetType}</strong>.</div>}
     {scenarioWarning&&<div className="notice">{scenarioWarning}</div>}
 
     <div className="actions">
@@ -192,6 +206,7 @@ export default function CoverageAnalysis({lgas}:{lgas:any[]}){
     {result&&<div className="resource-facts">
       <div><span>Scenario</span><strong>{coverageScenarioLabel(result.scenario)}</strong></div>
       <div><span>Resource type</span><strong>{String(result.resourceType).replaceAll("_"," ")}</strong></div>
+      {result.assetType&&<div><span>Asset type</span><strong>{result.assetType}</strong></div>}
       <div><span>Radius</span><strong>{Number(result.radiusM).toLocaleString()} m</strong></div>
       <div><span>LGA area</span><strong>{Number(result.lgaAreaKm2).toLocaleString(undefined,{maximumFractionDigits:1})} km²</strong></div>
       <div><span>Boundary source</span><strong>{result.lga.boundarySource||"Not recorded"}</strong></div>

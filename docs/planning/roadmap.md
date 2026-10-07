@@ -222,6 +222,7 @@ Production gate: run the migration against the real Aiven service and field-test
 - [x] Staff-only LGA territorial coverage analysis
 - [x] Functional borehole coverage scenario
 - [x] Functional asset proximity scenario
+- [x] Optional asset-type-specific coverage filtering
 - [x] Non-decommissioned mapped-footprint planning scenario
 - [x] Configurable 100 m–50 km radius API with 500 m–25 km UI presets
 - [x] True metre-based PostGIS geography buffers
