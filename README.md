@@ -44,6 +44,7 @@ The repository now contains a working Next.js application and Aiven/PostGIS data
 - Public-safe resource history summaries and photo galleries
 - Automated GIS data-quality checks and possible-duplicate detection
 - Spatial Analysis workspace for nearby-feature queries using true PostGIS distances
+- LGA territorial intervention-coverage analysis using metre-based PostGIS buffers, covered/uncovered area and GeoJSON gap export
 - LGA spatial summaries with administrative area, mapped forest hectares, verified river kilometres and spatially located open reports
 - Remote Sensing workbench with click-to-draw AOIs and existing forest-boundary reuse
 - Sentinel-2 Level-2A scene discovery through Earth Search
@@ -126,6 +127,7 @@ Never expose database or session secrets through NEXT_PUBLIC variables.
 - GET /api/gis/quality
 - GET /api/gis/analysis/nearby
 - GET /api/gis/analysis/lgas
+- GET /api/gis/analysis/coverage
 - GET/POST /api/gis/lga-boundaries
 - POST /api/remote-sensing/scenes
 - GET/POST /api/remote-sensing/analyses
