@@ -44,6 +44,7 @@ The repository now contains a working Next.js application and Aiven/PostGIS data
 - Public-safe resource history summaries and photo galleries
 - Automated GIS data-quality checks and possible-duplicate detection
 - Spatial Analysis workspace for nearby-feature queries using true PostGIS distances
+- LGA territorial intervention-coverage analysis using metre-based PostGIS buffers, covered/uncovered area and GeoJSON gap export
 - LGA spatial summaries with administrative area, mapped forest hectares, verified river kilometres and spatially located open reports
 - Remote Sensing workbench with click-to-draw AOIs and existing forest-boundary reuse
 - Sentinel-2 Level-2A scene discovery through Earth Search
@@ -92,7 +93,7 @@ Architecture decision: docs/architecture/decisions/0003-adopt-aiven-postgis-next
 
 ## Aiven migration
 
-db/migrations/001_init.sql enables PostGIS, pgcrypto, and citext; creates the operational schema; creates GIST spatial indexes; and seeds all 23 Benue LGAs with the 14 initial CARE-Map pilot LGAs marked. db/migrations/002_field_operations.sql adds GPS quality/provenance, inspections, import auditing, and GIS quality views. db/migrations/003_operations_governance.sql adds report ownership, priority/deadlines, status history, account governance metadata, and supporting indexes. db/migrations/004_remote_sensing.sql adds persisted Sentinel-2 vegetation analyses and spatial indexes. db/migrations/005_vegetation_monitoring.sql adds recurring vegetation watchlists, observation history, and acknowledgeable satellite alerts. db/migrations/006_satellite_field_verification.sql links satellite alerts to field-verification reports and records report origin. db/migrations/007_lga_boundaries.sql adds authoritative LGA polygons, source provenance, spatial indexes and boundary-import audit history.
+db/migrations/001_init.sql enables PostGIS, pgcrypto, and citext; creates the operational schema; creates GIST spatial indexes; and seeds all 23 Benue LGAs with the 14 initial CARE-Map pilot LGAs marked. db/migrations/002_field_operations.sql adds GPS quality/provenance, inspections, import auditing, and GIS quality views. db/migrations/003_operations_governance.sql adds report ownership, priority/deadlines, status history, account governance metadata, and supporting indexes. db/migrations/004_remote_sensing.sql adds persisted Sentinel-2 vegetation analyses and spatial indexes. db/migrations/005_vegetation_monitoring.sql adds recurring vegetation watchlists, observation history, and acknowledgeable satellite alerts. db/migrations/006_satellite_field_verification.sql links satellite alerts to field-verification reports and records report origin. db/migrations/007_lga_boundaries.sql adds authoritative LGA polygons, source provenance, spatial indexes and boundary-import audit history. db/migrations/008_coverage_geography_indexes.sql adds functional GiST geography indexes for metre-based borehole and asset proximity analysis.
 
 ## Environment variables
 
@@ -126,6 +127,7 @@ Never expose database or session secrets through NEXT_PUBLIC variables.
 - GET /api/gis/quality
 - GET /api/gis/analysis/nearby
 - GET /api/gis/analysis/lgas
+- GET /api/gis/analysis/coverage
 - GET/POST /api/gis/lga-boundaries
 - POST /api/remote-sensing/scenes
 - GET/POST /api/remote-sensing/analyses

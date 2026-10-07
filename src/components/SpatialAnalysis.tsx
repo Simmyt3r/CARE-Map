@@ -1,6 +1,7 @@
 "use client";
 import {useEffect,useMemo,useState} from "react";
 import SpatialAnalysisMap from "@/components/SpatialAnalysisMap";
+import CoverageAnalysis from "@/components/CoverageAnalysis";
 
 export default function SpatialAnalysis(){
   const[latitude,setLatitude]=useState("");
@@ -64,6 +65,8 @@ export default function SpatialAnalysis(){
       <SpatialAnalysisMap latitude={latNum} longitude={lngNum} results={results}/>
       {!!nearest.length&&<div className="table-wrap"><table><thead><tr><th>Distance</th><th>Type</th><th>Name / description</th><th>LGA</th><th>Status / risk</th></tr></thead><tbody>{nearest.map(r=><tr key={r.entity_type+r.id}><td><strong>{Number(r.distance_m)<1000?Number(r.distance_m).toFixed(0)+" m":(Number(r.distance_m)/1000).toFixed(2)+" km"}</strong></td><td>{r.entity_type.replaceAll("_"," ")}</td><td>{r.name}</td><td>{r.lga_code||"—"}</td><td>{r.status||"—"}{r.risk_level?" · "+r.risk_level:""}</td></tr>)}</tbody></table></div>}
     </section>
+
+    <CoverageAnalysis lgas={lgas}/>
 
     <section className="card stack">
       <div className="section-head"><div><h2>LGA spatial summary</h2><div className="muted">Authoritative counts plus administrative area, forest area, river length and report location calculated from stored PostGIS geometries.</div></div><button className="btn" onClick={loadLgas}>Refresh</button></div>
