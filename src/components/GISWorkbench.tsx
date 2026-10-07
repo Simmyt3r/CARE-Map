@@ -1,6 +1,7 @@
 "use client";
 import {useEffect,useMemo,useState} from "react";
 import LgaBoundaryManager from "@/components/LgaBoundaryManager";
+import SettlementManager from "@/components/SettlementManager";
 
 type ImportKind="boreholes"|"assets"|"forest-sites"|"rivers";
 type Quality={
@@ -110,6 +111,8 @@ export default function GISWorkbench(){
     </section>
 
     <LgaBoundaryManager/>
+
+    <SettlementManager/>
 
     <section className="card stack">
       <div className="section-head"><div><h2>GIS data quality</h2><div className="muted">Automated checks for weak GPS accuracy, missing maintenance, possible duplicate boreholes, unverified rivers, and stale community reports.</div></div><button className="btn" onClick={loadQuality}>Refresh checks</button></div>
