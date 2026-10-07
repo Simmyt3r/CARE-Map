@@ -231,6 +231,7 @@ Production gate: run the migration against the real Aiven service and field-test
 - [x] Include qualifying resources just outside an LGA when their buffer crosses the boundary
 - [x] Separate internal resources from cross-boundary supporting resources
 - [x] Covered/uncovered map visualization
+- [x] Rank up to 25 largest uncovered gap polygons with representative field coordinates
 - [x] GeoJSON export of LGA boundary, coverage area, uncovered gaps and contributing resources
 - [x] Explicit distinction between territorial coverage and population served
 - [x] Regression tests for resource/scenario/radius validation
