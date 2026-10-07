@@ -32,10 +32,10 @@ export default function AoiSketchMap({geometry,onChange}:{geometry:any;onChange:
   const mapRef=useRef<maplibregl.Map|null>(null);
   const geometryRef=useRef(geometry);
   const onChangeRef=useRef(onChange);
-  geometryRef.current=geometry;
-  onChangeRef.current=onChange;
-
   const points=pointsFromGeometry(geometry);
+
+  useEffect(()=>{geometryRef.current=geometry;},[geometry]);
+  useEffect(()=>{onChangeRef.current=onChange;},[onChange]);
 
   function apply(next:Point[]){
     const source=mapRef.current?.getSource("aoi-sketch") as maplibregl.GeoJSONSource|undefined;
