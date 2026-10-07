@@ -120,7 +120,7 @@ export default function PublicMap(){
 
   return <div className="card">
     <div className="filters">
-      <div className="field"><label>Layer</label><select value={type} onChange={e=>setType(e.target.value)}><option value="">All interventions</option><option value="borehole">Boreholes</option><option value="asset">Assets</option><option value="forest_site">Forests</option><option value="river">Rivers</option></select></div>
+      <div className="field"><label>Layer</label><select value={type} onChange={e=>setType(e.target.value)}><option value="">All interventions</option><option value="borehole">Boreholes</option><option value="asset">Assets</option><option value="forest_site">Forests</option><option value="river">Rivers</option><option value="ndvi_change">Vegetation change</option></select></div>
       <div className="field"><label>LGA</label><select value={lga} onChange={e=>setLga(e.target.value)}><option value="">All LGAs</option>{lgas.map(x=><option key={x.code} value={x.code}>{x.name}</option>)}</select></div>
       <div className="field"><label>Status</label><select value={status} onChange={e=>setStatus(e.target.value)}><option value="">Any status</option><option value="functional">Functional</option><option value="needs_maintenance">Needs maintenance</option><option value="non_functional">Non-functional</option></select></div>
       <div className="field"><label>Legend</label><div className="map-legend"><span><i className="legend-low"/>Low</span><span><i className="legend-medium"/>Medium</span><span><i className="legend-high"/>High</span><span><i className="legend-critical"/>Critical</span></div></div>
