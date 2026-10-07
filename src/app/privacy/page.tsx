@@ -39,7 +39,7 @@ export default function PrivacyPage(){
     </section>
 
     <section className="card stack"><h2>Retention and anonymization</h2>
-      <p>CARE-Map's current operating rule is to anonymize personal identifiers attached to resolved reports after two years, while retaining de-identified operational information where needed for historical, audit, monitoring, or trend purposes.</p>
+      <p>CARE-Map’s current operating rule is to anonymize personal identifiers attached to resolved reports after two years, while retaining de-identified operational information where needed for historical, audit, monitoring, or trend purposes.</p>
       <p>Community accounts remain active until disabled or erased. Self-service erasure anonymizes the account identity and removes optional reporter identity/contact fields from linked reports, while operational report records may remain in de-identified form where there is a lawful project need.</p>
       <p>This retention schedule is subject to formal legal review and any applicable ACReSAL or records-management obligations before public launch.</p>
     </section>
