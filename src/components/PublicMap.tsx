@@ -26,6 +26,12 @@ export default function PublicMap(){
       const features=Array.isArray(data.features)?data.features:[];
       boundaryByCodeRef.current=Object.fromEntries(features.map((feature:any)=>[feature.properties?.code,feature]));
       (map.getSource("lga-boundaries") as GeoJSONSource|undefined)?.setData({type:"FeatureCollection",features} as any);
+      const selected=filterRef.current.lga;
+      if(selected){
+        if(map.getLayer("lga-boundary-fill"))map.setFilter("lga-boundary-fill",["==",["get","code"],selected]);
+        const extent=geometryExtent(boundaryByCodeRef.current[selected]?.geometry);
+        if(extent)map.fitBounds([[extent[0],extent[1]],[extent[2],extent[3]]],{padding:42,maxZoom:12});
+      }
     }catch{}
   }
 
