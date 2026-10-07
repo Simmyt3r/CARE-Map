@@ -109,8 +109,8 @@ export async function POST(request:Request){
         const population=parseOptionalPopulation(properties.population);
         if(population===undefined)throw new Error("Population must be a whole number from 0 to 100,000,000.");
 
-        const rowPopulationSource=str(properties.populationSource||properties.population_source);
-        const populationSource=population==null?"":(rowPopulationSource||defaultPopulationSource);
+        const rowPopulationSource=str(properties.populationSource||properties.population_source).slice(0,300);
+        const populationSource=population==null?"":(rowPopulationSource||defaultPopulationSource).slice(0,300);
 
         const rowYear=properties.populationYear??properties.population_year;
         const populationYear=parseOptionalPopulationYear(
@@ -129,6 +129,19 @@ export async function POST(request:Request){
         let lgaCode=normalizeLgaToken(properties.lgaCode||properties.lga_code||properties.lga);
         if(lgaCode){
           if(!validLgas.has(lgaCode))throw new Error("Unknown LGA code: "+lgaCode);
+          const boundaryCheck=await client.query<{boundary_loaded:boolean;inside:boolean}>(`
+            SELECT
+              (boundary IS NOT NULL) boundary_loaded,
+              CASE
+                WHEN boundary IS NULL THEN TRUE
+                ELSE ST_Covers(boundary,ST_SetSRID(ST_MakePoint($2,$3),4326))
+              END inside
+            FROM lgas
+            WHERE code=$1
+          `,[lgaCode,point.longitude,point.latitude]);
+          if(boundaryCheck.rows[0]?.boundary_loaded&&!boundaryCheck.rows[0]?.inside){
+            throw new Error("Settlement point falls outside the supplied "+lgaCode+" boundary. Review the LGA or coordinate.");
+          }
         }else{
           const matches=await client.query<{code:string}>(`
             SELECT code
