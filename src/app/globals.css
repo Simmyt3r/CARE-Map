@@ -166,3 +166,6 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:
   .composer-print-footer{font-size:7pt}
   .maplibregl-ctrl-top-right{display:none!important}
 }
+
+.legend-boundary{width:18px!important;height:10px!important;border-radius:2px!important;background:transparent!important;border:2px solid #355f46!important}
+.boundary-missing-list{display:flex;gap:7px;flex-wrap:wrap}
