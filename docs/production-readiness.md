@@ -37,6 +37,7 @@ Advanced capability gates include:
 - verified catchments
 - Vercel Blob photo storage
 - Copernicus OAuth processing credentials
+- at least one reviewed/enabled local-language translation pack
 
 Advanced gates do not block the initial pilot launch, but the related features should not be treated as production-ready until their gate is green.
 
@@ -108,6 +109,7 @@ When the database is available the readiness engine counts:
 - verified hazard zones
 - verified catchments
 - active administrators
+- reviewed/enabled local-language translation packs when migration 015 is present
 
 These are evidence checks, not claims that the data itself is scientifically correct. Dataset verification and field acceptance still matter.
 
