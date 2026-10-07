@@ -72,7 +72,7 @@ export default function RemoteSensingResultDrawer({analysis,onClose,onUpdated}:{
               <div><span>Comparison clear-pixel coverage</span><strong>{pct(d.comparison_clear_fraction)}</strong></div>
               <div><span>Change level</span><strong>{d.change_level}</strong></div>
             </div>
-            <div className="notice">Vegetation area is estimated from clear Sentinel-2 pixels at 10 m sampling. Cloud-masked pixels are excluded rather than guessed.</div>
+            <div className="notice">Vegetation area is a coverage-normalized estimate from valid clear Sentinel-2 pixels at approximately 10 m sampling. Always interpret it together with the clear-pixel coverage shown above.</div>
           </section>
 
           <section className="drawer-section stack">
