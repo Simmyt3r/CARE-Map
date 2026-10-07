@@ -235,4 +235,4 @@ Production gate: run the migration against the real Aiven service and field-test
 - [x] Explicit distinction between territorial coverage and population served
 - [x] Regression tests for resource/scenario/radius validation
 
-**Interpretation rule:** this baseline measures land-area proximity to mapped point resources. It does not estimate population served, walking/driving time, road access, hydraulic capacity, actual service reliability or demand. Those require validated population/settlement/network data.
+**Production gate:** apply migration 008 after migration 007, then validate chosen radii and resource statuses with the GIS/M&E team before using coverage percentages in management reporting.\n\n**Interpretation rule:** this baseline measures land-area proximity to mapped point resources. It does not estimate population served, walking/driving time, road access, hydraulic capacity, actual service reliability or demand. Those require validated population/settlement/network data.
