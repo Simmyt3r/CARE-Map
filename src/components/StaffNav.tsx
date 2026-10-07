@@ -25,6 +25,7 @@ export default function StaffNav({role,name}:{role:string;name:string}){
       <Link href="/staff/remote-sensing">Remote Sensing</Link>
       <Link href="/staff/remote-sensing/monitoring">Monitoring</Link>
       <Link href="/staff/reports">Reports</Link>
+      <Link href="/staff/field-acceptance">Field Acceptance</Link>
       {role==="admin"&&<Link href="/staff/admin">Users</Link>}
       {role==="admin"&&<Link href="/staff/admin/governance">Governance</Link>}
       {role==="admin"&&<Link href="/staff/infrastructure">Infrastructure</Link>}
