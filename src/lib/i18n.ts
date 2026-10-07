@@ -74,6 +74,7 @@ export const englishCatalog={
   "report.submitted":"Report submitted successfully. Reference:",
 
   "common.loading":"Loading…",
+  "common.privacyNotice":"Privacy notice",
   "common.englishFallback":"English fallback"
 } as const;
 
