@@ -6,6 +6,7 @@ export default function PrivacyRequestForm(){
   const[form,setForm]=useState({requestType:"access",name:"",email:"",phone:"",description:""});
   const[reference,setReference]=useState("");
   const[message,setMessage]=useState("");
+  const[messageKind,setMessageKind]=useState<"success"|"error"|"notice">("notice");
   const[busy,setBusy]=useState(false);
   const[lookup,setLookup]=useState({reference:"",email:""});
   const[status,setStatus]=useState<any|null>(null);
@@ -13,24 +14,24 @@ export default function PrivacyRequestForm(){
   const set=(k:string,v:string)=>setForm(x=>({...x,[k]:v}));
 
   async function submit(e:React.FormEvent){
-    e.preventDefault();setBusy(true);setMessage("");setReference("");
+    e.preventDefault();setBusy(true);setMessage("");setMessageKind("notice");setReference("");
     const r=await fetch("/api/privacy/requests",{
       method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(form)
     });
     const j=await r.json().catch(()=>({}));setBusy(false);
-    if(!r.ok)return setMessage(j.error?.message||"Privacy request could not be submitted.");
+    if(!r.ok){setMessageKind("error");return setMessage(j.error?.message||"Privacy request could not be submitted.");}
     setReference(j.data.reference);
     setLookup({reference:j.data.reference,email:form.email});
-    setMessage("Privacy request submitted. Keep the reference below for status checks.");
+    setMessageKind("success");setMessage("Privacy request submitted. Keep the reference below for status checks.");
   }
 
   async function checkStatus(e:React.FormEvent){
-    e.preventDefault();setStatus(null);setMessage("");
+    e.preventDefault();setStatus(null);setMessage("");setMessageKind("notice");
     const qs=new URLSearchParams({reference:lookup.reference,email:lookup.email});
     const r=await fetch("/api/privacy/requests?"+qs);
     const j=await r.json().catch(()=>({}));
-    if(!r.ok)return setMessage(j.error?.message||"Could not check privacy request status.");
-    setStatus(j.data);
+    if(!r.ok){setMessageKind("error");return setMessage(j.error?.message||"Could not check privacy request status.");}
+    setStatus(j.data);setMessageKind("success");setMessage("Privacy request status retrieved.");
   }
 
   return <div className="grid two privacy-request-grid">
@@ -61,7 +62,7 @@ export default function PrivacyRequestForm(){
         <div><span>Target date</span><strong>{new Date(status.due_at).toLocaleDateString()}</strong></div>
         <div><span>Completed</span><strong>{status.completed_at?new Date(status.completed_at).toLocaleDateString():"—"}</strong></div>
       </div>}
-      {message&&<div className={reference?"success":"notice"}>{message}</div>}
+      {message&&<div className={messageKind}>{message}</div>}
     </form>
   </div>;
 }
