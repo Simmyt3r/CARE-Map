@@ -114,7 +114,7 @@ When Vercel Blob is configured, staff can attach JPEG, PNG, or WebP evidence ima
 
 Evidence records are stored separately from operational resource/report photos and are linked by `(run_id, check_key)`.
 
-Maximum evidence image size is 4 MB.
+Maximum evidence image size is 4 MB.\n\nThe current evidence uploader follows CARE-Map's existing public Vercel Blob pattern. Upload only redacted, non-sensitive evidence. Do not upload passwords, tokens, personal identifiers, private contact details, or confidential records.
 
 Useful evidence includes:
 
