@@ -14,6 +14,9 @@ export async function GET(){
       (l.boundary IS NOT NULL) boundary_loaded,
       CASE WHEN l.boundary IS NULL THEN NULL ELSE round((ST_Area(l.boundary::geography)/1000000.0)::numeric,2) END boundary_area_km2,
       l.boundary_source,
+      COALESCE(st.total,0)::int settlements,
+      COALESCE(st.verified,0)::int verified_settlements,
+      COALESCE(st.population_known,0)::int settlements_with_population,
       COALESCE(b.total,0)::int boreholes,
       COALESCE(b.functional,0)::int functional_boreholes,
       COALESCE(b.needs_attention,0)::int boreholes_needing_attention,
@@ -28,6 +31,12 @@ export async function GET(){
       COALESCE(sr.open_reports,0)::int spatial_open_reports,
       COALESCE(sr.critical_reports,0)::int spatial_critical_reports
     FROM lgas l
+    LEFT JOIN (
+      SELECT lga_code,count(*) total,
+        count(*) FILTER(WHERE verified) verified,
+        count(*) FILTER(WHERE population IS NOT NULL) population_known
+      FROM settlements GROUP BY lga_code
+    ) st ON st.lga_code=l.code
     LEFT JOIN (
       SELECT lga_code,count(*) total,
         count(*) FILTER(WHERE status='functional') functional,
@@ -76,6 +85,8 @@ export async function GET(){
 
   const totals=await query(`
     SELECT
+      (SELECT count(*) FROM settlements)::int settlements,
+      (SELECT count(*) FROM settlements WHERE verified)::int verified_settlements,
       (SELECT count(*) FROM boreholes)::int boreholes,
       (SELECT count(*) FROM assets)::int assets,
       (SELECT count(*) FROM forest_sites)::int forest_sites,
