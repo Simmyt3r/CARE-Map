@@ -11,6 +11,11 @@ export async function GET(){
   const session=await getSession();
   if(!isAdmin(session))return error("Administrator access required.",403,"FORBIDDEN");
 
+  const exists=await query<{present:boolean}>("SELECT to_regclass('public.translation_packs') IS NOT NULL present");
+  if(!exists.rows[0]?.present){
+    return NextResponse.json({data:[],imports:[],targets:targetLanguages,notReady:true,migration:"015_localization.sql"});
+  }
+
   const packs=await query(`
     SELECT p.language_code,p.language_name,p.native_name,p.translations,p.source,p.version,
       p.status,p.enabled,p.reviewed_at,p.updated_at,u.name reviewed_by_name
