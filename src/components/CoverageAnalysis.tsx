@@ -33,6 +33,12 @@ export default function CoverageAnalysis({lgas}:{lgas:any[]}){
     if(lga&&!boundaryLgas.some(x=>x.code===lga))setLga(boundaryLgas[0]?.code||"");
   },[boundaryLgas,lga]);
 
+  function invalidate(){
+    setResult(null);
+    setMethodology(null);
+    setMessage("");
+  }
+
   async function run(){
     if(!lga)return setMessage("Import at least one LGA boundary before running coverage analysis.");
     setBusy(true);setMessage("");
@@ -119,19 +125,19 @@ export default function CoverageAnalysis({lgas}:{lgas:any[]}){
     {!boundaryLgas.length&&<div className="notice">No LGA boundaries are loaded yet. Import approved boundaries in GIS Workbench before using territorial coverage analysis.</div>}
 
     <div className="grid four">
-      <div className="field"><label>LGA</label><select value={lga} onChange={e=>{setLga(e.target.value);setResult(null);}}>
+      <div className="field"><label>LGA</label><select value={lga} onChange={e=>{setLga(e.target.value);invalidate();}}>
         <option value="">Choose LGA</option>
         {boundaryLgas.map(x=><option key={x.code} value={x.code}>{x.name}</option>)}
       </select></div>
-      <div className="field"><label>Resource</label><select value={type} onChange={e=>{setType(e.target.value as CoverageResourceType);setResult(null);}}>
+      <div className="field"><label>Resource</label><select value={type} onChange={e=>{setType(e.target.value as CoverageResourceType);invalidate();}}>
         <option value="borehole">Boreholes</option>
         <option value="asset">Assets (all asset types)</option>
       </select></div>
-      <div className="field"><label>Scenario</label><select value={scenario} onChange={e=>{setScenario(e.target.value as CoverageScenario);setResult(null);}}>
+      <div className="field"><label>Scenario</label><select value={scenario} onChange={e=>{setScenario(e.target.value as CoverageScenario);invalidate();}}>
         <option value="functional">Functional only</option>
         <option value="non_decommissioned">Mapped footprint (non-decommissioned)</option>
       </select></div>
-      <div className="field"><label>Distance radius</label><select value={radius} onChange={e=>{setRadius(e.target.value);setResult(null);}}>
+      <div className="field"><label>Distance radius</label><select value={radius} onChange={e=>{setRadius(e.target.value);invalidate();}}>
         <option value="500">500 m</option>
         <option value="1000">1 km</option>
         <option value="2000">2 km</option>
