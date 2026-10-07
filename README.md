@@ -53,6 +53,7 @@ The repository now contains a working Next.js application and Aiven/PostGIS data
 - Automatic vegetation-loss alerts surfaced in the Operations Center
 - One-click satellite-alert field verification tasks in the normal report workflow
 - Evidence-photo capture and automatic satellite-alert closure after field verification
+- Printable Map Composer with layer toggles, LGA/risk filters, legends, feature counts, notes and GeoJSON export
 
 ### Administration
 - Role-based users: registered community, staff, admin
