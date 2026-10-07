@@ -29,7 +29,7 @@ export async function GET(){
            FROM import_jobs i LEFT JOIN users u ON u.id=i.created_by
            ORDER BY i.created_at DESC LIMIT 12`),
     query(`SELECT a.id,a.monitor_id,a.severity,a.title,a.message,a.vegetation_change_ha,a.vegetation_change_pct,
-                  a.created_at,m.name monitor_name,o.observed_for,o.clear_fraction
+                  a.created_at,m.name monitor_name,o.observed_for,o.clear_fraction,count(*) OVER()::int total_open
            FROM vegetation_alerts a
            JOIN vegetation_monitors m ON m.id=a.monitor_id
            JOIN vegetation_monitor_observations o ON o.id=a.observation_id
@@ -38,7 +38,7 @@ export async function GET(){
            LIMIT 20`)
   ]);
   return NextResponse.json({data:{
-    summary:{...summary.rows[0],open_vegetation_alerts:vegetationAlerts.rowCount||0},
+    summary:{...summary.rows[0],open_vegetation_alerts:Number(vegetationAlerts.rows[0]?.total_open||0)},
     queue:queue.rows,imports:imports.rows,vegetationAlerts:vegetationAlerts.rows
   }});
 }
