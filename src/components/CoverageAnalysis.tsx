@@ -81,6 +81,12 @@ export default function CoverageAnalysis({lgas}:{lgas:any[]}){
       geometry:result.uncovered,
       properties:{role:"uncovered_area",radiusM:result.radiusM,coveragePct:result.coveragePct}
     });
+    for(const feature of result.gaps?.features||[]){
+      features.push({
+        ...feature,
+        properties:{...feature.properties,role:"uncovered_gap"}
+      });
+    }
     for(const feature of result.resources?.features||[]){
       features.push({
         ...feature,
@@ -158,6 +164,19 @@ export default function CoverageAnalysis({lgas}:{lgas:any[]}){
     </div>}
 
     <CoverageAnalysisMap result={result}/>
+
+    {!!result?.gaps?.features?.length&&<div className="stack">
+      <div className="section-head"><div><h3>Largest uncovered gaps</h3><div className="muted">Ranked polygon gaps larger than 1,000 m². Coordinates use a representative point inside each gap.</div></div><span className="badge">{result.gaps.features.length}</span></div>
+      <div className="table-wrap"><table>
+        <thead><tr><th>Rank</th><th>Area</th><th>Latitude</th><th>Longitude</th></tr></thead>
+        <tbody>{result.gaps.features.slice(0,10).map((gap:any)=><tr key={gap.properties.rank}>
+          <td><strong>#{gap.properties.rank}</strong></td>
+          <td>{Number(gap.properties.areaKm2).toLocaleString(undefined,{maximumFractionDigits:3})} km²</td>
+          <td>{Number(gap.properties.latitude).toFixed(6)}</td>
+          <td>{Number(gap.properties.longitude).toFixed(6)}</td>
+        </tr>)}</tbody>
+      </table></div>
+    </div>}
 
     {result&&methodology&&<div className="notice">
       <strong>Interpretation:</strong> {methodology.note}
