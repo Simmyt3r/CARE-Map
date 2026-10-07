@@ -22,7 +22,8 @@ function parseDate(value:unknown){
   if(!raw)return null;
   if(!/^\d{4}-\d{2}-\d{2}$/.test(raw))return undefined;
   const d=new Date(raw+"T00:00:00Z");
-  return Number.isNaN(d.getTime())?undefined:raw;
+  if(Number.isNaN(d.getTime()))return undefined;
+  return d.toISOString().slice(0,10)===raw?raw:undefined;
 }
 
 export async function GET(request:Request){
