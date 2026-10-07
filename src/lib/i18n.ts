@@ -53,6 +53,9 @@ export const englishCatalog={
   "map.critical":"Critical",
   "map.dataError":"Map data could not be loaded.",
   "map.aria":"CARE-Map interactive intervention map",
+  "map.item":"CARE-Map item",
+  "map.risk":"Risk",
+  "map.viewRecord":"View public record",
 
   "register.title":"Community account",
   "register.subtitle":"Registration is optional. It gives you an identity for submitted reports and future tracking features.",
