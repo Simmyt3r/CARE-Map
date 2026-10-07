@@ -16,7 +16,7 @@ Staff can configure:
 
 - map title
 - subtitle
-- LGA filter
+- LGA filter with polygon zoom/highlight when boundaries are loaded
 - risk filter
 - layer visibility
 - feature labels
@@ -24,6 +24,8 @@ Staff can configure:
 
 The map includes:
 
+- optional imported LGA boundary outlines
+- selected-LGA highlight
 - north arrow
 - metric scale
 - risk legend
@@ -54,11 +56,16 @@ The export respects:
 - the data returned for the current map extent
 - the current LGA query when one is active
 
-## Current limitation
+## Spatial LGA filtering
 
-Published vegetation-change analyses currently do not store an LGA code. The public map API therefore omits those AOIs whenever an LGA filter is supplied. The Map Composer displays a notice when this combination is selected.
+When project-approved LGA polygons have been imported, the composer uses those boundaries to:
 
-A future boundary-aware implementation can spatially join change AOIs to official LGA polygons once those administrative boundaries are stored in CARE-Map.
+- zoom to the selected LGA
+- highlight the selected administrative polygon
+- include published vegetation-change AOIs that spatially intersect the selected LGA
+- draw optional LGA outlines on the printed map
+
+Vegetation-change filtering is therefore based on geometry intersection rather than requiring each analysis record to carry an LGA text field.
 
 ## Cartographic interpretation
 

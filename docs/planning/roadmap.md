@@ -191,4 +191,27 @@ Production gate: run the migration against the real Aiven service and field-test
 - [x] Responsive mobile/desktop controls
 - [x] Print-specific navigation/control suppression
 
-**Current limitation:** published vegetation-change AOIs do not yet store LGA metadata, so they are omitted when an LGA filter is active.
+**Extension completed in Phase 11:** published vegetation-change AOIs can now be filtered spatially against imported LGA polygons.
+
+
+## Phase 11 — Administrative Boundaries ✅ Baseline complete
+
+- [x] Store Benue LGA MultiPolygon boundaries in PostGIS
+- [x] GiST spatial index for LGA boundaries
+- [x] Preserve boundary source/version provenance
+- [x] Record who imported each boundary and when
+- [x] Audited GeoJSON boundary-import history
+- [x] Match common `code`, `lga_code`, `LGA_NAME`, `NAME_2` and related property schemas
+- [x] Validate Polygon/MultiPolygon geometry and repair invalid geometry before storage
+- [x] GIS Workbench boundary-import/status panel
+- [x] Show loaded vs missing boundaries for all 23 Benue LGAs
+- [x] Public-map LGA boundary overlay and selected-LGA highlight
+- [x] Zoom public map to an imported LGA polygon
+- [x] Map Composer LGA boundary layer and selected-LGA highlight
+- [x] Optional LGA boundary display in printed operational maps
+- [x] Spatially filter published vegetation-change AOIs by LGA polygon
+- [x] Calculate LGA administrative area from PostGIS geography
+- [x] Count open/critical reports physically inside each LGA boundary
+- [x] Regression tests for boundary matching and GeoJSON extents
+
+**Production gate:** apply migration 007 and import a project-approved Benue LGA boundary dataset with documented provenance. Do not treat arbitrary third-party polygons as authoritative without GIS/SPMU validation.
