@@ -215,3 +215,24 @@ Production gate: run the migration against the real Aiven service and field-test
 - [x] Regression tests for boundary matching and GeoJSON extents
 
 **Production gate:** apply migration 007 and import a project-approved Benue LGA boundary dataset with documented provenance. Do not treat arbitrary third-party polygons as authoritative without GIS/SPMU validation.
+
+
+## Phase 12 — Intervention Coverage Analysis ✅ Baseline complete
+
+- [x] Staff-only LGA territorial coverage analysis
+- [x] Functional borehole coverage scenario
+- [x] Functional asset proximity scenario
+- [x] Non-decommissioned mapped-footprint planning scenario
+- [x] Configurable 100 m–50 km radius API with 500 m–25 km UI presets
+- [x] True metre-based PostGIS geography buffers
+- [x] Clip coverage to imported LGA administrative boundaries
+- [x] Calculate covered and uncovered km²
+- [x] Calculate territorial coverage percentage
+- [x] Include qualifying resources just outside an LGA when their buffer crosses the boundary
+- [x] Separate internal resources from cross-boundary supporting resources
+- [x] Covered/uncovered map visualization
+- [x] GeoJSON export of LGA boundary, coverage area, uncovered gaps and contributing resources
+- [x] Explicit distinction between territorial coverage and population served
+- [x] Regression tests for resource/scenario/radius validation
+
+**Interpretation rule:** this baseline measures land-area proximity to mapped point resources. It does not estimate population served, walking/driving time, road access, hydraulic capacity, actual service reliability or demand. Those require validated population/settlement/network data.
