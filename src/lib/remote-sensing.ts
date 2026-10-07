@@ -160,8 +160,8 @@ export async function fetchNdviStats(aoi:GeoPolygon,date:string,windowDays:numbe
       aggregation:{
         timeRange:range,
         aggregationInterval:{of:"P"+windowDays+"D"},
-        resx:10,
-        resy:10,
+        resx:0.00009,
+        resy:0.00009,
         evalscript:statsEvalscript(threshold)
       }
     }),
@@ -178,7 +178,7 @@ export async function fetchNdviStats(aoi:GeoPolygon,date:string,windowDays:numbe
   const sampleCount=Number(ndviStats?.sampleCount||0);
   const noDataCount=Number(ndviStats?.noDataCount||0);
   const validPixels=Math.max(0,sampleCount-noDataCount);
-  const geometryPixels=Number(json?.geometryPixelCount||sampleCount||0);
+  const geometryPixels=Number(entry?.geometryPixelCount||json?.geometryPixelCount||sampleCount||0);
   const clearFraction=geometryPixels>0?Math.max(0,Math.min(1,validPixels/geometryPixels)):null;
   const vegetationFraction=vegetationStats&&Number.isFinite(Number(vegetationStats.mean))?Number(vegetationStats.mean):null;
   const vegetationHa=vegetationFraction==null?null:aoiAreaHa*(clearFraction??1)*vegetationFraction;
