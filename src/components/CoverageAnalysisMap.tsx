@@ -44,6 +44,7 @@ export default function CoverageAnalysisMap({result}:{result:any|null}){
       map.addSource("coverage-covered",{type:"geojson",data:coveredData as any});
       map.addSource("coverage-uncovered",{type:"geojson",data:uncoveredData as any});
       map.addSource("coverage-resources",{type:"geojson",data:result.resources as any});
+      map.addSource("coverage-gaps",{type:"geojson",data:result.gaps as any});
 
       map.addLayer({
         id:"coverage-uncovered-fill",
@@ -56,6 +57,23 @@ export default function CoverageAnalysisMap({result}:{result:any|null}){
         type:"fill",
         source:"coverage-covered",
         paint:{"fill-color":"#2f855a","fill-opacity":0.30}
+      });
+      map.addLayer({
+        id:"coverage-gap-outlines",
+        type:"line",
+        source:"coverage-gaps",
+        paint:{"line-color":"#8f1f1f","line-width":1.5,"line-dasharray":[3,2]}
+      });
+      map.addLayer({
+        id:"coverage-gap-labels",
+        type:"symbol",
+        source:"coverage-gaps",
+        layout:{
+          "text-field":["concat","#",["to-string",["get","rank"]]],
+          "text-size":12,
+          "text-allow-overlap":false
+        },
+        paint:{"text-color":"#8f1f1f","text-halo-color":"#ffffff","text-halo-width":1.5}
       });
       map.addLayer({
         id:"coverage-boundary-line",
