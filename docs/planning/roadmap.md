@@ -267,3 +267,28 @@ Production gate: run the migration against the real Aiven service and field-test
 **Production gate:** apply migration 009 and import a GIS/M&E-approved settlement inventory. Keep imported records unverified until source, coordinates and LGA assignment have been reviewed. Population-based statistics should not be published without documented population provenance and acceptable completeness.
 
 **Interpretation rule:** settlement access percentage is a count of mapped/verified settlements within a distance threshold. Known-population access percentage uses only settlement records with sourced population values; it is not automatically the population access rate for the whole LGA.
+
+
+## Phase 14 — River Corridor Exposure ✅ Baseline complete
+
+- [x] Staff-only verified-river proximity screening
+- [x] Select all verified rivers in an LGA or one intersecting verified river
+- [x] Configurable 50 m–20 km corridor radius API with practical UI presets
+- [x] True metre-based river and point distances using PostGIS geography
+- [x] Clip river corridor geometry to imported LGA boundaries
+- [x] Calculate verified river length analyzed
+- [x] Calculate river-corridor area
+- [x] Identify verified settlements inside the corridor
+- [x] Identify non-decommissioned boreholes and assets inside the corridor
+- [x] Identify open reports inside the corridor
+- [x] Preserve sourced settlement population when available
+- [x] Distance-rank exposed mapped features
+- [x] Map verified river lines, corridor geometry and exposed features
+- [x] GeoJSON export of boundary, corridor, rivers and exposed features
+- [x] Geography indexes for verified river and open-report proximity queries
+- [x] Explicit distinction between river proximity and flood/erosion hazard
+- [x] Regression tests for corridor-radius validation and scope labels
+
+**Production gate:** apply migration 010 after migrations 007–009 and confirm the mapped river geometries are verified by the GIS team before using exposure counts in operations or reporting.
+
+**Interpretation rule:** river proximity is a screening variable, not proof of flood or erosion hazard. Hazard conclusions require terrain/elevation, drainage, rainfall, historical inundation/erosion evidence, and field verification.
