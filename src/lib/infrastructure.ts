@@ -33,6 +33,11 @@ export type DataReadiness={
   verifiedCatchments:number;
   pilotAcceptanceTested:number;
   pilotAcceptancePassed:number;
+  privacyTablesReady:boolean;
+  openPrivacyRequests:number;
+  overduePrivacyRequests:number;
+  openPrivacyBreaches:number;
+  overdueNdpcBreachNotifications:number;
   admins:number;
 };
 
@@ -192,7 +197,8 @@ export async function currentInfrastructureSnapshot(){
   };
   let data:DataReadiness={
     lgaBoundaries:0,totalLgas:23,pilotBoundaries:0,pilotLgas:14,verifiedRivers:0,verifiedSettlements:0,
-    boreholes:0,assets:0,verifiedHazardZones:0,verifiedCatchments:0,pilotAcceptanceTested:0,pilotAcceptancePassed:0,admins:0
+    boreholes:0,assets:0,verifiedHazardZones:0,verifiedCatchments:0,pilotAcceptanceTested:0,pilotAcceptancePassed:0,
+    privacyTablesReady:false,openPrivacyRequests:0,overduePrivacyRequests:0,openPrivacyBreaches:0,overdueNdpcBreachNotifications:0,admins:0
   };
 
   if(databaseUrl){
@@ -209,7 +215,7 @@ export async function currentInfrastructureSnapshot(){
 
         const tableCheck=await client.query<{
           lgas:boolean;lgaBoundary:boolean;rivers:boolean;settlements:boolean;boreholes:boolean;assets:boolean;
-          hazards:boolean;catchments:boolean;acceptance:boolean;users:boolean;
+          hazards:boolean;catchments:boolean;acceptance:boolean;privacyRequests:boolean;privacyBreaches:boolean;users:boolean;
         }>(`
           SELECT
             to_regclass('public.lgas') IS NOT NULL lgas,
@@ -224,6 +230,8 @@ export async function currentInfrastructureSnapshot(){
             to_regclass('public.hazard_zones') IS NOT NULL hazards,
             to_regclass('public.catchments') IS NOT NULL catchments,
             to_regclass('public.field_acceptance_runs') IS NOT NULL acceptance,
+            to_regclass('public.data_subject_requests') IS NOT NULL "privacyRequests",
+            to_regclass('public.privacy_breach_register') IS NOT NULL "privacyBreaches",
             to_regclass('public.users') IS NOT NULL users
         `);
         const t=tableCheck.rows[0];
@@ -258,6 +266,11 @@ export async function currentInfrastructureSnapshot(){
             ) latest
             WHERE result='pass'
           `):0,
+          privacyTablesReady:Boolean(t?.privacyRequests&&t?.privacyBreaches),
+          openPrivacyRequests:t?.privacyRequests?await count("SELECT count(*) n FROM data_subject_requests WHERE status NOT IN ('completed','rejected')"):0,
+          overduePrivacyRequests:t?.privacyRequests?await count("SELECT count(*) n FROM data_subject_requests WHERE status NOT IN ('completed','rejected') AND due_at<now()"):0,
+          openPrivacyBreaches:t?.privacyBreaches?await count("SELECT count(*) n FROM privacy_breach_register WHERE status<>'closed'"):0,
+          overdueNdpcBreachNotifications:t?.privacyBreaches?await count("SELECT count(*) n FROM privacy_breach_register WHERE ndpc_notification_required=TRUE AND ndpc_notified_at IS NULL AND detected_at<now()-INTERVAL '72 hours'"):0,
           admins:t?.users?await count("SELECT count(*) n FROM users WHERE role='admin' AND active=TRUE AND deleted_at IS NULL"):0
         };
       }catch{
@@ -349,6 +362,32 @@ export async function currentInfrastructureSnapshot(){
       required:true,
       detail:data.pilotAcceptancePassed+" of "+data.pilotLgas+" pilot LGAs have a passing latest completed field acceptance run; "+data.pilotAcceptanceTested+" have any completed run.",
       action:"Run the Field Acceptance Test Center on target devices in each pilot LGA and resolve every required failed/blocked check."
+    },
+    {
+      id:"privacy-contact",label:"Published privacy controller contact",category:"security",
+      state:process.env.DATA_CONTROLLER_NAME&&process.env.DATA_CONTROLLER_ADDRESS&&process.env.PRIVACY_CONTACT_EMAIL&&process.env.PRIVACY_LAWFUL_BASIS_REPORTS&&process.env.PRIVACY_LAWFUL_BASIS_ACCOUNTS?"ready":"blocked",required:true,
+      detail:process.env.DATA_CONTROLLER_NAME&&process.env.DATA_CONTROLLER_ADDRESS&&process.env.PRIVACY_CONTACT_EMAIL&&process.env.PRIVACY_LAWFUL_BASIS_REPORTS&&process.env.PRIVACY_LAWFUL_BASIS_ACCOUNTS
+        ?"Controller identity, address, privacy contact and lawful-basis wording are configured."
+        :"Controller/contact and/or lawful-basis privacy settings are incomplete.",
+      action:"Configure DATA_CONTROLLER_NAME, DATA_CONTROLLER_ADDRESS, PRIVACY_CONTACT_EMAIL, PRIVACY_LAWFUL_BASIS_REPORTS and PRIVACY_LAWFUL_BASIS_ACCOUNTS after formal review."
+    },
+    {
+      id:"privacy-legal-review",label:"Formal NDPA/privacy legal review",category:"operations",
+      state:process.env.PRIVACY_LEGAL_REVIEWED_AT&&process.env.PRIVACY_REVIEWER?"ready":"blocked",required:true,
+      detail:process.env.PRIVACY_LEGAL_REVIEWED_AT&&process.env.PRIVACY_REVIEWER
+        ?"Formal review recorded: "+process.env.PRIVACY_LEGAL_REVIEWED_AT+" · "+process.env.PRIVACY_REVIEWER
+        :"Formal legal/privacy review has not been recorded.",
+      action:"Complete the NDPA/GAID review with the responsible ACReSAL privacy/legal function or qualified Nigerian data-protection professional, then set PRIVACY_LEGAL_REVIEWED_AT and PRIVACY_REVIEWER."
+    },
+    {
+      id:"privacy-operations",label:"Privacy rights and breach deadlines",category:"operations",
+      state:!data.privacyTablesReady?"blocked":data.overduePrivacyRequests>0||data.overdueNdpcBreachNotifications>0?"blocked":"ready",required:true,
+      detail:!data.privacyTablesReady
+        ?"Privacy governance tables are not available."
+        :data.overduePrivacyRequests+" overdue rights request(s); "+data.overdueNdpcBreachNotifications+" overdue NDPC breach notification clock(s).",
+      action:!data.privacyTablesReady
+        ?"Apply migration 014."
+        :"Open Admin → Privacy and resolve overdue rights requests or breach-notification actions."
     },
     {
       id:"settlements",label:"Verified settlement inventory",category:"data",

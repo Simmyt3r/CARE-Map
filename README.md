@@ -24,6 +24,8 @@ The repository now contains a working Next.js application and Aiven/PostGIS data
 - Stable public detail page for every approved mapped resource
 - Printable QR identification labels for field assets
 - QR scan-to-report workflow tied to the exact mapped resource
+- Public privacy notice, privacy-rights request/status workflow and explicit optional-contact consent
+- Community self-service data export and account-identity anonymization
 
 ### Staff
 - Secure staff/admin authentication
@@ -72,6 +74,7 @@ The repository now contains a working Next.js application and Aiven/PostGIS data
 - Audit logging for key data changes
 - Scheduled risk refresh and two-year report anonymization hook
 - Production Readiness Center with live launch gates, migration integrity checks, pilot/statewide data readiness and remediation guidance
+- Admin Privacy & Data Governance Center with rights-request queue, 30-day targets, breach register and 72-hour notification tracking
 
 ## Technology
 
@@ -100,7 +103,7 @@ Architecture decision: docs/architecture/decisions/0003-adopt-aiven-postgis-next
 
 ## Aiven migration
 
-db/migrations/001_init.sql enables PostGIS, pgcrypto, and citext; creates the operational schema; creates GIST spatial indexes; and seeds all 23 Benue LGAs with the 14 initial CARE-Map pilot LGAs marked. db/migrations/002_field_operations.sql adds GPS quality/provenance, inspections, import auditing, and GIS quality views. db/migrations/003_operations_governance.sql adds report ownership, priority/deadlines, status history, account governance metadata, and supporting indexes. db/migrations/004_remote_sensing.sql adds persisted Sentinel-2 vegetation analyses and spatial indexes. db/migrations/005_vegetation_monitoring.sql adds recurring vegetation watchlists, observation history, and acknowledgeable satellite alerts. db/migrations/006_satellite_field_verification.sql links satellite alerts to field-verification reports and records report origin. db/migrations/007_lga_boundaries.sql adds authoritative LGA polygons, source provenance, spatial indexes and boundary-import audit history. db/migrations/008_coverage_geography_indexes.sql adds functional GiST geography indexes for metre-based borehole and asset proximity analysis. db/migrations/009_settlements_access.sql adds verified settlement/community points, population provenance safeguards, spatial indexes and settlement-import audit history. db/migrations/010_river_corridor_indexes.sql adds geography indexes for verified river corridors and open-report proximity queries. db/migrations/011_hazard_zones.sql adds verified hazard polygons, provenance/verification metadata, spatial indexes and audited hazard imports. db/migrations/012_catchments.sql adds verified catchment/landscape polygons, optional hierarchy, provenance metadata, spatial indexes and audited imports. db/migrations/013_field_acceptance.sql adds field acceptance runs, canonical workflow checks and dedicated evidence records. Migration execution is tracked separately in care_map_schema_migrations using filename, SHA-256 checksum and applied timestamp.
+db/migrations/001_init.sql enables PostGIS, pgcrypto, and citext; creates the operational schema; creates GIST spatial indexes; and seeds all 23 Benue LGAs with the 14 initial CARE-Map pilot LGAs marked. db/migrations/002_field_operations.sql adds GPS quality/provenance, inspections, import auditing, and GIS quality views. db/migrations/003_operations_governance.sql adds report ownership, priority/deadlines, status history, account governance metadata, and supporting indexes. db/migrations/004_remote_sensing.sql adds persisted Sentinel-2 vegetation analyses and spatial indexes. db/migrations/005_vegetation_monitoring.sql adds recurring vegetation watchlists, observation history, and acknowledgeable satellite alerts. db/migrations/006_satellite_field_verification.sql links satellite alerts to field-verification reports and records report origin. db/migrations/007_lga_boundaries.sql adds authoritative LGA polygons, source provenance, spatial indexes and boundary-import audit history. db/migrations/008_coverage_geography_indexes.sql adds functional GiST geography indexes for metre-based borehole and asset proximity analysis. db/migrations/009_settlements_access.sql adds verified settlement/community points, population provenance safeguards, spatial indexes and settlement-import audit history. db/migrations/010_river_corridor_indexes.sql adds geography indexes for verified river corridors and open-report proximity queries. db/migrations/011_hazard_zones.sql adds verified hazard polygons, provenance/verification metadata, spatial indexes and audited hazard imports. db/migrations/012_catchments.sql adds verified catchment/landscape polygons, optional hierarchy, provenance metadata, spatial indexes and audited imports. db/migrations/013_field_acceptance.sql adds field acceptance runs, canonical workflow checks and dedicated evidence records. db/migrations/014_privacy_governance.sql adds privacy-notice evidence, data-subject rights requests, and the breach-response register. Migration execution is tracked separately in care_map_schema_migrations using filename, SHA-256 checksum and applied timestamp.
 
 ## Environment variables
 
@@ -118,6 +121,13 @@ db/migrations/001_init.sql enables PostGIS, pgcrypto, and citext; creates the op
 | CDSE_TOKEN_URL | Optional Copernicus OAuth token endpoint override |
 | CDSE_SH_BASE_URL | Optional Copernicus Sentinel Hub API base URL override |
 | EARTH_SEARCH_STAC_URL | Optional public Sentinel-2 STAC catalog override |
+| DATA_CONTROLLER_NAME | Final legally reviewed CARE-Map controller identity |
+| DATA_CONTROLLER_ADDRESS | Controller official address |
+| PRIVACY_CONTACT_EMAIL | Public privacy / rights contact |
+| PRIVACY_LAWFUL_BASIS_REPORTS | Legally reviewed lawful-basis wording for core report processing |
+| PRIVACY_LAWFUL_BASIS_ACCOUNTS | Legally reviewed lawful-basis wording for community-account processing |
+| PRIVACY_LEGAL_REVIEWED_AT | Date formal privacy/legal review was completed |
+| PRIVACY_REVIEWER | Reviewer / DPO / DPCO / legal function that completed the review |
 
 Never expose database or session secrets through NEXT_PUBLIC variables.
 
@@ -172,11 +182,18 @@ Never expose database or session secrets through NEXT_PUBLIC variables.
 - GET/PATCH /api/field-acceptance/:id
 - GET/POST /api/field-acceptance/:id/evidence
 - GET /api/admin/readiness
+- POST/GET /api/privacy/requests
+- GET /api/privacy/me/export
+- POST /api/privacy/me/delete
+- GET /api/admin/privacy/requests
+- PATCH /api/admin/privacy/requests/:id
+- GET/POST /api/admin/privacy/breaches
+- PATCH /api/admin/privacy/breaches/:id
 - GET /api/health
 
 ## Documentation
 
-See docs/planning, docs/architecture, docs/design, docs/IMPLEMENTATION.md, docs/production-readiness.md, and docs/field-acceptance.md.
+See docs/planning, docs/architecture, docs/design, docs/IMPLEMENTATION.md, docs/production-readiness.md, docs/field-acceptance.md, and docs/planning/data-privacy.md.
 
 ## Production status
 

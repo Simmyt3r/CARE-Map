@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import {useEffect,useState} from "react";
 
 const QUEUE_KEY="caremap_report_queue_v1";
@@ -6,6 +7,7 @@ type ReportPayload={
   type:string;reporterName:string|null;reporterContact:string|null;description:string;
   latitude:number;longitude:number;gpsAccuracy:number|null;capturedAt:string|null;captureSource:"manual"|"device_gps";
   relatedEntityType:"borehole"|"asset"|"forest_site"|"river"|null;relatedEntityId:string|null;
+  privacyAcknowledged:true;optionalContactConsent:boolean;
 };
 type Queued={id:string;payload:ReportPayload;queuedAt:string};
 
@@ -17,6 +19,8 @@ function writeQueue(items:Queued[]){localStorage.setItem(QUEUE_KEY,JSON.stringif
 export default function ReportForm({relatedEntityType=null,relatedEntityId=null,relatedName="",initialLatitude="",initialLongitude=""}:{relatedEntityType?:"borehole"|"asset"|"forest_site"|"river"|null;relatedEntityId?:string|null;relatedName?:string;initialLatitude?:string;initialLongitude?:string}){
   const[form,setForm]=useState({type:"problem_report",reporterName:"",reporterContact:"",description:"",latitude:initialLatitude,longitude:initialLongitude,gpsAccuracy:"",capturedAt:"",captureSource:"manual" as "manual"|"device_gps"});
   const[message,setMessage]=useState("");
+  const[privacyAcknowledged,setPrivacyAcknowledged]=useState(false);
+  const[optionalContactConsent,setOptionalContactConsent]=useState(false);
   const[busy,setBusy]=useState(false);
   const[queued,setQueued]=useState(0);
   const set=(k:string,v:string)=>setForm(x=>({...x,[k]:v}));
@@ -80,7 +84,9 @@ export default function ReportForm({relatedEntityType=null,relatedEntityId=null,
       capturedAt:form.capturedAt||null,
       captureSource:form.captureSource,
       relatedEntityType:relatedEntityType||null,
-      relatedEntityId:relatedEntityId||null
+      relatedEntityId:relatedEntityId||null,
+      privacyAcknowledged:true,
+      optionalContactConsent
     };
   }
 
@@ -95,6 +101,8 @@ export default function ReportForm({relatedEntityType=null,relatedEntityId=null,
 
   async function submit(e:React.FormEvent){
     e.preventDefault();setBusy(true);setMessage("");
+    if(!privacyAcknowledged){setBusy(false);return setMessage("Read and acknowledge the privacy notice before submitting.");}
+    if((form.reporterName||form.reporterContact)&&!optionalContactConsent){setBusy(false);return setMessage("Consent is required if you choose to provide your name or contact details.");}
     const data=payload();
     if(!navigator.onLine){queueOffline(data);setBusy(false);return;}
     try{
@@ -117,13 +125,15 @@ export default function ReportForm({relatedEntityType=null,relatedEntityId=null,
       <div className="field"><label>Your name (optional)</label><input value={form.reporterName} onChange={e=>set("reporterName",e.target.value)}/></div>
     </div>
     <div className="field"><label>Contact (optional)</label><input value={form.reporterContact} onChange={e=>set("reporterContact",e.target.value)} placeholder="Phone or email"/></div>
+    {(form.reporterName||form.reporterContact)&&<label className="check-field privacy-check"><input type="checkbox" checked={optionalContactConsent} onChange={e=>setOptionalContactConsent(e.target.checked)}/><span>I consent to CARE-Map storing the optional name/contact details I provided so staff can follow up on this report. I can later withdraw this consent or request erasure.</span></label>}
     <div className="field"><label>Description</label><textarea required minLength={10} value={form.description} onChange={e=>set("description",e.target.value)} placeholder="Describe what you observed, nearby landmarks, severity, or local name."/></div>
     <div className="grid three">
       <div className="field"><label>Latitude</label><input required inputMode="decimal" value={form.latitude} onChange={e=>manualCoordinate("latitude",e.target.value)} placeholder="7.7304"/></div>
       <div className="field"><label>Longitude</label><input required inputMode="decimal" value={form.longitude} onChange={e=>manualCoordinate("longitude",e.target.value)} placeholder="8.5361"/></div>
       <div className="field"><label>GPS accuracy</label><input readOnly value={form.gpsAccuracy?("±"+form.gpsAccuracy+" m"):"Manual / unknown"}/></div>
     </div>
-    <div className="actions"><button type="button" className="btn" onClick={locate}>Use my current GPS</button><button className="btn primary" disabled={busy}>{busy?"Submitting…":"Submit report"}</button></div>
+    <label className="check-field privacy-check"><input type="checkbox" required checked={privacyAcknowledged} onChange={e=>setPrivacyAcknowledged(e.target.checked)}/><span>I have read the <Link href="/privacy" target="_blank">CARE-Map privacy notice</Link> and understand that the report description and location will be processed for project monitoring and response.</span></label>
+    <div className="actions"><button type="button" className="btn" onClick={locate}>Use my current GPS</button><button className="btn primary" disabled={busy||!privacyAcknowledged||Boolean((form.reporterName||form.reporterContact)&&!optionalContactConsent)}>{busy?"Submitting…":"Submit report"}</button></div>
     {message&&<div className={message.startsWith("Report submitted")||message.includes("submitted after")?"success":"notice"}>{message}</div>}
   </form>;
 }

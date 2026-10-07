@@ -65,6 +65,13 @@ export default function InfrastructurePanel({snapshot}:{snapshot:Snapshot}){
   const[blobToken,setBlobToken]=useState("");
   const[cdseClientId,setCdseClientId]=useState("");
   const[cdseClientSecret,setCdseClientSecret]=useState("");
+  const[dataControllerName,setDataControllerName]=useState("");
+  const[dataControllerAddress,setDataControllerAddress]=useState("");
+  const[privacyContactEmail,setPrivacyContactEmail]=useState("");
+  const[privacyReportsBasis,setPrivacyReportsBasis]=useState("");
+  const[privacyAccountsBasis,setPrivacyAccountsBasis]=useState("");
+  const[privacyLegalReviewedAt,setPrivacyLegalReviewedAt]=useState("");
+  const[privacyReviewer,setPrivacyReviewer]=useState("");
   const[adminName,setAdminName]=useState("CARE-Map Administrator");
   const[adminEmail,setAdminEmail]=useState("");
   const[adminPassword,setAdminPassword]=useState("");
@@ -80,10 +87,17 @@ export default function InfrastructurePanel({snapshot}:{snapshot:Snapshot}){
     if(blobToken)lines.push('BLOB_READ_WRITE_TOKEN="'+escapeEnv(blobToken)+'"');
     if(cdseClientId)lines.push('CDSE_CLIENT_ID="'+escapeEnv(cdseClientId)+'"');
     if(cdseClientSecret)lines.push('CDSE_CLIENT_SECRET="'+escapeEnv(cdseClientSecret)+'"');
+    if(dataControllerName)lines.push('DATA_CONTROLLER_NAME="'+escapeEnv(dataControllerName)+'"');
+    if(dataControllerAddress)lines.push('DATA_CONTROLLER_ADDRESS="'+escapeEnv(dataControllerAddress)+'"');
+    if(privacyContactEmail)lines.push('PRIVACY_CONTACT_EMAIL="'+escapeEnv(privacyContactEmail)+'"');
+    if(privacyReportsBasis)lines.push('PRIVACY_LAWFUL_BASIS_REPORTS="'+escapeEnv(privacyReportsBasis)+'"');
+    if(privacyAccountsBasis)lines.push('PRIVACY_LAWFUL_BASIS_ACCOUNTS="'+escapeEnv(privacyAccountsBasis)+'"');
+    if(privacyLegalReviewedAt)lines.push('PRIVACY_LEGAL_REVIEWED_AT="'+escapeEnv(privacyLegalReviewedAt)+'"');
+    if(privacyReviewer)lines.push('PRIVACY_REVIEWER="'+escapeEnv(privacyReviewer)+'"');
     if(adminEmail)lines.push('ADMIN_EMAIL="'+escapeEnv(adminEmail)+'"');
     if(adminPassword)lines.push('ADMIN_PASSWORD="'+escapeEnv(adminPassword)+'"');
     return lines.join("\n");
-  },[databaseUrl,caCert,sessionSecret,cronSecret,blobToken,cdseClientId,cdseClientSecret,adminEmail,adminPassword]);
+  },[databaseUrl,caCert,sessionSecret,cronSecret,blobToken,cdseClientId,cdseClientSecret,dataControllerName,dataControllerAddress,privacyContactEmail,privacyReportsBasis,privacyAccountsBasis,privacyLegalReviewedAt,privacyReviewer,adminEmail,adminPassword]);
 
   const required=snapshot.readinessItems.filter(x=>x.required);
   const optional=snapshot.readinessItems.filter(x=>!x.required);
@@ -185,7 +199,25 @@ export default function InfrastructurePanel({snapshot}:{snapshot:Snapshot}){
     </section>
 
     <section className="card stack">
-      <div><h2>4. Administrator bootstrap</h2><div className="muted">Create the first administrator or rotate its password directly in the selected Aiven database.</div></div>
+      <div><h2>4. Privacy & legal launch settings</h2><div className="muted">Enter the final wording only after the responsible privacy/legal reviewer has confirmed the controller identity and lawful bases.</div></div>
+      <div className="grid two">
+        <div className="field"><label>DATA_CONTROLLER_NAME</label><input value={dataControllerName} onChange={e=>setDataControllerName(e.target.value)} placeholder="Final legal identity of the CARE-Map controller"/></div>
+        <div className="field"><label>PRIVACY_CONTACT_EMAIL</label><input type="email" value={privacyContactEmail} onChange={e=>setPrivacyContactEmail(e.target.value)} placeholder="privacy@example.gov.ng"/></div>
+      </div>
+      <div className="field"><label>DATA_CONTROLLER_ADDRESS</label><input value={dataControllerAddress} onChange={e=>setDataControllerAddress(e.target.value)} placeholder="Official address"/></div>
+      <div className="grid two">
+        <div className="field"><label>PRIVACY_LAWFUL_BASIS_REPORTS</label><textarea value={privacyReportsBasis} onChange={e=>setPrivacyReportsBasis(e.target.value)} placeholder="Legally reviewed basis for core community-report processing"/></div>
+        <div className="field"><label>PRIVACY_LAWFUL_BASIS_ACCOUNTS</label><textarea value={privacyAccountsBasis} onChange={e=>setPrivacyAccountsBasis(e.target.value)} placeholder="Legally reviewed basis for community-account processing"/></div>
+      </div>
+      <div className="grid two">
+        <div className="field"><label>PRIVACY_LEGAL_REVIEWED_AT</label><input type="date" value={privacyLegalReviewedAt} onChange={e=>setPrivacyLegalReviewedAt(e.target.value)}/></div>
+        <div className="field"><label>PRIVACY_REVIEWER</label><input value={privacyReviewer} onChange={e=>setPrivacyReviewer(e.target.value)} placeholder="Reviewer / DPO / DPCO / legal function"/></div>
+      </div>
+      <div className="notice">Do not fill the review fields merely to turn the dashboard green. They are an attestation that the privacy notice, processing purposes, lawful bases, retention, processors/transfers, rights workflow, breach process and DPIA need have actually been reviewed.</div>
+    </section>
+
+    <section className="card stack">
+      <div><h2>5. Administrator bootstrap</h2><div className="muted">Create the first administrator or rotate its password directly in the selected Aiven database.</div></div>
       <div className="grid two">
         <div className="field"><label>Administrator name</label><input value={adminName} onChange={e=>setAdminName(e.target.value)}/></div>
         <div className="field"><label>Administrator email</label><input type="email" value={adminEmail} onChange={e=>setAdminEmail(e.target.value)}/></div>
@@ -195,7 +227,7 @@ export default function InfrastructurePanel({snapshot}:{snapshot:Snapshot}){
     </section>
 
     <section className="card stack">
-      <div><h2>5. Vercel environment bundle</h2><div className="muted">Copy this into Vercel Project Settings → Environment Variables. Use Secret type for every value here. Redeploy after changing environment variables.</div></div>
+      <div><h2>6. Vercel environment bundle</h2><div className="muted">Copy this into Vercel Project Settings → Environment Variables. Use Secret type for every value here. Redeploy after changing environment variables.</div></div>
       <textarea className="env-preview" readOnly value={envBundle} placeholder="Complete the fields above to generate the environment bundle."/>
       <div className="actions">
         <button className="btn primary" disabled={!envBundle} onClick={()=>copy(envBundle)}>Copy environment bundle</button>
@@ -204,14 +236,15 @@ export default function InfrastructurePanel({snapshot}:{snapshot:Snapshot}){
     </section>
 
     <section className="card stack">
-      <div><h2>6. Launch sequence</h2><div className="muted">Do these in order. The readiness score will change only after the server/database actually reflect the configuration.</div></div>
+      <div><h2>7. Launch sequence</h2><div className="muted">Do these in order. The readiness score will change only after the server/database actually reflect the configuration.</div></div>
       <div className="checklist">
         <div><span>1</span>Configure and test the Aiven connection.</div>
         <div><span>2</span>Initialize or upgrade PostGIS and record every migration checksum.</div>
         <div><span>3</span>Create the administrator and configure SESSION_SECRET / CRON_SECRET.</div>
         <div><span>4</span>Import approved boundaries for every pilot LGA and baseline intervention coordinates.</div>
-        <div><span>5</span>Configure photo storage and Copernicus credentials when those advanced workflows are required.</div>
-        <div><span>6</span>Redeploy, recheck readiness, then field-test GPS/report workflows before public launch.</div>
+        <div><span>5</span>Complete privacy/legal review, configure the final controller/contact/lawful-basis settings, and apply migration 014.</div>
+        <div><span>6</span>Configure photo storage and Copernicus credentials when those advanced workflows are required.</div>
+        <div><span>7</span>Redeploy, recheck readiness, then complete field acceptance before public launch.</div>
       </div>
     </section>
 

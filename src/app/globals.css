@@ -309,3 +309,20 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:
 @media(max-width:1000px){.field-acceptance-stats{grid-template-columns:repeat(3,minmax(0,1fr))}.acceptance-evidence-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:700px){.field-acceptance-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.acceptance-check-head{display:grid}.acceptance-evidence-grid{grid-template-columns:1fr}}
 @media(max-width:480px){.field-acceptance-stats{grid-template-columns:1fr}.acceptance-status-buttons .btn{flex:1 1 42%}}
+
+.privacy-page p{line-height:1.65}
+.privacy-check{align-items:flex-start}
+.privacy-check input{margin-top:3px}
+.privacy-request-grid{align-items:start}
+.privacy-danger{padding:14px;border:1px solid #efcaca;border-radius:12px;background:#fffafa}
+.privacy-danger p{margin:6px 0 12px;color:var(--muted);font-size:13px}
+.btn.danger{border-color:#d9a6a6;background:#fff1f1;color:#9b1c1c}
+.btn.danger:hover{background:#fbe4e4}
+.privacy-governance-stats{grid-template-columns:repeat(4,minmax(0,1fr))}
+.privacy-case-editor{padding:12px 0 2px;min-width:min(520px,70vw)}
+.privacy-case-editor textarea{min-height:90px}
+.privacy-checklist{grid-template-columns:repeat(2,minmax(0,1fr))}
+.compact-actions{margin-top:0;gap:5px}
+.success-inline{color:#1f6b3b;font-weight:800}
+@media(max-width:900px){.privacy-governance-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.privacy-checklist{grid-template-columns:1fr}}
+@media(max-width:560px){.privacy-governance-stats{grid-template-columns:1fr}.privacy-request-grid{grid-template-columns:1fr}.privacy-case-editor{min-width:0;width:100%}}
