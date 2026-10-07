@@ -3,7 +3,6 @@ import {getSession,isStaff} from "@/lib/auth";
 import {clientIp,error,rateLimit} from "@/lib/http";
 import {reportSchema} from "@/lib/validators";
 import {pool,query} from "@/lib/db";
-import {PRIVACY_NOTICE_VERSION} from "@/lib/privacy";
 
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
@@ -36,12 +35,12 @@ export async function POST(request:Request){
     );
     await client.query(
       "INSERT INTO privacy_notice_acceptances(user_id,report_id,context,notice_version) VALUES($1,$2,'report_submission',$3)",
-      [session?.sub||null,reportId,PRIVACY_NOTICE_VERSION]
+      [session?.sub||null,reportId,d.privacyNoticeVersion]
     );
     if(optionalIdentity){
       await client.query(
         "INSERT INTO privacy_notice_acceptances(user_id,report_id,context,notice_version,optional_contact_consent) VALUES($1,$2,'optional_contact',$3,TRUE)",
-        [session?.sub||null,reportId,PRIVACY_NOTICE_VERSION]
+        [session?.sub||null,reportId,d.privacyNoticeVersion]
       );
     }
     await client.query("COMMIT");
