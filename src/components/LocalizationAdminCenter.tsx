@@ -23,6 +23,7 @@ export default function LocalizationAdminCenter(){
   const[fileName,setFileName]=useState("");
   const[translations,setTranslations]=useState<Record<string,unknown>>({});
   const[message,setMessage]=useState("");
+  const[notReady,setNotReady]=useState(false);
   const[busy,setBusy]=useState(false);
 
   const load=useCallback(async()=>{
@@ -31,6 +32,7 @@ export default function LocalizationAdminCenter(){
     if(!r.ok)return setMessage(j.error?.message||"Could not load translation packs.");
     setPacks(j.data||[]);
     setImports(j.imports||[]);
+    setNotReady(Boolean(j.notReady));
   },[]);
 
   useEffect(()=>{void load();},[load]);
@@ -98,6 +100,7 @@ export default function LocalizationAdminCenter(){
         <div className="actions compact-actions"><button className="btn" onClick={template}>Download English template</button><button className="btn" onClick={load}>Refresh</button></div>
       </div>
       <div className="notice"><strong>Review rule:</strong> CARE-Map will never publish a draft pack. A pack must contain every required public key, be explicitly reviewed by an administrator, and then be separately enabled.</div>
+      {notReady&&<div className="error"><strong>Migration 015 is not applied.</strong> Apply <code>015_localization.sql</code> before importing or reviewing translation packs.</div>}
       <div className="stats localization-stats">
         <div className="stat"><strong>{packs.length}</strong><span>Target language packs</span></div>
         <div className="stat"><strong>{packs.filter(p=>p.status==="reviewed").length}</strong><span>Reviewed</span></div>
@@ -125,9 +128,20 @@ export default function LocalizationAdminCenter(){
           <div><strong>Missing required keys</strong><div className="translation-key-list">{preview.missing.length?preview.missing.map(k=><code key={k}>{k}</code>):<span className="success-inline">None</span>}</div></div>
           <div><strong>Unknown ignored keys</strong><div className="translation-key-list">{preview.unknown.length?preview.unknown.map(k=><code key={k}>{k}</code>):<span className="muted">None</span>}</div></div>
         </div>
+        <details className="translation-compare">
+          <summary>Review English vs translated strings</summary>
+          <div className="table-wrap"><table>
+            <thead><tr><th>Key</th><th>English</th><th>{target?.name||"Translation"}</th></tr></thead>
+            <tbody>{Object.keys(englishCatalog).map(key=><tr key={key}>
+              <td><code>{key}</code></td>
+              <td>{englishCatalog[key as keyof typeof englishCatalog]}</td>
+              <td>{String(preview.translations[key]||"")||<span className="muted">Missing</span>}</td>
+            </tr>)}</tbody>
+          </table></div>
+        </details>
       </div>}
 
-      <button className="btn primary" disabled={busy||!source.trim()||!version.trim()||!Object.keys(translations).length} onClick={importPack}>{busy?"Importing…":"Import as draft"}</button>
+      <button className="btn primary" disabled={notReady||busy||!source.trim()||!version.trim()||!Object.keys(translations).length} onClick={importPack}>{busy?"Importing…":"Import as draft"}</button>
     </section>
 
     <section className="card stack">
@@ -147,6 +161,17 @@ export default function LocalizationAdminCenter(){
             <div><span>Reviewed by</span><strong>{pack.reviewed_by_name||"—"}</strong></div>
           </div>
           {!!pack.missingKeys?.length&&<details><summary>Missing {pack.missingKeys.length} key(s)</summary><div className="translation-key-list">{pack.missingKeys.map((k:string)=><code key={k}>{k}</code>)}</div></details>}
+          <details className="translation-compare">
+            <summary>Review strings</summary>
+            <div className="table-wrap"><table>
+              <thead><tr><th>Key</th><th>English</th><th>{pack.language_name}</th></tr></thead>
+              <tbody>{Object.keys(englishCatalog).map(key=><tr key={key}>
+                <td><code>{key}</code></td>
+                <td>{englishCatalog[key as keyof typeof englishCatalog]}</td>
+                <td>{String(pack.translations?.[key]||"")||<span className="muted">Missing</span>}</td>
+              </tr>)}</tbody>
+            </table></div>
+          </details>
           <div className="actions">
             {pack.status!=="reviewed"&&<button className="btn primary" disabled={Number(pack.coverage)!==100} onClick={()=>action(pack.language_code,"review")}>Approve review</button>}
             {pack.status==="reviewed"&&!pack.enabled&&<button className="btn primary" onClick={()=>action(pack.language_code,"enable")}>Enable publicly</button>}
