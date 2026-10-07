@@ -65,7 +65,7 @@ export default function OperationsCenter(){
         <thead><tr><th>Priority</th><th>Report</th><th>Owner</th><th>Status</th><th>Due</th></tr></thead>
         <tbody>{(data?.queue||[]).map((r:any)=><tr key={r.id} className={r.priority==="critical"?"critical-row":""}>
           <td><span className={"priority-badge priority-"+r.priority}>{r.priority}</span></td>
-          <td><strong>{r.type.replaceAll("_"," ")}</strong><div className="muted clamp-2">{r.description}</div><small>{new Date(r.submitted_at).toLocaleString()}</small></td>
+          <td><strong>{r.type.replaceAll("_"," ")}</strong>{r.origin==="satellite_alert"&&<span className="badge satellite-badge">Satellite verification</span>}<div className="muted clamp-2">{r.description}</div><small>{new Date(r.submitted_at).toLocaleString()}</small></td>
           <td>{r.assigned_name||<span className="muted">Unassigned</span>}</td>
           <td><span className="badge">{r.status.replaceAll("_"," ")}</span></td>
           <td className={r.due_at&&now!==null&&new Date(r.due_at).getTime()<now?"overdue-text":""}>{r.due_at?new Date(r.due_at).toLocaleString():"No deadline"}</td>
