@@ -58,7 +58,7 @@ export async function GET(request:Request){
     });
   }
 
-  const [summary,recent]=await Promise.all([
+  const [summary,recent,imports]=await Promise.all([
     query(`
       SELECT
         count(*)::int total,
@@ -76,11 +76,20 @@ export async function GET(request:Request){
       ${where}
       ORDER BY s.created_at DESC
       LIMIT 250
-    `,params)
+    `,params),
+    query(`
+      SELECT i.id,i.source,i.format,i.verified_on_import,i.total_rows,i.imported_rows,
+             i.failed_rows,i.auto_assigned_lga_rows,i.created_at,u.name created_by_name
+      FROM settlement_imports i
+      LEFT JOIN users u ON u.id=i.created_by
+      ORDER BY i.created_at DESC
+      LIMIT 12
+    `)
   ]);
 
   return NextResponse.json({
     data:recent.rows,
+    imports:imports.rows,
     summary:summary.rows[0]||{total:0,verified:0,population_known:0,lgas_covered:0,source_datasets:0}
   });
 }
