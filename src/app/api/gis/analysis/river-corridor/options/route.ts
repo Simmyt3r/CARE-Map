@@ -26,6 +26,7 @@ export async function GET(request:Request){
     WHERE r.verified=TRUE
       AND l.boundary IS NOT NULL
       AND ST_Intersects(r.course,l.boundary)
+      AND NOT ST_IsEmpty(ST_CollectionExtract(ST_Intersection(r.course,l.boundary),2))
     ORDER BY COALESCE(NULLIF(r.name,''),NULLIF(r.local_name,''),'Unnamed river')
     LIMIT 500
   `,[lga]);
