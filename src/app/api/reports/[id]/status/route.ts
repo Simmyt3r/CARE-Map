@@ -2,6 +2,7 @@ import {NextResponse} from "next/server";
 import {getSession,isStaff} from "@/lib/auth";
 import {error} from "@/lib/http";
 import {pool} from "@/lib/db";
+import {fieldVerificationClosureError} from "@/lib/satellite-verification";
 
 const allowed=new Set(["submitted","under_review","verified","resolved","rejected"]);
 
@@ -25,18 +26,15 @@ export async function PATCH(request:Request,context:{params:Promise<{id:string}>
     const fromStatus=current.rows[0].status;
     const origin=current.rows[0].origin;
 
-    if(origin==="satellite_alert"&&(body.status==="resolved"||body.status==="rejected")){
-      if(!body.notes||body.notes.trim().length<10){
-        await client.query("ROLLBACK");
-        return error("Field verification closure requires a clear status note of at least 10 characters.",400);
-      }
-      if(body.status==="resolved"){
-        const evidence=await client.query("SELECT count(*)::int count FROM photos WHERE entity_type='report' AND entity_id=$1",[id]);
-        if(Number(evidence.rows[0]?.count||0)<1){
-          await client.query("ROLLBACK");
-          return error("Add at least one field evidence photo before resolving a satellite verification task.",400);
-        }
-      }
+    let evidenceCount=0;
+    if(origin==="satellite_alert"&&body.status==="resolved"){
+      const evidence=await client.query("SELECT count(*)::int count FROM photos WHERE entity_type='report' AND entity_id=$1",[id]);
+      evidenceCount=Number(evidence.rows[0]?.count||0);
+    }
+    const closureError=fieldVerificationClosureError({origin,status:body.status,note:body.notes,evidenceCount});
+    if(closureError){
+      await client.query("ROLLBACK");
+      return error(closureError,400);
     }
 
     const result=await client.query(
