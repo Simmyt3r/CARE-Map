@@ -61,7 +61,7 @@ export default function VegetationMonitoring(){
     </section>
 
     <section className="card">
-      <div className="section-head"><div><h2>Vegetation watchlist</h2><div className="muted">Scheduled checks compare fresh clear-pixel vegetation against each monitor's fixed reference state.</div></div><span className="badge">{monitors.length}</span></div>
+      <div className="section-head"><div><h2>Vegetation watchlist</h2><div className="muted">Scheduled checks compare fresh clear-pixel vegetation against each monitor&apos;s fixed reference state.</div></div><span className="badge">{monitors.length}</span></div>
       <div className="table-wrap"><table>
         <thead><tr><th>Monitor</th><th>Reference</th><th>Last observation</th><th>Latest change</th><th>Open alerts</th><th>Next check</th><th>Status</th><th></th></tr></thead>
         <tbody>{monitors.map(m=><tr key={m.id} className={Number(m.open_alerts)>0?"critical-row":""}>
