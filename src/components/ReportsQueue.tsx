@@ -25,6 +25,7 @@ export default function ReportsQueue(){
     if(filter==="unassigned")return !["resolved","rejected"].includes(r.status)&&!r.assigned_to;
     if(filter==="overdue")return !["resolved","rejected"].includes(r.status)&&r.due_at&&now!==null&&new Date(r.due_at).getTime()<now;
     if(filter==="critical")return !["resolved","rejected"].includes(r.status)&&r.priority==="critical";
+    if(filter==="satellite")return r.origin==="satellite_alert";
     if(filter==="closed")return ["resolved","rejected"].includes(r.status);
     return true;
   }),[rows,filter,now]);
@@ -42,6 +43,7 @@ export default function ReportsQueue(){
       <button className="btn" onClick={()=>setFilter("unassigned")}>Unassigned</button>
       <button className="btn" onClick={()=>setFilter("overdue")}>Overdue</button>
       <button className="btn" onClick={()=>setFilter("critical")}>Critical</button>
+      <button className="btn" onClick={()=>setFilter("satellite")}>Satellite</button>
       <button className="btn" onClick={()=>setFilter("closed")}>Closed</button>
       <button className="btn" onClick={()=>setFilter("all")}>All</button>
     </div>
