@@ -29,6 +29,7 @@ export default function StaffNav({role,name}:{role:string;name:string}){
       {role==="admin"&&<Link href="/staff/admin">Users</Link>}
       {role==="admin"&&<Link href="/staff/admin/governance">Governance</Link>}
       {role==="admin"&&<Link href="/staff/admin/privacy">Privacy</Link>}
+      {role==="admin"&&<Link href="/staff/admin/localization">Localization</Link>}
       {role==="admin"&&<Link href="/staff/infrastructure">Infrastructure</Link>}
       <a href="/api/dashboard/export">Export CSV</a>
     </div>
