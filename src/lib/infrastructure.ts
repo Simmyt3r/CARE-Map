@@ -365,11 +365,11 @@ export async function currentInfrastructureSnapshot(){
     },
     {
       id:"privacy-contact",label:"Published privacy controller contact",category:"security",
-      state:process.env.DATA_CONTROLLER_NAME&&process.env.DATA_CONTROLLER_ADDRESS&&process.env.PRIVACY_CONTACT_EMAIL?"ready":"blocked",required:true,
-      detail:process.env.DATA_CONTROLLER_NAME&&process.env.DATA_CONTROLLER_ADDRESS&&process.env.PRIVACY_CONTACT_EMAIL
-        ?"Controller identity, address and privacy contact are configured."
-        :"DATA_CONTROLLER_NAME, DATA_CONTROLLER_ADDRESS and/or PRIVACY_CONTACT_EMAIL are missing.",
-      action:"Configure the final legally reviewed controller identity, address and privacy contact in Vercel."
+      state:process.env.DATA_CONTROLLER_NAME&&process.env.DATA_CONTROLLER_ADDRESS&&process.env.PRIVACY_CONTACT_EMAIL&&process.env.PRIVACY_LAWFUL_BASIS_REPORTS&&process.env.PRIVACY_LAWFUL_BASIS_ACCOUNTS?"ready":"blocked",required:true,
+      detail:process.env.DATA_CONTROLLER_NAME&&process.env.DATA_CONTROLLER_ADDRESS&&process.env.PRIVACY_CONTACT_EMAIL&&process.env.PRIVACY_LAWFUL_BASIS_REPORTS&&process.env.PRIVACY_LAWFUL_BASIS_ACCOUNTS
+        ?"Controller identity, address, privacy contact and lawful-basis wording are configured."
+        :"Controller/contact and/or lawful-basis privacy settings are incomplete.",
+      action:"Configure DATA_CONTROLLER_NAME, DATA_CONTROLLER_ADDRESS, PRIVACY_CONTACT_EMAIL, PRIVACY_LAWFUL_BASIS_REPORTS and PRIVACY_LAWFUL_BASIS_ACCOUNTS after formal review."
     },
     {
       id:"privacy-legal-review",label:"Formal NDPA/privacy legal review",category:"operations",
