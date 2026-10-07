@@ -76,6 +76,11 @@ export async function PATCH(request:Request,context:{params:Promise<{id:string}>
 
     const events:Record<string,unknown>={};
 
+    if(run.rows[0].status==="completed"&&!body.reopen){
+      await client.query("ROLLBACK");
+      return error("Completed acceptance runs are read-only. Reopen the run before changing it.",409,"RUN_COMPLETED");
+    }
+
     if(body.reopen){
       await client.query(`
         UPDATE field_acceptance_runs
@@ -86,10 +91,6 @@ export async function PATCH(request:Request,context:{params:Promise<{id:string}>
     }
 
     if(body.checkKey!==undefined){
-      if(run.rows[0].status==="completed"&&!body.reopen){
-        await client.query("ROLLBACK");
-        return error("Reopen the completed run before changing check results.",409,"RUN_COMPLETED");
-      }
       const key=requestedCheckKey as string;
       const status=body.status as AcceptanceCheckStatus;
       const notes=body.checkNotes==null?null:String(body.checkNotes).trim().slice(0,3000)||null;
