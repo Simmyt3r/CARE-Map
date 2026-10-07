@@ -39,7 +39,7 @@ export default function OperationsCenter(){
 
     {!!data?.vegetationAlerts?.length&&<section className="card">
       <div className="section-head">
-        <div><h2>Satellite vegetation alerts</h2><div className="muted">Clear-pixel Sentinel-2 observations that crossed a monitoring plan's vegetation-loss threshold.</div></div>
+        <div><h2>Satellite vegetation alerts</h2><div className="muted">Clear-pixel Sentinel-2 observations that crossed a monitoring plan&apos;s vegetation-loss threshold.</div></div>
         <Link className="btn" href="/staff/remote-sensing/monitoring">Vegetation monitoring</Link>
       </div>
       <div className="table-wrap"><table>
