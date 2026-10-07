@@ -32,7 +32,7 @@ For Sentinel-2 Level-2A:
 
 - B08 = near infrared
 - B04 = red
-- nominal sampling used by the CARE-Map statistics request = 10 m
+- sampling used by the CARE-Map statistics request ≈ 10 m in Benue
 
 Higher positive NDVI usually indicates stronger green vegetation. Threshold meaning varies by ecosystem and season, so the threshold is configurable instead of being hard-coded as a universal truth.
 
@@ -124,7 +124,7 @@ Do not expose either credential in a `NEXT_PUBLIC_*` variable.
 
 ## Vegetated-area calculation
 
-The provider returns statistics at 10 m sampling.
+The provider returns statistics at approximately 10 m sampling for the geographic CRS used by the current implementation.
 
 CARE-Map derives:
 
