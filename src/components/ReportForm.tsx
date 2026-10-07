@@ -1,13 +1,14 @@
 "use client";
 import Link from "next/link";
 import {useEffect,useState} from "react";
+import {PRIVACY_NOTICE_VERSION} from "@/lib/privacy";
 
 const QUEUE_KEY="caremap_report_queue_v1";
 type ReportPayload={
   type:string;reporterName:string|null;reporterContact:string|null;description:string;
   latitude:number;longitude:number;gpsAccuracy:number|null;capturedAt:string|null;captureSource:"manual"|"device_gps";
   relatedEntityType:"borehole"|"asset"|"forest_site"|"river"|null;relatedEntityId:string|null;
-  privacyAcknowledged:true;optionalContactConsent:boolean;
+  privacyAcknowledged:true;privacyNoticeVersion:string;optionalContactConsent:boolean;
 };
 type Queued={id:string;payload:ReportPayload;queuedAt:string};
 
@@ -86,6 +87,7 @@ export default function ReportForm({relatedEntityType=null,relatedEntityId=null,
       relatedEntityType:relatedEntityType||null,
       relatedEntityId:relatedEntityId||null,
       privacyAcknowledged:true,
+      privacyNoticeVersion:PRIVACY_NOTICE_VERSION,
       optionalContactConsent
     };
   }

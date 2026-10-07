@@ -20,11 +20,18 @@ export async function GET(request:Request){
  UPDATE reports SET reporter_name=NULL,reporter_contact=NULL,submitted_by=NULL,anonymized_at=now()
  WHERE resolved_at IS NOT NULL AND resolved_at<now()-INTERVAL '2 years' AND anonymized_at IS NULL;
 
- UPDATE privacy_notice_acceptances p SET user_id=NULL
- WHERE p.report_id IN (
-   SELECT r.id FROM reports r
-   WHERE r.anonymized_at IS NOT NULL AND r.resolved_at<now()-INTERVAL '2 years'
- ) AND p.user_id IS NOT NULL;
+ DO $
+ BEGIN
+   IF to_regclass('public.privacy_notice_acceptances') IS NOT NULL THEN
+     EXECUTE $sql$
+       UPDATE privacy_notice_acceptances p SET user_id=NULL
+       WHERE p.report_id IN (
+         SELECT r.id FROM reports r
+         WHERE r.anonymized_at IS NOT NULL AND r.resolved_at<now()-INTERVAL '2 years'
+       ) AND p.user_id IS NOT NULL
+     $sql$;
+   END IF;
+ END $;
  `);
  return NextResponse.json({ok:true,refreshedAt:new Date().toISOString()});
 }
