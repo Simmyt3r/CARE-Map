@@ -38,8 +38,8 @@ export async function POST(request:Request){
   const description=String(body?.description||"").trim().slice(0,6000);
   const detectedAt=String(body?.detectedAt||"").trim();
   const detected=new Date(detectedAt);
-  const likelyRisk=Boolean(body?.likelyRisk);
   const highRisk=Boolean(body?.highRisk);
+  const likelyRisk=Boolean(body?.likelyRisk)||highRisk;
 
   if(title.length<3)return error("Breach title is required.");
   if(description.length<10)return error("Describe the breach or suspected breach.");
