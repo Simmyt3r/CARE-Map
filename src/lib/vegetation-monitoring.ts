@@ -96,7 +96,7 @@ export async function runVegetationMonitor(monitorId:string,actorId:string|null=
     `,[monitor.id,status,nextDue.toISOString()]);
 
     let alertId:string|null=null;
-    if(shouldRaiseVegetationAlert(changePct,clearFraction,minimumClear,Number(monitor.alert_loss_pct))){
+    if(changePct!==null&&shouldRaiseVegetationAlert(changePct,clearFraction,minimumClear,Number(monitor.alert_loss_pct))){
       const severityForAlert=alertSeverity(changePct);
       const title=severityForAlert.charAt(0).toUpperCase()+severityForAlert.slice(1)+" vegetation loss: "+monitor.name;
       const message=
