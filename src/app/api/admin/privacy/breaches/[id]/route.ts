@@ -29,7 +29,9 @@ export async function PATCH(request:Request,context:{params:Promise<{id:string}>
     params.push(Boolean(body.likelyRisk));sets.push("likely_risk=$"+params.length,"ndpc_notification_required=$"+params.length);meta.likelyRisk=Boolean(body.likelyRisk);
   }
   if(body.highRisk!==undefined){
-    params.push(Boolean(body.highRisk));sets.push("high_risk=$"+params.length,"subjects_notification_required=$"+params.length);meta.highRisk=Boolean(body.highRisk);
+    const high=Boolean(body.highRisk);
+    params.push(high);sets.push("high_risk=$"+params.length,"subjects_notification_required=$"+params.length);meta.highRisk=high;
+    if(high)sets.push("likely_risk=TRUE","ndpc_notification_required=TRUE");
   }
   if(body.ndpcNotified===true){sets.push("ndpc_notified_at=COALESCE(ndpc_notified_at,now())");meta.ndpcNotified=true;}
   if(body.subjectsNotified===true){sets.push("subjects_notified_at=COALESCE(subjects_notified_at,now())");meta.subjectsNotified=true;}
