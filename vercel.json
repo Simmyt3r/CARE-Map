@@ -1,1 +1,1 @@
-{"crons":[{"path":"/api/internal/refresh-risk","schedule":"0 2 * * *"}]}
+{"crons":[{"path":"/api/internal/refresh-risk","schedule":"0 2 * * *"},{"path":"/api/internal/remote-sensing-monitor","schedule":"0 3 * * *"}]}

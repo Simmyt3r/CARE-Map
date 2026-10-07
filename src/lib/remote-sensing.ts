@@ -181,7 +181,7 @@ export async function fetchNdviStats(aoi:GeoPolygon,date:string,windowDays:numbe
   const geometryPixels=Number(entry?.geometryPixelCount||json?.geometryPixelCount||sampleCount||0);
   const clearFraction=geometryPixels>0?Math.max(0,Math.min(1,validPixels/geometryPixels)):null;
   const vegetationFraction=vegetationStats&&Number.isFinite(Number(vegetationStats.mean))?Number(vegetationStats.mean):null;
-  const vegetationHa=vegetationFraction==null?null:aoiAreaHa*(clearFraction??1)*vegetationFraction;
+  const vegetationHa=vegetationFraction==null?null:aoiAreaHa*vegetationFraction;
 
   return{
     meanNdvi:ndviStats&&Number.isFinite(Number(ndviStats.mean))?Number(ndviStats.mean):null,
