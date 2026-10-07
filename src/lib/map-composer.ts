@@ -40,5 +40,5 @@ export function featureCollection(features:ComposerFeature[]){
 
 export function composerFilename(title:string){
   const clean=title.trim().toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,80);
-  return (clean||"care-map")+"-geojson.json";
+  return (clean||"care-map")+".geojson";
 }
