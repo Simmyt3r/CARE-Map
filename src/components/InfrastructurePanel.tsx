@@ -227,7 +227,7 @@ export default function InfrastructurePanel({snapshot}:{snapshot:Snapshot}){
     </section>
 
     <section className="card stack">
-      <div><h2>6. Vercel environment bundle</h2><div className="muted">Copy this into Vercel Project Settings → Environment Variables. Use Secret type for every value here. Redeploy after changing environment variables.</div></div>
+      <div><h2>6. Vercel environment bundle</h2><div className="muted">Copy this into Vercel Project Settings → Environment Variables. Keep credentials/secrets protected; controller identity, privacy contact and lawful-basis wording are intentionally public configuration. Redeploy after changing environment variables.</div></div>
       <textarea className="env-preview" readOnly value={envBundle} placeholder="Complete the fields above to generate the environment bundle."/>
       <div className="actions">
         <button className="btn primary" disabled={!envBundle} onClick={()=>copy(envBundle)}>Copy environment bundle</button>
