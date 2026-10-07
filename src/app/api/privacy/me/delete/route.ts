@@ -21,6 +21,10 @@ export async function POST(request:Request){
       "UPDATE reports SET reporter_name=NULL,reporter_contact=NULL WHERE submitted_by=$1",
       [session.sub]
     );
+    await client.query(
+      "UPDATE privacy_notice_acceptances SET user_id=NULL WHERE user_id=$1",
+      [session.sub]
+    );
 
     const anonymizedEmail="deleted+"+session.sub+"@caremap.invalid";
     const updated=await client.query(`
