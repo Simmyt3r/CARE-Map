@@ -42,6 +42,7 @@ export async function POST(request:Request){
   if(!source)return error("Boundary source / provenance is required.");
   if(!Array.isArray(features)||!features.length)return error("Provide GeoJSON polygon features.");
   if(features.length>100)return error("Boundary import is limited to 100 features per batch.");
+  if(JSON.stringify(features).length>10_000_000)return error("Boundary import payload must be 10 MB or smaller.");
 
   const client=await pool().connect();
   const failures:{row:number;message:string}[]=[];
@@ -52,6 +53,7 @@ export async function POST(request:Request){
     const lgaResult=await client.query<{code:string;name:string}>("SELECT code,name FROM lgas ORDER BY name");
     const byCode=new Map(lgaResult.rows.map(x=>[normalizeLgaToken(x.code),x]));
     const byName=new Map(lgaResult.rows.map(x=>[normalizeLgaToken(x.name),x]));
+    const matchedCodes=new Set<string>();
 
     const job=await client.query<{id:string}>(
       "INSERT INTO lga_boundary_imports(source,total_features,created_by) VALUES($1,$2,$3) RETURNING id",
@@ -71,6 +73,7 @@ export async function POST(request:Request){
         for(const code of candidates.codes){match=byCode.get(code);if(match)break;}
         if(!match){for(const name of candidates.names){match=byName.get(name);if(match)break;}}
         if(!match)throw new Error("Could not match feature to a CARE-Map LGA. Include code/lga_code or a recognized LGA name.");
+        if(matchedCodes.has(match.code))throw new Error("Duplicate boundary feature for "+match.name+" in this import batch.");
 
         const geo=JSON.stringify(feature.geometry);
         const updated=await client.query<{code:string;area_km2:number|string}>(`
@@ -95,10 +98,12 @@ export async function POST(request:Request){
             AND n.geom IS NOT NULL
             AND NOT ST_IsEmpty(n.geom)
             AND ST_Area(n.geom::geography)>1000000
+            AND ST_Area(n.geom::geography)<50000000000
           RETURNING l.code,ST_Area(l.boundary::geography)/1000000.0 area_km2
         `,[match.code,geo,source,session.sub]);
 
-        if(!updated.rowCount)throw new Error("Boundary geometry was empty or smaller than 1 km² after validation.");
+        if(!updated.rowCount)throw new Error("Boundary geometry must be between 1 km² and 50,000 km² after validation.");
+        matchedCodes.add(match.code);
         await client.query("RELEASE SAVEPOINT "+savepoint);
         imported++;
       }catch(e){
