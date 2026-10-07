@@ -125,7 +125,9 @@ The API:
 5. intersects the result with the LGA boundary
 6. derives the uncovered remainder
 7. calculates areas with geography
-8. returns GeoJSON for the boundary, covered area, uncovered area and resources
+8. splits the uncovered geometry into component polygons
+9. ranks the 25 largest uncovered gaps above 1,000 m²
+10. returns GeoJSON for the boundary, covered area, uncovered area, ranked gaps and resources
 
 ## API
 
@@ -166,6 +168,7 @@ The response includes:
 - LGA boundary GeoJSON
 - covered-area GeoJSON
 - uncovered-area GeoJSON
+- ranked uncovered-gap FeatureCollection with area and representative latitude/longitude
 - contributing resource FeatureCollection
 
 ## GeoJSON export
@@ -175,6 +178,7 @@ The interface can export one FeatureCollection containing:
 - LGA boundary
 - covered area
 - uncovered gap area
+- ranked uncovered gap polygons
 - contributing resources
 
 This can be opened in QGIS for cartography, validation or further spatial analysis.
