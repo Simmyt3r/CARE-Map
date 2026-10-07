@@ -10,7 +10,7 @@ export default function StaffNav({role,name}:{role:string;name:string}){
     router.push("/login");
   }
 
-  return <div className="card" style={{marginBottom:18}}>
+  return <div className="card staff-nav-card" style={{marginBottom:18}}>
     <div className="section-head">
       <div><strong>{name}</strong><div className="muted">{role}</div></div>
       <button className="btn" onClick={logout}>Sign out</button>
@@ -21,6 +21,7 @@ export default function StaffNav({role,name}:{role:string;name:string}){
       <Link href="/staff/data">GIS Data</Link>
       <Link href="/staff/gis">GIS Workbench</Link>
       <Link href="/staff/analysis">Spatial Analysis</Link>
+      <Link href="/staff/map-composer">Map Composer</Link>
       <Link href="/staff/remote-sensing">Remote Sensing</Link>
       <Link href="/staff/remote-sensing/monitoring">Monitoring</Link>
       <Link href="/staff/reports">Reports</Link>
