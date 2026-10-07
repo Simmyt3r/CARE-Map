@@ -41,3 +41,14 @@ export function populationProvenanceError(population:number|null,populationSourc
   }
   return null;
 }
+
+export type SettlementAccessClass="within_threshold"|"access_gap"|"beyond_search_radius";
+
+export function settlementNearestSearchRadius(thresholdM:number){
+  return Math.max(50_000,Math.min(150_000,Math.round(thresholdM*3)));
+}
+
+export function classifySettlementAccess(distanceM:number|null,thresholdM:number):SettlementAccessClass{
+  if(distanceM==null)return "beyond_search_radius";
+  return distanceM<=thresholdM?"within_threshold":"access_gap";
+}
