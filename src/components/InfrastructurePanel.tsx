@@ -2,6 +2,17 @@
 import {useMemo,useState,useTransition} from "react";
 import {bootstrapAdminAction,initializeAivenAction,testAivenAction,type InfraActionResult} from "@/app/staff/infrastructure/actions";
 
+type ReadinessState="ready"|"warning"|"blocked";
+type ReadinessItem={
+  id:string;
+  label:string;
+  category:"infrastructure"|"security"|"database"|"data"|"operations";
+  state:ReadinessState;
+  required:boolean;
+  detail:string;
+  action:string;
+};
+
 type Snapshot={
   environment:string;
   databaseConfigured:boolean;
@@ -14,6 +25,10 @@ type Snapshot={
   databaseHost:string|null;
   databaseName:string|null;
   database:{ok:boolean;postgresVersion?:string;postgisEnabled?:boolean;postgisVersion?:string|null;tables?:number;error?:string};
+  migrations:{historyAvailable:boolean;expected:number;applied:number;pending:string[];checksumMismatches:string[];latestAppliedAt:string|null};
+  data:{lgaBoundaries:number;totalLgas:number;pilotBoundaries:number;pilotLgas:number;verifiedRivers:number;verifiedSettlements:number;boreholes:number;assets:number;verifiedHazardZones:number;verifiedCatchments:number;admins:number};
+  readinessItems:ReadinessItem[];
+  readiness:{score:number;required:number;ready:number;warnings:number;blockers:number;optionalReady:number;optionalTotal:number};
 };
 
 function randomSecret(bytes=32){
@@ -24,6 +39,18 @@ function randomSecret(bytes=32){
 
 function Status({ok,label}:{ok:boolean;label:string}){
   return <div className={"setup-status "+(ok?"ok":"missing")}><span>{ok?"✓":"!"}</span><div><strong>{label}</strong><small>{ok?"Ready":"Needs configuration"}</small></div></div>;
+}
+
+function Gate({item}:{item:ReadinessItem}){
+  const mark=item.state==="ready"?"✓":item.state==="warning"?"!":"×";
+  return <div className={"readiness-gate "+item.state}>
+    <div className="readiness-gate-mark">{mark}</div>
+    <div className="readiness-gate-copy">
+      <div className="readiness-gate-title"><strong>{item.label}</strong><span>{item.required?"Launch gate":"Optional capability"}</span></div>
+      <p>{item.detail}</p>
+      {item.state!=="ready"&&<small><strong>Next:</strong> {item.action}</small>}
+    </div>
+  </div>;
 }
 
 function escapeEnv(value:string){
@@ -58,6 +85,9 @@ export default function InfrastructurePanel({snapshot}:{snapshot:Snapshot}){
     return lines.join("\n");
   },[databaseUrl,caCert,sessionSecret,cronSecret,blobToken,cdseClientId,cdseClientSecret,adminEmail,adminPassword]);
 
+  const required=snapshot.readinessItems.filter(x=>x.required);
+  const optional=snapshot.readinessItems.filter(x=>!x.required);
+
   function run(fn:()=>Promise<InfraActionResult>){
     setResult(null);
     startTransition(()=>{void fn().then(setResult).catch(e=>setResult({ok:false,message:e instanceof Error?e.message:"Action failed."}));});
@@ -69,10 +99,53 @@ export default function InfrastructurePanel({snapshot}:{snapshot:Snapshot}){
   }
 
   return <div className="stack">
+    <section className="card stack readiness-overview">
+      <div className="section-head">
+        <div><h2>Production Readiness Center</h2><div className="muted">Live launch evidence from the deployed environment and configured database. Secret values are never displayed.</div></div>
+        <div className="actions readiness-head-actions">
+          <span className="badge">{snapshot.environment}</span>
+          <button className="btn" onClick={()=>window.location.reload()}>Recheck readiness</button>
+          <a className="btn" href="/api/admin/readiness" target="_blank" rel="noreferrer">View JSON</a>
+        </div>
+      </div>
+
+      <div className="readiness-hero">
+        <div className={"readiness-score "+(snapshot.readiness.blockers?"blocked":snapshot.readiness.warnings?"warning":"ready")}>
+          <strong>{snapshot.readiness.score}%</strong>
+          <span>launch readiness</span>
+        </div>
+        <div className="stats readiness-stats">
+          <div className="stat"><strong>{snapshot.readiness.ready}/{snapshot.readiness.required}</strong><span>Required gates ready</span></div>
+          <div className="stat"><strong>{snapshot.readiness.blockers}</strong><span>Blocking items</span></div>
+          <div className="stat"><strong>{snapshot.migrations.applied}/{snapshot.migrations.expected}</strong><span>Migrations recorded</span></div>
+          <div className="stat"><strong>{snapshot.data.pilotBoundaries}/{snapshot.data.pilotLgas}</strong><span>Pilot LGA boundaries</span></div>
+          <div className="stat"><strong>{snapshot.data.boreholes+snapshot.data.assets}</strong><span>Mapped interventions</span></div>
+        </div>
+      </div>
+
+      <div className="readiness-meter" aria-label={"Readiness "+snapshot.readiness.score+" percent"}><span style={{width:snapshot.readiness.score+"%"}}/></div>
+
+      {snapshot.migrations.checksumMismatches.length>0&&<div className="error">
+        <strong>Migration integrity failure.</strong> Historical migration files changed after being recorded: {snapshot.migrations.checksumMismatches.join(", ")}. Restore those files and create a new migration for schema changes.
+      </div>}
+
+      <div className="readiness-columns">
+        <div className="stack">
+          <div className="section-head"><h3>Required launch gates</h3><span className="badge">{snapshot.readiness.blockers} blocked</span></div>
+          <div className="readiness-gates">{required.map(item=><Gate key={item.id} item={item}/>)}</div>
+        </div>
+        <div className="stack">
+          <div className="section-head"><h3>Advanced capability gates</h3><span className="badge">{snapshot.readiness.optionalReady}/{snapshot.readiness.optionalTotal} ready</span></div>
+          <div className="readiness-gates">{optional.map(item=><Gate key={item.id} item={item}/>)}</div>
+        </div>
+      </div>
+    </section>
+
     <section className="card">
-      <div className="section-head"><div><h2>Production readiness</h2><div className="muted">Current server environment. Secret values are never displayed.</div></div><span className="badge">{snapshot.environment}</span></div>
+      <div className="section-head"><div><h2>Environment configuration</h2><div className="muted">Fast status view of secrets and external services.</div></div></div>
       <div className="setup-status-grid">
         <Status ok={snapshot.databaseConfigured&&snapshot.database.ok} label="Aiven database"/>
+        <Status ok={snapshot.database.postgisEnabled===true} label="PostGIS"/>
         <Status ok={snapshot.caConfigured} label="Aiven CA certificate"/>
         <Status ok={snapshot.sessionSecretConfigured} label="Session signing secret"/>
         <Status ok={snapshot.cronSecretConfigured} label="Cron secret"/>
@@ -80,6 +153,7 @@ export default function InfrastructurePanel({snapshot}:{snapshot:Snapshot}){
         <Status ok={snapshot.remoteSensingConfigured} label="Copernicus remote sensing"/>
       </div>
       {snapshot.databaseConfigured&&<div className="notice">Configured database: <strong>{snapshot.databaseHost||"unknown host"}</strong> / {snapshot.databaseName||"unknown database"} · {snapshot.database.ok?"reachable":"unreachable"}{snapshot.database.postgisEnabled?" · PostGIS "+(snapshot.database.postgisVersion||""):""}</div>}
+      {snapshot.migrations.pending.length>0&&<div className="notice"><strong>Pending migration files:</strong> {snapshot.migrations.pending.join(", ")}</div>}
       {!snapshot.database.ok&&snapshot.database.error&&<div className="error">{snapshot.database.error}</div>}
     </section>
 
@@ -91,6 +165,7 @@ export default function InfrastructurePanel({snapshot}:{snapshot:Snapshot}){
         <button className="btn" disabled={pending||!databaseUrl} onClick={()=>run(()=>testAivenAction({databaseUrl,caCert}))}>Test connection</button>
         <button className="btn primary" disabled={pending||!databaseUrl} onClick={()=>run(()=>initializeAivenAction({databaseUrl,caCert}))}>Initialize / upgrade schema</button>
       </div>
+      <div className="notice">Schema upgrades now use a migration ledger with SHA-256 checksums. Applied migration files are skipped; checksum drift blocks the upgrade so historical SQL cannot be silently rewritten.</div>
     </section>
 
     <section className="grid two">
@@ -128,14 +203,14 @@ export default function InfrastructurePanel({snapshot}:{snapshot:Snapshot}){
     </section>
 
     <section className="card stack">
-      <div><h2>6. Launch checklist</h2><div className="muted">The panel prepares and verifies infrastructure; Vercel environment changes take effect on a new deployment.</div></div>
+      <div><h2>6. Launch sequence</h2><div className="muted">Do these in order. The readiness score will change only after the server/database actually reflect the configuration.</div></div>
       <div className="checklist">
-        <div><span>1</span>Test the Aiven connection.</div>
-        <div><span>2</span>Initialize PostGIS and CARE-Map tables.</div>
-        <div><span>3</span>Create or rotate the administrator.</div>
-        <div><span>4</span>Add Copernicus OAuth credentials if NDVI processing is required.</div>
-        <div><span>5</span>Copy the environment bundle into Vercel as Secret variables.</div>
-        <div><span>6</span>Redeploy CARE-Map and return here to verify green status.</div>
+        <div><span>1</span>Configure and test the Aiven connection.</div>
+        <div><span>2</span>Initialize or upgrade PostGIS and record every migration checksum.</div>
+        <div><span>3</span>Create the administrator and configure SESSION_SECRET / CRON_SECRET.</div>
+        <div><span>4</span>Import approved boundaries for every pilot LGA and baseline intervention coordinates.</div>
+        <div><span>5</span>Configure photo storage and Copernicus credentials when those advanced workflows are required.</div>
+        <div><span>6</span>Redeploy, recheck readiness, then field-test GPS/report workflows before public launch.</div>
       </div>
     </section>
 

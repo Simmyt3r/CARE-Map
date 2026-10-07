@@ -12,8 +12,8 @@ export default async function InfrastructurePage(){
   return <div className="stack">
     <div className="section-head">
       <div>
-        <h1>Infrastructure setup</h1>
-        <div className="muted">Configure and verify Aiven, PostGIS, application secrets and administrator bootstrap from one place.</div>
+        <h1>Production readiness & infrastructure</h1>
+        <div className="muted">Verify launch gates, configure Aiven/PostGIS, manage secrets, and see exactly what still blocks production.</div>
       </div>
     </div>
     <InfrastructurePanel snapshot={snapshot}/>

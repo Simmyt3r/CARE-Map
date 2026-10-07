@@ -27,7 +27,7 @@ export async function initializeAivenAction(input:{databaseUrl:string;caCert?:st
   await requireAdmin();
   try{
     const result=await initializeDatabase(clean(input));
-    return{ok:true,message:"PostGIS and CARE-Map schema initialized successfully.",details:{migrations:result.migrations,postgisVersion:result.postgisVersion}};
+    return{ok:true,message:"PostGIS and CARE-Map schema initialized successfully.",details:{migrations:result.migrations,appliedNow:result.appliedNow,skipped:result.skipped,postgisVersion:result.postgisVersion}};
   }catch(e){
     return{ok:false,message:e instanceof Error?e.message:"Database initialization failed."};
   }
