@@ -30,6 +30,7 @@ export async function GET(request:Request){
 
   const url=new URL(request.url);
   const level=str(url.searchParams.get("level")).toLowerCase();
+  const lga=str(url.searchParams.get("lga")).toUpperCase();
   const verifiedValue=url.searchParams.get("verified");
   const format=str(url.searchParams.get("format")).toLowerCase();
 
@@ -38,6 +39,10 @@ export async function GET(request:Request){
   const where:string[]=["TRUE"];
   const params:unknown[]=[];
   if(level){params.push(level);where.push("c.catchment_level=$"+params.length);}
+  if(lga){
+    params.push(lga);const n=params.length;
+    where.push("EXISTS(SELECT 1 FROM lgas l WHERE l.code=$"+n+" AND l.boundary IS NOT NULL AND ST_Intersects(c.boundary,l.boundary) AND ST_Area(ST_Intersection(c.boundary,l.boundary)::geography)>1000)");
+  }
   if(verifiedValue==="1"||verifiedValue==="true")where.push("c.verified=TRUE");
   if(verifiedValue==="0"||verifiedValue==="false")where.push("c.verified=FALSE");
 
