@@ -11,8 +11,16 @@ export async function GET(_:Request,context:{params:Promise<{id:string}>}){
   const{id}=await context.params;
   const [report,history,staff]=await Promise.all([
     query(`SELECT r.id,r.status,r.priority,r.assigned_to,r.assigned_at,r.due_at,r.updated_at,
-                  u.name assigned_name,u.email assigned_email
-           FROM reports r LEFT JOIN users u ON u.id=r.assigned_to WHERE r.id=$1`,[id]),
+                  r.origin,r.origin_ref_id,r.resolution_notes,
+                  u.name assigned_name,u.email assigned_email,
+                  va.id satellite_alert_id,va.severity satellite_alert_severity,
+                  va.title satellite_alert_title,va.message satellite_alert_message,
+                  vm.name satellite_monitor_name
+           FROM reports r
+           LEFT JOIN users u ON u.id=r.assigned_to
+           LEFT JOIN vegetation_alerts va ON va.verification_report_id=r.id
+           LEFT JOIN vegetation_monitors vm ON vm.id=va.monitor_id
+           WHERE r.id=$1`,[id]),
     query(`SELECT h.id,h.from_status,h.to_status,h.note,h.created_at,u.name actor_name
            FROM report_status_history h LEFT JOIN users u ON u.id=h.actor_id
            WHERE h.report_id=$1 ORDER BY h.created_at DESC LIMIT 100`,[id]),
