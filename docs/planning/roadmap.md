@@ -172,3 +172,23 @@ Production gate: run the migration against the real Aiven service and field-test
 - [x] Audit field-verification creation and evidence uploads
 
 **Production gate:** apply migration 006 and configure BLOB_READ_WRITE_TOKEN before using evidence-photo closure in the field. Validate the workflow with a known site before operational rollout.
+
+
+## Phase 10 — Map Composer ✅ Baseline complete
+
+- [x] Staff-only operational map composition workspace
+- [x] Toggle borehole, asset, forest, river and published vegetation-change layers
+- [x] LGA filter for mapped operational features
+- [x] Risk-level filter
+- [x] Optional feature labels
+- [x] Editable map title, subtitle and interpretation notes
+- [x] North arrow, metric scale and map legends
+- [x] Visible-feature counts by layer
+- [x] Fit map to visible data
+- [x] Printable A4 landscape layout
+- [x] Browser Print / Save PDF workflow
+- [x] Export visible features as GeoJSON
+- [x] Responsive mobile/desktop controls
+- [x] Print-specific navigation/control suppression
+
+**Current limitation:** published vegetation-change AOIs do not yet store LGA metadata, so they are omitted when an LGA filter is active.

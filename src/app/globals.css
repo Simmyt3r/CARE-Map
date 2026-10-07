@@ -117,3 +117,52 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:
 .evidence-grid figcaption{display:grid;gap:3px;padding:9px}
 .evidence-grid figcaption small{color:var(--muted)}
 @media(max-width:560px){.evidence-grid{grid-template-columns:1fr}.verification-action{align-items:stretch}.verification-action .btn{width:100%}}
+
+.map-composer-page{gap:16px}
+.composer-controls textarea{min-height:92px}
+.composer-layer-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.composer-label-toggle{align-self:end;min-height:44px}
+.map-print-sheet{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 12px 30px rgba(20,55,35,.08)}
+.composer-print-header{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;padding-bottom:12px;border-bottom:2px solid #173c27}
+.composer-print-header h1{margin:3px 0 4px;font-size:28px;line-height:1.08}
+.composer-print-header p{margin:0;color:var(--muted)}
+.composer-kicker{text-transform:uppercase;letter-spacing:.1em;font-size:11px;font-weight:900;color:#356b4a}
+.composer-print-meta{display:grid;gap:4px;text-align:right;font-size:12px;min-width:190px}
+.composer-print-meta span{color:var(--muted)}
+.composer-map-frame{position:relative;margin-top:14px;border:1px solid #b8c6bb;border-radius:10px;overflow:hidden;background:#e8eee9}
+.composer-map{height:620px}
+.north-arrow{position:absolute;left:16px;top:16px;z-index:3;width:48px;height:64px;border:1px solid rgba(22,52,38,.35);border-radius:8px;background:rgba(255,255,255,.9);display:grid;place-items:center;padding:5px;font-weight:900;color:#153826;box-shadow:0 3px 12px rgba(0,0,0,.12)}
+.north-arrow span{font-size:13px;line-height:1}.north-arrow b{font-size:32px;line-height:.8}
+.composer-summary{display:grid;grid-template-columns:1.4fr 1fr;gap:14px;margin-top:12px}
+.composer-counts{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+.composer-counts span{display:grid;gap:2px;padding:8px;border:1px solid var(--line);border-radius:8px;color:var(--muted);font-size:10px;text-align:center}
+.composer-counts strong{font-size:16px;color:var(--text)}
+.composer-legends{display:grid;gap:8px}
+.composer-legends>div{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;font-size:11px}
+.composer-legends span{display:inline-flex;align-items:center;gap:5px}
+.composer-legends i{display:inline-block;width:11px;height:11px;border-radius:50%;border:1px solid rgba(0,0,0,.15)}
+.legend-point{background:#1f6b3b}
+.legend-line{width:18px!important;height:3px!important;border:0!important;border-radius:2px!important;background:#2878a8}
+.legend-area{border-radius:2px!important;background:#2f855a;opacity:.45}
+.composer-notes{margin-top:12px;padding:10px 12px;border-left:4px solid #2f855a;background:#f7faf7}
+.composer-notes p{margin:5px 0 0;white-space:pre-wrap;font-size:12px}
+.composer-print-footer{margin-top:10px;padding-top:8px;border-top:1px solid var(--line);font-size:9px;color:var(--muted)}
+@media(max-width:1000px){.composer-layer-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.composer-summary{grid-template-columns:1fr}.composer-counts{grid-template-columns:repeat(3,minmax(0,1fr))}.composer-map{height:520px}}
+@media(max-width:600px){.composer-print-header{display:grid}.composer-print-meta{text-align:left}.composer-counts{grid-template-columns:repeat(2,minmax(0,1fr))}.composer-map{height:430px}.composer-layer-grid{grid-template-columns:1fr}}
+@page{size:A4 landscape;margin:8mm}
+@media print{
+  body{background:#fff!important}
+  .staff-nav-card,.print-hide,.composer-controls{display:none!important}
+  .map-composer-page{display:block!important}
+  .map-print-sheet{border:0!important;border-radius:0!important;box-shadow:none!important;padding:0!important}
+  .composer-print-header h1{font-size:22pt}
+  .composer-map-frame{margin-top:5mm;break-inside:avoid}
+  .composer-map{height:145mm!important}
+  .composer-summary{margin-top:4mm;break-inside:avoid}
+  .composer-counts span{padding:4px;font-size:8pt}
+  .composer-counts strong{font-size:12pt}
+  .composer-legends>div{font-size:8pt}
+  .composer-notes{font-size:9pt;break-inside:avoid}
+  .composer-print-footer{font-size:7pt}
+  .maplibregl-ctrl-top-right{display:none!important}
+}
