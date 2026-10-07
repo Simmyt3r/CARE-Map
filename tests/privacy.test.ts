@@ -4,7 +4,8 @@ import {
   dataSubjectRequestLabel,
   isDataSubjectRequestStatus,
   isDataSubjectRequestType,
-  privacyReference
+  privacyReference,
+  PRIVACY_NOTICE_VERSION
 } from "../src/lib/privacy";
 
 describe("privacy governance helpers",()=>{
@@ -17,6 +18,10 @@ describe("privacy governance helpers",()=>{
 
   it("creates readable request labels",()=>{
     expect(dataSubjectRequestLabel("withdraw_consent")).toBe("Withdraw Consent");
+  });
+
+  it("uses an auditable date-formatted privacy notice version",()=>{
+    expect(PRIVACY_NOTICE_VERSION).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });
 
   it("creates non-sequential privacy references with a 12-hex suffix",()=>{
