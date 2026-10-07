@@ -41,7 +41,14 @@ The repository now contains a working Next.js application and Aiven/PostGIS data
 - Field inspections with condition and GPS metadata
 - Site-photo uploads through Vercel Blob
 - Public-safe resource history summaries and photo galleries
-- Automated GIS data-quality checks and possible-duplicate detection\n- Spatial Analysis workspace for nearby-feature queries using true PostGIS distances\n- LGA spatial summaries with mapped forest hectares and verified river kilometres
+- Automated GIS data-quality checks and possible-duplicate detection
+- Spatial Analysis workspace for nearby-feature queries using true PostGIS distances
+- LGA spatial summaries with mapped forest hectares and verified river kilometres
+- Remote Sensing workbench with click-to-draw AOIs and existing forest-boundary reuse
+- Sentinel-2 Level-2A scene discovery through Earth Search
+- NDVI baseline/comparison statistics, cloud masking, clear-pixel coverage and vegetated-area estimates
+- Baseline/comparison NDVI image previews
+- Publishable vegetation-change AOI layer on the public map
 
 ### Administration
 - Role-based users: registered community, staff, admin
@@ -79,7 +86,7 @@ Architecture decision: docs/architecture/decisions/0003-adopt-aiven-postgis-next
 
 ## Aiven migration
 
-db/migrations/001_init.sql enables PostGIS, pgcrypto, and citext; creates the operational schema; creates GIST spatial indexes; and seeds all 23 Benue LGAs with the 14 initial CARE-Map pilot LGAs marked. db/migrations/002_field_operations.sql adds GPS quality/provenance, inspections, import auditing, and GIS quality views. db/migrations/003_operations_governance.sql adds report ownership, priority/deadlines, status history, account governance metadata, and supporting indexes.
+db/migrations/001_init.sql enables PostGIS, pgcrypto, and citext; creates the operational schema; creates GIST spatial indexes; and seeds all 23 Benue LGAs with the 14 initial CARE-Map pilot LGAs marked. db/migrations/002_field_operations.sql adds GPS quality/provenance, inspections, import auditing, and GIS quality views. db/migrations/003_operations_governance.sql adds report ownership, priority/deadlines, status history, account governance metadata, and supporting indexes. db/migrations/004_remote_sensing.sql adds persisted Sentinel-2 vegetation analyses and spatial indexes.
 
 ## Environment variables
 
@@ -92,6 +99,11 @@ db/migrations/001_init.sql enables PostGIS, pgcrypto, and citext; creates the op
 | ADMIN_EMAIL | Initial administrator email |
 | ADMIN_PASSWORD | Initial administrator password |
 | BLOB_READ_WRITE_TOKEN | Vercel Blob token for field photo uploads |
+| CDSE_CLIENT_ID | Copernicus Data Space OAuth client ID for Sentinel processing |
+| CDSE_CLIENT_SECRET | Copernicus Data Space OAuth client secret |
+| CDSE_TOKEN_URL | Optional Copernicus OAuth token endpoint override |
+| CDSE_SH_BASE_URL | Optional Copernicus Sentinel Hub API base URL override |
+| EARTH_SEARCH_STAC_URL | Optional public Sentinel-2 STAC catalog override |
 
 Never expose database or session secrets through NEXT_PUBLIC variables.
 
@@ -105,7 +117,14 @@ Never expose database or session secrets through NEXT_PUBLIC variables.
 - GET/POST /api/resources/:kind/:id/photos
 - POST /api/gis/import
 - GET /api/gis/export
-- GET /api/gis/quality\n- GET /api/gis/analysis/nearby\n- GET /api/gis/analysis/lgas
+- GET /api/gis/quality
+- GET /api/gis/analysis/nearby
+- GET /api/gis/analysis/lgas
+- POST /api/remote-sensing/scenes
+- GET/POST /api/remote-sensing/analyses
+- GET/PATCH /api/remote-sensing/analyses/:id
+- POST /api/remote-sensing/analyses/:id/run
+- GET /api/remote-sensing/analyses/:id/preview
 - GET/POST /api/reports
 - PATCH /api/reports/:id/status
 - GET /api/reports/mine
