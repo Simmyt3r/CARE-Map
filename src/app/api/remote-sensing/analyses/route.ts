@@ -49,7 +49,7 @@ export async function POST(request:Request){
         name,aoi,baseline_date,comparison_date,window_days,vegetation_threshold,status,
         baseline_scene,comparison_scene,created_by
       ) VALUES(
-        $1,ST_Multi(ST_SetSRID(ST_GeomFromGeoJSON($2),4326)),$3,$4,$5,$6,$7,$8,$9,$10
+        $1,ST_Multi(ST_CollectionExtract(ST_MakeValid(ST_Force2D(ST_SetSRID(ST_GeomFromGeoJSON($2),4326))),3)),$3,$4,$5,$6,$7,$8,$9,$10
       ) RETURNING id`,
       [
         body.name.trim().slice(0,180),
