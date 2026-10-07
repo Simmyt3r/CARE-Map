@@ -1,0 +1,213 @@
+# CARE-Map Intervention Coverage Analysis
+
+The Intervention Coverage workspace provides a GIS baseline for asking:
+
+> What share of an LGA's land area lies within a chosen straight-line distance of qualifying mapped boreholes or assets?
+
+It is available under:
+
+```
+Staff → Spatial Analysis → Intervention coverage
+```
+
+## What the baseline measures
+
+CARE-Map calculates **territorial area coverage**.
+
+For an LGA boundary (L), a set of qualifying point resources (P), and radius (r):
+
+```
+service_area = union(buffer(each resource point, r))
+covered = intersection(LGA boundary, service_area)
+uncovered = LGA boundary - covered
+coverage_percent = area(covered) / area(LGA boundary) × 100
+```
+
+Distances are evaluated with PostGIS geography in metres.
+
+## Cross-boundary resources
+
+A resource does not have to be physically inside the selected LGA to contribute.
+
+CARE-Map includes a point when it is within the selected radius of the LGA boundary. Its buffer is then clipped to the selected LGA.
+
+The output separates:
+
+- resources inside the selected LGA
+- external supporting resources whose coverage crosses the administrative boundary
+
+This prevents administrative borders from artificially truncating proximity coverage.
+
+## Resource types
+
+### Boreholes
+
+The primary operational use case.
+
+**Functional only** uses records whose status is:
+
+```
+functional
+```
+
+This is still only a proximity proxy. A borehole being marked functional does not prove:
+
+- sufficient yield
+- water quality
+- continuous availability
+- adequate capacity
+- safe walking access
+- population demand coverage
+
+### Assets
+
+Asset mode combines all mapped asset types in the current baseline.
+
+This can be useful for general infrastructure-footprint analysis, but staff should not interpret heterogeneous assets as one service class.
+
+A later extension can add asset-type-specific coverage scenarios.
+
+## Scenarios
+
+### Functional only
+
+Only resources currently marked `functional` contribute.
+
+### Mapped footprint (non-decommissioned)
+
+All resources except `decommissioned` contribute.
+
+This scenario can include:
+
+- functional
+- needs maintenance
+- non-functional
+
+It is therefore a **planning/infrastructure footprint**, not an active-service estimate.
+
+## Radius
+
+The API accepts:
+
+```
+100 m to 50,000 m
+```
+
+The interface provides common presets:
+
+- 500 m
+- 1 km
+- 2 km
+- 5 km
+- 10 km
+- 25 km
+
+The radius is a straight-line distance, not network travel distance.
+
+## Required data
+
+Coverage analysis requires:
+
+1. migration 007 applied
+2. an imported LGA boundary for the selected LGA
+3. mapped boreholes or assets with valid point geometry
+4. meaningful resource status values
+
+No extra database migration is required for Phase 12.
+
+## Spatial workflow
+
+The API:
+
+1. loads the selected LGA MultiPolygon
+2. finds qualifying resources using `ST_DWithin(...::geography, ...::geography, radius)`
+3. buffers each qualifying point using geography metres
+4. unions the service buffers
+5. intersects the result with the LGA boundary
+6. derives the uncovered remainder
+7. calculates areas with geography
+8. returns GeoJSON for the boundary, covered area, uncovered area and resources
+
+## API
+
+```
+GET /api/gis/analysis/coverage
+```
+
+Query parameters:
+
+| Parameter | Values |
+|---|---|
+| `lga` | CARE-Map LGA code |
+| `type` | `borehole` or `asset` |
+| `scenario` | `functional` or `non_decommissioned` |
+| `radius` | metres, 100–50,000 |
+
+Example:
+
+```
+/api/gis/analysis/coverage?lga=MAKURDI&type=borehole&scenario=functional&radius=2000
+```
+
+## Output
+
+The response includes:
+
+- LGA code/name/boundary source
+- resource type
+- scenario
+- radius
+- total contributing resources
+- resources physically inside the LGA
+- external supporting resources
+- LGA area in km²
+- covered area in km²
+- uncovered area in km²
+- coverage percentage
+- LGA boundary GeoJSON
+- covered-area GeoJSON
+- uncovered-area GeoJSON
+- contributing resource FeatureCollection
+
+## GeoJSON export
+
+The interface can export one FeatureCollection containing:
+
+- LGA boundary
+- covered area
+- uncovered gap area
+- contributing resources
+
+This can be opened in QGIS for cartography, validation or further spatial analysis.
+
+## What it does **not** measure
+
+Do not call this population coverage.
+
+The current result does **not** model:
+
+- population distribution
+- settlements
+- households
+- travel time
+- roads/paths
+- slope barriers
+- rivers/bridges as accessibility barriers
+- facility capacity
+- borehole yield
+- reliability/uptime
+- service demand
+
+A 2 km circular buffer is a GIS proximity model, not proof that everyone inside the circle can or does use the resource.
+
+## Recommended next extension
+
+For a more defensible access model, combine CARE-Map with validated:
+
+- settlement points/polygons
+- population raster or enumerated community population
+- road/path network
+- elevation/slope
+- facility capacity or borehole yield
+
+That would allow CARE-Map to progress from **territorial proximity coverage** to **population and accessibility analysis**.
