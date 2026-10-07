@@ -63,15 +63,15 @@ FOR EACH ROW EXECUTE FUNCTION touch_updated_at();
 CREATE TABLE IF NOT EXISTS field_acceptance_evidence(
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   run_id UUID NOT NULL REFERENCES field_acceptance_runs(id) ON DELETE CASCADE,
-  check_key TEXT REFERENCES field_acceptance_checks(check_key) DEFERRABLE INITIALLY DEFERRED,
+  check_key TEXT,
   url TEXT NOT NULL,
   caption TEXT,
   uploaded_by UUID REFERENCES users(id),
-  uploaded_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  uploaded_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  FOREIGN KEY(run_id,check_key)
+    REFERENCES field_acceptance_checks(run_id,check_key)
+    ON DELETE CASCADE
 );
-
--- A cross-table composite FK is awkward here because check_key is unique only per run.
--- Keep run/check consistency enforced in the upload API and index evidence for review.
 CREATE INDEX IF NOT EXISTS idx_field_acceptance_evidence_run
   ON field_acceptance_evidence(run_id,uploaded_at DESC);
 
