@@ -2,6 +2,7 @@
 import Link from "next/link";
 import {useRouter} from "next/navigation";
 import {useState} from "react";
+import {PRIVACY_NOTICE_VERSION} from "@/lib/privacy";
 
 export default function RegisterForm(){
  const router=useRouter();
@@ -9,7 +10,7 @@ export default function RegisterForm(){
 
  async function submit(e:React.FormEvent){
    e.preventDefault();setBusy(true);setMessage("");
-   const r=await fetch("/api/auth/register",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({name,email,password,privacyAcknowledged})});
+   const r=await fetch("/api/auth/register",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({name,email,password,privacyAcknowledged,privacyNoticeVersion:PRIVACY_NOTICE_VERSION})});
    const j=await r.json().catch(()=>({}));setBusy(false);
    if(!r.ok)return setMessage(j.error?.message||"Registration failed.");
    router.push("/report");
