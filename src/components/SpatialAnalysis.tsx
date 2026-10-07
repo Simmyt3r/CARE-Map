@@ -4,6 +4,7 @@ import SpatialAnalysisMap from "@/components/SpatialAnalysisMap";
 import CoverageAnalysis from "@/components/CoverageAnalysis";
 import SettlementAccessAnalysis from "@/components/SettlementAccessAnalysis";
 import RiverCorridorAnalysis from "@/components/RiverCorridorAnalysis";
+import HazardExposureAnalysis from "@/components/HazardExposureAnalysis";
 
 export default function SpatialAnalysis(){
   const[latitude,setLatitude]=useState("");
@@ -73,6 +74,8 @@ export default function SpatialAnalysis(){
     <SettlementAccessAnalysis lgas={lgas}/>
 
     <RiverCorridorAnalysis lgas={lgas}/>
+
+    <HazardExposureAnalysis lgas={lgas}/>
 
     <section className="card stack">
       <div className="section-head"><div><h2>LGA spatial summary</h2><div className="muted">Authoritative counts plus administrative area, forest area, river length and report location calculated from stored PostGIS geometries.</div></div><button className="btn" onClick={loadLgas}>Refresh</button></div>
