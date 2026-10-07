@@ -2,6 +2,7 @@
 import {useEffect,useRef,useState} from "react";
 import * as maplibregl from "maplibre-gl";
 import type {GeoJSONSource} from "maplibre-gl";
+import {geometryExtent} from "@/lib/geojson";
 
 type Lga={code:string;name:string};
 type Filters={type:string;lga:string;status:string};
@@ -10,10 +11,23 @@ export default function PublicMap(){
   const node=useRef<HTMLDivElement|null>(null);
   const mapRef=useRef<maplibregl.Map|null>(null);
   const filterRef=useRef<Filters>({type:"",lga:"",status:""});
+  const boundaryByCodeRef=useRef<Record<string,any>>({});
   const[type,setType]=useState(""),[lga,setLga]=useState(""),[status,setStatus]=useState("");
   const[lgas,setLgas]=useState<Lga[]>([]),[error,setError]=useState("");
 
   useEffect(()=>{fetch("/api/lgas").then(r=>r.json()).then(j=>setLgas(j.data||[])).catch(()=>{});},[]);
+
+  async function loadBoundaries(map=mapRef.current){
+    if(!map)return;
+    try{
+      const r=await fetch("/api/gis/lga-boundaries");
+      if(!r.ok)return;
+      const data=await r.json();
+      const features=Array.isArray(data.features)?data.features:[];
+      boundaryByCodeRef.current=Object.fromEntries(features.map((feature:any)=>[feature.properties?.code,feature]));
+      (map.getSource("lga-boundaries") as GeoJSONSource|undefined)?.setData({type:"FeatureCollection",features} as any);
+    }catch{}
+  }
 
   async function loadFeatures(map=mapRef.current){
     if(!map)return;
@@ -46,8 +60,12 @@ export default function PublicMap(){
     map.addControl(new maplibregl.ScaleControl({maxWidth:120,unit:"metric"}),"bottom-left");
 
     map.on("load",()=>{
+      map.addSource("lga-boundaries",{type:"geojson",data:{type:"FeatureCollection",features:[]}});
       map.addSource("carepoints",{type:"geojson",data:{type:"FeatureCollection",features:[]},cluster:true,clusterRadius:46,clusterMaxZoom:13});
       map.addSource("careshapes",{type:"geojson",data:{type:"FeatureCollection",features:[]}});
+
+      map.addLayer({id:"lga-boundary-fill",type:"fill",source:"lga-boundaries",filter:["==",["get","code"],"__NONE__"],paint:{"fill-color":"#244d35","fill-opacity":0.09}});
+      map.addLayer({id:"lga-boundary-lines",type:"line",source:"lga-boundaries",paint:{"line-color":"#355f46","line-width":["interpolate",["linear"],["zoom"],6,1,12,2],"line-opacity":0.7}});
 
       map.addLayer({id:"care-polygons",type:"fill",source:"careshapes",filter:["in",["geometry-type"],["literal",["Polygon","MultiPolygon"]]],paint:{"fill-color":"#2f855a","fill-opacity":0.26,"fill-outline-color":"#1f6b3b"}});
       map.addLayer({id:"care-lines",type:"line",source:"careshapes",filter:["in",["geometry-type"],["literal",["LineString","MultiLineString"]]],paint:{"line-color":"#2878a8","line-width":["interpolate",["linear"],["zoom"],6,2,13,5]}});
@@ -109,14 +127,27 @@ export default function PublicMap(){
         map.on("mouseenter",layer,()=>{map.getCanvas().style.cursor="pointer";});
         map.on("mouseleave",layer,()=>{map.getCanvas().style.cursor="";});
       });
-      loadFeatures(map);
+      void loadBoundaries(map);
+      void loadFeatures(map);
     });
     map.on("moveend",()=>loadFeatures(map));
     mapRef.current=map;
     return()=>{map.remove();mapRef.current=null;};
   },[]);
 
-  useEffect(()=>{filterRef.current={type,lga,status};loadFeatures();},[type,lga,status]);
+  useEffect(()=>{
+    filterRef.current={type,lga,status};
+    const map=mapRef.current;
+    if(map?.getLayer("lga-boundary-fill")){
+      map.setFilter("lga-boundary-fill",["==",["get","code"],lga||"__NONE__"]);
+    }
+    if(lga&&map){
+      const feature=boundaryByCodeRef.current[lga];
+      const extent=geometryExtent(feature?.geometry);
+      if(extent)map.fitBounds([[extent[0],extent[1]],[extent[2],extent[3]]],{padding:42,maxZoom:12});
+    }
+    void loadFeatures();
+  },[type,lga,status]);
 
   return <div className="card">
     <div className="filters">
