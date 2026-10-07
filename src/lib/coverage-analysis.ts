@@ -20,5 +20,5 @@ export function isCoverageScenario(value:unknown):value is CoverageScenario{
 }
 
 export function coverageScenarioLabel(value:CoverageScenario){
-  return value==="functional"?"Functional only":"All non-decommissioned";
+  return value==="functional"?"Functional only":"Mapped footprint (non-decommissioned)";
 }
