@@ -21,7 +21,7 @@ describe("map composer helpers",()=>{
   });
 
   it("builds a safe GeoJSON filename",()=>{
-    expect(composerFilename("Benue ACReSAL — October Map")).toBe("benue-acresal-october-map-geojson.json");
-    expect(composerFilename("   ")).toBe("care-map-geojson.json");
+    expect(composerFilename("Benue ACReSAL — October Map")).toBe("benue-acresal-october-map.geojson");
+    expect(composerFilename("   ")).toBe("care-map.geojson");
   });
 });
