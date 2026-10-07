@@ -45,6 +45,7 @@ export default function PrivacyGovernanceCenter(){
       method:"POST",headers:{"content-type":"application/json"},
       body:JSON.stringify({
         ...breachForm,
+        detectedAt:breachForm.detectedAt?new Date(breachForm.detectedAt).toISOString():"",
         approximateSubjects:breachForm.approximateSubjects?Number(breachForm.approximateSubjects):null
       })
     });
