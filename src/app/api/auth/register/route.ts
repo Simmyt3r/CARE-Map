@@ -4,7 +4,6 @@ import {pool} from "@/lib/db";
 import {createSessionToken,setSessionCookie} from "@/lib/auth";
 import {clientIp,error,rateLimit} from "@/lib/http";
 import {registerSchema} from "@/lib/validators";
-import {PRIVACY_NOTICE_VERSION} from "@/lib/privacy";
 
 export const runtime="nodejs";
 
@@ -27,7 +26,7 @@ export async function POST(request:Request){
     const id=result.rows[0].id;
     await client.query(
       "INSERT INTO privacy_notice_acceptances(user_id,context,notice_version) VALUES($1,'registration',$2)",
-      [id,PRIVACY_NOTICE_VERSION]
+      [id,parsed.data.privacyNoticeVersion]
     );
     await client.query("COMMIT");
 
