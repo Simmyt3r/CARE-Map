@@ -292,3 +292,34 @@ Production gate: run the migration against the real Aiven service and field-test
 **Production gate:** apply migration 010 after migrations 007–009 and confirm the mapped river geometries are verified by the GIS team before using exposure counts in operations or reporting.
 
 **Interpretation rule:** river proximity is a screening variable, not proof of flood or erosion hazard. Hazard conclusions require terrain/elevation, drainage, rainfall, historical inundation/erosion evidence, and field verification.
+
+
+## Phase 15 — Verified Hazard Zones & Exposure ✅ Baseline complete
+
+- [x] PostGIS MultiPolygon hazard-zone layer
+- [x] Flood, erosion, gully erosion, land degradation, landslide and other hazard classes
+- [x] Unknown/low/medium/high/critical severity model without treating unknown as low
+- [x] Required source/provenance for hazard datasets
+- [x] Optional source date and mapping/method metadata
+- [x] Verified/unverified hazard workflow with verifier and timestamp
+- [x] Audited GeoJSON hazard imports
+- [x] Polygon normalization and geometry repair
+- [x] 1,000-feature / 20 MB import safeguards
+- [x] GIS Workbench hazard review and severity editing
+- [x] Hazard GeoJSON export
+- [x] Staff-only verified hazard exposure analysis
+- [x] LGA, hazard type, severity and specific-zone filtering
+- [x] LGA-clipped union of selected verified polygons
+- [x] Hazard area in km² and percentage of LGA area
+- [x] Verified settlement exposure
+- [x] Borehole and asset exposure
+- [x] Open-report exposure
+- [x] Sourced exposed-population totals without filling missing population
+- [x] Map of verified hazard polygons and exposed features
+- [x] Exposure GeoJSON export
+- [x] Regression tests for hazard types, severities, labels and ordering
+- [x] Explicit source-quality and methodology interpretation rules
+
+**Production gate:** apply migration 011 and import only GIS/M&E-approved hazard polygon datasets with documented source, date/version and method. Keep uncertain datasets unverified until reviewed.
+
+**Interpretation rule:** CARE-Map verification means staff accepted the imported polygon for operational use; it does not mean CARE-Map independently validated the scientific model that produced the hazard dataset.
