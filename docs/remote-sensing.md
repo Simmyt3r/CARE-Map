@@ -136,13 +136,13 @@ CARE-Map derives:
 Conceptually:
 
 ```
-clear vegetation area =
-AOI area × clear pixel fraction × vegetation fraction
+estimated vegetation area =
+AOI area × vegetation fraction observed across valid clear pixels
 ```
 
 The result is expressed in hectares.
 
-This is an estimate based only on clear usable pixels. CARE-Map deliberately does not interpolate or invent values for masked cloud pixels.
+The vegetation fraction is calculated only from valid clear pixels, then applied to the full AOI to produce a coverage-normalized estimate. Clear-pixel coverage is always reported separately as the confidence/quality indicator. This avoids treating a cloudier image as automatic vegetation loss, but it also assumes the visible pixels are reasonably representative of the AOI. Low-clear-coverage observations must therefore be treated cautiously.
 
 ## Change calculation
 
@@ -260,6 +260,43 @@ Future extensions can add:
 - DEM/slope/watershed analysis
 - burn/fire indices
 - soil/water indices
-- automatic periodic vegetation monitoring
+- Sentinel-1 radar for cloud-independent validation of automated monitoring
 - pixel-level change raster persistence
 - richer time-series charts
+
+
+## Automated vegetation monitoring
+
+A completed NDVI comparison can be promoted into a recurring monitoring plan.
+
+The comparison-period result becomes the fixed reference state. Each scheduled check:
+
+1. Uses the same AOI and NDVI threshold.
+2. Searches the most recent observation window.
+3. Calculates clear-pixel coverage.
+4. Rejects the observation for alerting if clear coverage is below the plan threshold.
+5. Compares the normalized vegetation-area estimate with the fixed reference.
+6. Raises an operational alert when loss exceeds the configured percentage threshold.
+7. Sends the alert into the CARE-Map Operations Center until a staff member acknowledges it.
+
+The default daily scheduler only checks monitors whose `next_due_at` has arrived, so a 30-day plan is not processed every day.
+
+Low-clear-coverage and failed observations retry the following day. Successful observations schedule the next check according to the monitor cadence.
+
+Monitoring database migration:
+
+```
+db/migrations/005_vegetation_monitoring.sql
+```
+
+Monitoring APIs:
+
+```
+GET/POST /api/remote-sensing/monitors
+PATCH    /api/remote-sensing/monitors/:id
+POST     /api/remote-sensing/monitors/:id/run
+GET      /api/remote-sensing/monitors/:id/observations
+GET      /api/remote-sensing/alerts
+POST     /api/remote-sensing/alerts/:id/acknowledge
+GET      /api/internal/remote-sensing-monitor
+```
