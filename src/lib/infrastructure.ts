@@ -245,7 +245,7 @@ export async function currentInfrastructureSnapshot(){
               FROM field_acceptance_runs r
               JOIN lgas l ON l.code=r.lga_code
               WHERE l.pilot=TRUE AND r.status='completed'
-              ORDER BY r.lga_code,r.completed_at DESC
+              ORDER BY r.lga_code,r.completed_at DESC,r.id DESC
             ) latest
           `):0,
           pilotAcceptancePassed:t?.acceptance?await count(`
@@ -254,7 +254,7 @@ export async function currentInfrastructureSnapshot(){
               FROM field_acceptance_runs r
               JOIN lgas l ON l.code=r.lga_code
               WHERE l.pilot=TRUE AND r.status='completed'
-              ORDER BY r.lga_code,r.completed_at DESC
+              ORDER BY r.lga_code,r.completed_at DESC,r.id DESC
             ) latest
             WHERE result='pass'
           `):0,
