@@ -1,5 +1,6 @@
 "use client";
 import {useEffect,useState} from "react";
+import ReportEvidencePhotos from "@/components/ReportEvidencePhotos";
 
 type Staff={id:string;name:string;email:string;role:string;active:boolean};
 
@@ -67,6 +68,14 @@ export default function ReportGovernanceDrawer({report,staff,onClose,onUpdated}:
           </div>
         </section>
 
+        {details?.report?.origin==="satellite_alert"&&<section className="drawer-section stack satellite-context">
+          <div className="section-head"><h3>Satellite trigger</h3><span className={"priority-badge priority-"+(details.report.satellite_alert_severity||"medium")}>{details.report.satellite_alert_severity||"alert"}</span></div>
+          <strong>{details.report.satellite_alert_title||"Vegetation-loss alert"}</strong>
+          {details.report.satellite_alert_message&&<p>{details.report.satellite_alert_message}</p>}
+          {details.report.satellite_monitor_name&&<div className="muted">Monitor: {details.report.satellite_monitor_name}</div>}
+          <div className="notice">This report closes the satellite alert when the field task is resolved or rejected.</div>
+        </section>}
+
         <section className="drawer-section stack">
           <h3>Ownership & urgency</h3>
           <div className="grid two">
@@ -76,6 +85,8 @@ export default function ReportGovernanceDrawer({report,staff,onClose,onUpdated}:
           <div className="field"><label>Due date / time</label><input type="datetime-local" value={dueAt} onChange={e=>setDueAt(e.target.value)}/></div>
           <button className="btn primary" disabled={busy} onClick={saveGovernance}>Save assignment</button>
         </section>
+
+        <ReportEvidencePhotos reportId={report.id}/>
 
         <section className="drawer-section stack">
           <h3>Workflow update</h3>
