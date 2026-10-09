@@ -1,67 +1,29 @@
-# CARE-Map Implementation
+# CARE-Map Implementation Status
 
-The repository now contains an executable MVP rather than only design material.
+**Updated:** 2026-10-09 | **Status:** Substantial application implementation in repository; production provisioning, source-data validation and client acceptance remain outstanding.
 
-## Delivered workflows
+The authoritative feature inventory and API list are in the [root README](../README.md). This page summarizes implementation boundaries without implying a deployment or real-world verification that has not happened.
 
-### Public
-- Browse a MapLibre/OpenStreetMap basemap with CARE-Map PostGIS layers.
-- Filter interventions by entity type, LGA, and status.
-- Submit a problem or unknown-stream report with manual coordinates or phone GPS.
-- Register a community account.
-- Track reports attached to the signed-in account.
+## Implemented code areas
+- Public MapLibre/PostGIS maps, LGA filters, public resource details and QR report entry.
+- Community problem/stream reporting, optional accounts, public privacy flows and an offline community report queue.
+- Staff asset, borehole, river and forest data management; inspections and maintenance; photos, GPS provenance, verified review and report assignment.
+- GIS CSV/GeoJSON import, data quality, spatial proximity, LGA coverage, settlement-water access, river exposure, hazard polygons and catchment analysis; printable Map Composer.
+- Sentinel-2 scene search, baseline/comparison NDVI, monitored areas, alerts and linked field verification tasks.
+- Administrator users/roles, audit logs, privacy/governance, translation packs, Production Readiness and Field Acceptance.
+- Schema migrations 001–015, PostGIS spatial indexes, basic CI/Vitest infrastructure.
 
-### Staff
-- Secure staff/admin session.
-- Dashboard totals, functional rate, open reports, and high-risk count.
-- Create boreholes and assets from latitude/longitude.
-- Create forest polygons and river lines from GeoJSON.
-- Change infrastructure status.
-- Log maintenance through the API.
-- Review, verify, resolve, or reject community reports.
-- Export infrastructure data as CSV.
+## Not established by code alone
+- Live Aiven provisioning, strict TLS and production secret configuration.
+- Production Vercel environment, Blob storage, Copernicus credentials and scheduled-job execution.
+- Authenticated client-approved administrative/pilot baseline data and official LGA boundary completeness.
+- Actual production load testing against the 500-concurrent-user / under-2-second targets.
+- Independent privacy/security review, satellite/hazard scientific validation and backup-restore exercise.
+- Signed field acceptance for all pilot LGAs and formal client go-live approval.
+- Full offline map tile support, offline staff editing, or a trained AI prediction model.
 
-### Administration
-- Create staff/admin/community users.
-- Audit log for resource creation/update/delete and report state changes.
+## Deployment
+Use the [Deployment and Operations Guide](client-handover/deployment-operations.md), followed by [Production Readiness](production-readiness.md) and [Field Acceptance](field-acceptance.md). Never publish secrets in Git or send them in handover documents.
 
-### GIS / risk
-- PostGIS geometry columns and GIST indexes.
-- Bounding-box map API.
-- GeoJSON output.
-- Rule-based scheduled risk refresh.
-- Nearby unresolved reports contribute to forest-site risk.
-- Automatic two-year anonymization hook for resolved community reports.
-
-## Deployment checklist
-
-1. Create an Aiven for PostgreSQL service.
-2. Copy its PostgreSQL service URI into DATABASE_URL.
-3. Copy the CA certificate into AIVEN_CA_CERT for certificate verification in production.
-4. Create a random 32+ character SESSION_SECRET.
-5. Create CRON_SECRET.
-6. Run npm install.
-7. Run npm run db:migrate.
-8. Set ADMIN_EMAIL and a 12+ character ADMIN_PASSWORD.
-9. Run npm run db:seed-admin.
-10. Add the same runtime environment variables to Vercel and deploy.
-
-## Data-entry convention
-
-For point assets, longitude/latitude are collected separately. For line and polygon features, GeoJSON uses longitude first, latitude second.
-
-Example line:
-
-~~~json
-{"type":"LineString","coordinates":[[8.52,7.71],[8.55,7.74]]}
-~~~
-
-Example polygon:
-
-~~~json
-{"type":"Polygon","coordinates":[[[8.52,7.71],[8.55,7.71],[8.55,7.74],[8.52,7.71]]]}
-~~~
-
-## External setup still required
-
-The code cannot provision the user's Aiven account or Vercel environment by itself. Production readiness therefore still requires real service credentials, running the migration against that service, and deployment verification.
+## Client release package
+Start from the [Five Essential Client Documents](README.md#the-five-essential-client-facing-documents). The UAT/handover document contains the unsigned approval and contractual responsibility template.
