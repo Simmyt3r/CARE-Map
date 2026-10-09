@@ -4,7 +4,8 @@ const {DATABASE_URL,ADMIN_EMAIL,ADMIN_PASSWORD}=process.env;
 if(!DATABASE_URL||!ADMIN_EMAIL||!ADMIN_PASSWORD) throw new Error("DATABASE_URL, ADMIN_EMAIL and ADMIN_PASSWORD are required");
 if(ADMIN_PASSWORD.length<12) throw new Error("ADMIN_PASSWORD must be at least 12 characters");
 const ca=process.env.AIVEN_CA_CERT?.replace(/\\n/g,"\n");
-const client=new pg.Client({connectionString:DATABASE_URL,ssl:ca?{ca,rejectUnauthorized:true}:{rejectUnauthorized:false}});
+const uri=new URL(process.env.DATABASE_URL);for(const key of ["sslmode","sslrootcert","sslcert","sslkey"])uri.searchParams.delete(key);
+const client=new pg.Client({connectionString:uri.toString(),ssl:ca?{ca,rejectUnauthorized:true}:{rejectUnauthorized:false}});
 await client.connect();
 try{
  const hash=await bcrypt.hash(ADMIN_PASSWORD,12);
