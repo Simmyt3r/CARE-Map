@@ -6,8 +6,9 @@ import pg from "pg";
 if(!process.env.DATABASE_URL) throw new Error("DATABASE_URL is required");
 
 const ca=process.env.AIVEN_CA_CERT?.replace(/\\n/g,"\n");
+const uri=new URL(process.env.DATABASE_URL);for(const key of ["sslmode","sslrootcert","sslcert","sslkey"])uri.searchParams.delete(key);
 const client=new pg.Client({
-  connectionString:process.env.DATABASE_URL,
+  connectionString:uri.toString(),
   ssl:ca?{ca,rejectUnauthorized:true}:{rejectUnauthorized:false}
 });
 
