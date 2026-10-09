@@ -43,8 +43,9 @@ export async function POST(request: NextRequest) {
   }
   if (password.length<12) return reply("ADMIN_PASSWORD must have at least 12 characters.",503);
 
+  const uri=new URL(databaseUrl);for(const key of ["sslmode","sslrootcert","sslcert","sslkey"])uri.searchParams.delete(key);
   const client=new pg.Client({
-    connectionString:databaseUrl,
+    connectionString:uri.toString(),
     ssl:{ca:caCert.replace(/\\n/g,"\n"),rejectUnauthorized:true},
     connectionTimeoutMillis:10000
   });
@@ -62,7 +63,7 @@ export async function POST(request: NextRequest) {
   try {
     const migrations=await initializeDatabase({databaseUrl,caCert});
     // One-time bootstrap only: never rotate an existing administrator through this route.
-    const verify=new pg.Client({connectionString:databaseUrl,ssl:{ca:caCert.replace(/\\n/g,"\n"),rejectUnauthorized:true},connectionTimeoutMillis:10000});
+    const verify=new pg.Client({connectionString:uri.toString(),ssl:{ca:caCert.replace(/\\n/g,"\n"),rejectUnauthorized:true},connectionTimeoutMillis:10000});
     try {
       await verify.connect();
       const count=await verify.query<{count:string}>("SELECT count(*)::text AS count FROM users WHERE role='admin' AND active=TRUE AND deleted_at IS NULL");
