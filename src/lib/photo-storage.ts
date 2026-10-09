@@ -51,7 +51,7 @@ export async function uploadPhotoToCloudinary(file:File,category:string,entityId
   const publicId="care-map/"+category+"/"+entityId+"/"+randomUUID();
 
   const form=new FormData();
-  form.set("file",new Blob([bytes],{type:file.type}),"photo."+suffix);
+  form.set("file",new Blob([await file.arrayBuffer()],{type:file.type}),"photo."+suffix);
   form.set("public_id",publicId);
   form.set("overwrite","false");
   const basic=Buffer.from(key+":"+secret).toString("base64");
