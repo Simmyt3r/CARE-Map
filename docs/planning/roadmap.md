@@ -66,7 +66,8 @@ Production gate: run the migration against the real Aiven service and field-test
 - [ ] Validate offline behavior in target LGAs
 - [x] Vercel Blob field-photo storage integration
 - [x] Resource photo gallery
-- [ ] Add English/local-language translations
+- [x] Localization framework and reviewed translation-pack governance
+- [ ] Import and approve human-reviewed Tiv/Idoma/Igede content packs
 - [x] Sentinel-2 remote-sensing integration baseline
 - [ ] Complete formal NDPA/legal review
 - [ ] Field acceptance testing and production launch
@@ -454,3 +455,35 @@ Production gate: run the migration against the real Aiven service and field-test
 **Formal legal gate remains open:** the software implementation does not itself complete the legal review. The responsible ACReSAL privacy/legal function or qualified Nigerian data-protection professional must approve controller roles, lawful bases, retention, DPIA need, processor/transfers, NDPC registration/filing obligations, DPO/DPCO requirements, cookies/storage, minors, breach SOP and the final public notice.
 
 **Production rule:** only set `PRIVACY_LEGAL_REVIEWED_AT` and `PRIVACY_REVIEWER` after that real review is completed.
+
+
+## Phase 20 — Localization & Translation Governance ✅ Tooling complete
+
+- [x] Built-in English public catalog and permanent fallback
+- [x] Tiv, Idoma and Igede target-language pack records
+- [x] Reviewed/disabled translation-pack state model
+- [x] Human translator/reviewer source and version provenance
+- [x] Audited translation-pack imports
+- [x] Required-key coverage calculation
+- [x] Missing-key and unknown-key reporting
+- [x] 100% required-key coverage before review approval
+- [x] Separate review and public-enable actions
+- [x] Disable and revoke-review actions
+- [x] Reimporting a pack resets it to draft and disables it
+- [x] Public APIs expose only reviewed + enabled packs
+- [x] English fallback when local pack/database is unavailable
+- [x] Browser-persisted public language preference
+- [x] HTML language attribute updated to resolved locale
+- [x] Localized public navigation
+- [x] Localized public landing page
+- [x] Localized community registration
+- [x] Localized community reporting, GPS and offline feedback
+- [x] Admin Translation Review Center
+- [x] Downloadable English JSON translation template
+- [x] Production Readiness optional localization capability gate
+- [x] Legal privacy notice explicitly remains English until separately reviewed legal translation
+- [x] Regression tests for locale fallback, key validation and 100% coverage rule
+
+**External content gate remains open:** actual Tiv, Idoma and Igede wording must be supplied and reviewed by fluent human language reviewers. CARE-Map intentionally does not ship machine-guessed local-language strings.
+
+**Production rule:** a local-language pack appears to public users only after complete key coverage, explicit human review approval and separate public enablement. Legal/privacy translations require separate legal/privacy review.

@@ -3,18 +3,22 @@ import {useEffect,useRef,useState} from "react";
 import * as maplibregl from "maplibre-gl";
 import type {GeoJSONSource} from "maplibre-gl";
 import {geometryExtent} from "@/lib/geojson";
+import {useI18n} from "@/components/LocalizationProvider";
 
 type Lga={code:string;name:string};
 type Filters={type:string;lga:string;status:string};
 
 export default function PublicMap(){
+  const{t}=useI18n();
+  const tRef=useRef(t);
   const node=useRef<HTMLDivElement|null>(null);
   const mapRef=useRef<maplibregl.Map|null>(null);
   const filterRef=useRef<Filters>({type:"",lga:"",status:""});
   const boundaryByCodeRef=useRef<Record<string,any>>({});
   const[type,setType]=useState(""),[lga,setLga]=useState(""),[status,setStatus]=useState("");
-  const[lgas,setLgas]=useState<Lga[]>([]),[error,setError]=useState("");
+  const[lgas,setLgas]=useState<Lga[]>([]),[hasError,setHasError]=useState(false);
 
+  useEffect(()=>{tRef.current=t;},[t]);
   useEffect(()=>{fetch("/api/lgas").then(r=>r.json()).then(j=>setLgas(j.data||[])).catch(()=>{});},[]);
 
   async function loadBoundaries(map=mapRef.current){
@@ -50,8 +54,8 @@ export default function PublicMap(){
       const shapes={type:"FeatureCollection",features:(data.features||[]).filter((x:any)=>x.geometry?.type!=="Point")} as any;
       (map.getSource("carepoints") as GeoJSONSource|undefined)?.setData(points);
       (map.getSource("careshapes") as GeoJSONSource|undefined)?.setData(shapes);
-      setError("");
-    }catch{setError("Map data could not be loaded.");}
+      setHasError(false);
+    }catch{setHasError(true);}
   }
 
   useEffect(()=>{
@@ -104,16 +108,43 @@ export default function PublicMap(){
         const div=document.createElement("div");
         div.className="map-popup";
         const title=document.createElement("strong");
-        title.textContent=p.name||p.entityType||"CARE-Map item";
+        const tx=tRef.current;
+        const entityLabel=(value:string)=>{
+          if(value==="borehole")return tx("map.boreholes");
+          if(value==="asset")return tx("map.assets");
+          if(value==="forest_site")return tx("map.forests");
+          if(value==="river")return tx("map.rivers");
+          if(value==="ndvi_change")return tx("map.vegetationChange");
+          return value.replaceAll("_"," ");
+        };
+        const statusLabel=(value:string)=>{
+          if(value==="functional")return tx("map.functional");
+          if(value==="needs_maintenance")return tx("map.needsMaintenance");
+          if(value==="non_functional")return tx("map.nonFunctional");
+          return value.replaceAll("_"," ");
+        };
+        const riskLabel=(value:string)=>{
+          if(value==="low")return tx("map.low");
+          if(value==="medium")return tx("map.medium");
+          if(value==="high")return tx("map.high");
+          if(value==="critical")return tx("map.critical");
+          return value;
+        };
+        title.textContent=p.name||entityLabel(String(p.entityType||""))||tx("map.item");
         const meta=document.createElement("div");
-        meta.textContent=[p.entityType?.replace("_"," "),p.lga,p.status,p.riskLevel&&("Risk: "+p.riskLevel)].filter(Boolean).join(" • ");
+        meta.textContent=[
+          p.entityType&&entityLabel(String(p.entityType)),
+          p.lga,
+          p.status&&statusLabel(String(p.status)),
+          p.riskLevel&&(tx("map.risk")+": "+riskLabel(String(p.riskLevel)))
+        ].filter(Boolean).join(" • ");
         div.append(title,meta);
         const kindMap:Record<string,string>={borehole:"boreholes",asset:"assets",forest_site:"forest-sites",river:"rivers"};
         const publicKind=kindMap[String(p.entityType||"")];
         if(publicKind&&p.id){
           const link=document.createElement("a");
           link.href="/resource/"+publicKind+"/"+p.id;
-          link.textContent="View public record";
+          link.textContent=tx("map.viewRecord");
           link.className="map-popup-link";
           div.append(link);
         }
@@ -157,12 +188,12 @@ export default function PublicMap(){
 
   return <div className="card">
     <div className="filters">
-      <div className="field"><label>Layer</label><select value={type} onChange={e=>setType(e.target.value)}><option value="">All interventions</option><option value="borehole">Boreholes</option><option value="asset">Assets</option><option value="forest_site">Forests</option><option value="river">Rivers</option><option value="ndvi_change">Vegetation change</option></select></div>
-      <div className="field"><label>LGA</label><select value={lga} onChange={e=>setLga(e.target.value)}><option value="">All LGAs</option>{lgas.map(x=><option key={x.code} value={x.code}>{x.name}</option>)}</select></div>
-      <div className="field"><label>Status</label><select value={status} onChange={e=>setStatus(e.target.value)}><option value="">Any status</option><option value="functional">Functional</option><option value="needs_maintenance">Needs maintenance</option><option value="non_functional">Non-functional</option></select></div>
-      <div className="field"><label>Legend</label><div className="map-legend"><span><i className="legend-low"/>Low</span><span><i className="legend-medium"/>Medium</span><span><i className="legend-high"/>High</span><span><i className="legend-critical"/>Critical</span></div></div>
+      <div className="field"><label>{t("map.layer")}</label><select value={type} onChange={e=>setType(e.target.value)}><option value="">{t("map.allInterventions")}</option><option value="borehole">{t("map.boreholes")}</option><option value="asset">{t("map.assets")}</option><option value="forest_site">{t("map.forests")}</option><option value="river">{t("map.rivers")}</option><option value="ndvi_change">{t("map.vegetationChange")}</option></select></div>
+      <div className="field"><label>{t("map.lga")}</label><select value={lga} onChange={e=>setLga(e.target.value)}><option value="">{t("map.allLgas")}</option>{lgas.map(x=><option key={x.code} value={x.code}>{x.name}</option>)}</select></div>
+      <div className="field"><label>{t("map.status")}</label><select value={status} onChange={e=>setStatus(e.target.value)}><option value="">{t("map.anyStatus")}</option><option value="functional">{t("map.functional")}</option><option value="needs_maintenance">{t("map.needsMaintenance")}</option><option value="non_functional">{t("map.nonFunctional")}</option></select></div>
+      <div className="field"><label>{t("map.legend")}</label><div className="map-legend"><span><i className="legend-low"/>{t("map.low")}</span><span><i className="legend-medium"/>{t("map.medium")}</span><span><i className="legend-high"/>{t("map.high")}</span><span><i className="legend-critical"/>{t("map.critical")}</span></div></div>
     </div>
-    {error&&<div className="error">{error}</div>}
-    <div ref={node} className="map-wrap" aria-label="CARE-Map interactive intervention map"/>
+    {hasError&&<div className="error">{t("map.dataError")}</div>}
+    <div ref={node} className="map-wrap" aria-label={t("map.aria")}/>
   </div>;
 }

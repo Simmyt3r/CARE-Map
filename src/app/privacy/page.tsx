@@ -1,5 +1,6 @@
 import PrivacyRequestForm from "@/components/PrivacyRequestForm";
 import {PRIVACY_NOTICE_VERSION} from "@/lib/privacy";
+import PrivacyLanguageNotice from "@/components/PrivacyLanguageNotice";
 
 export const dynamic="force-dynamic";
 
@@ -11,6 +12,7 @@ export default function PrivacyPage(){
   const accountsBasis=process.env.PRIVACY_LAWFUL_BASIS_ACCOUNTS||"Lawful basis pending formal legal review";
 
   return <div className="stack privacy-page">
+    <PrivacyLanguageNotice/>
     <section className="card stack">
       <span className="badge">Privacy notice · version {PRIVACY_NOTICE_VERSION}</span>
       <h1>CARE-Map privacy notice</h1>
