@@ -207,25 +207,27 @@ export default function SettlementManager(){
     <div className="notice"><strong>Verification rule:</strong> keep the batch unverified unless the source and coordinates have been reviewed. Access analysis uses verified settlements by default.</div>
 
     <div className="grid two">
-      <div className="field"><label>Import format</label><select value={format} onChange={e=>{setFormat(e.target.value as ImportFormat);setRows([]);setFeatures([]);setFileName("");}}>
+      <div className="field"><label>Import format</label><select value={format} disabled={busy} onChange={e=>{setFormat(e.target.value as ImportFormat);setRows([]);setFeatures([]);setFileName("");resetProgress();}}>
         <option value="csv">CSV coordinates</option>
         <option value="geojson">GeoJSON points</option>
       </select></div>
-      <div className="field"><label>Dataset source / provenance</label><input value={source} onChange={e=>setSource(e.target.value)} placeholder="e.g. Benue ACReSAL validated community inventory · 2026-10"/></div>
+      <div className="field"><label>Dataset source / provenance</label><input value={source} disabled={busy} onChange={e=>{setSource(e.target.value);resetProgress();}} placeholder="e.g. Benue ACReSAL validated community inventory · 2026-10"/></div>
     </div>
 
     <div className="grid three">
-      <div className="field"><label>Default population source</label><input value={defaultPopulationSource} onChange={e=>setDefaultPopulationSource(e.target.value)} placeholder="Optional; used when row source is blank"/></div>
-      <div className="field"><label>Default population year</label><input inputMode="numeric" value={defaultPopulationYear} onChange={e=>setDefaultPopulationYear(e.target.value)} placeholder="Optional, e.g. 2024"/></div>
-      <label className="check-field settlement-verified-check"><input type="checkbox" checked={verified} onChange={e=>setVerified(e.target.checked)}/> Mark imported records verified</label>
+      <div className="field"><label>Default population source</label><input value={defaultPopulationSource} disabled={busy} onChange={e=>{setDefaultPopulationSource(e.target.value);resetProgress();}} placeholder="Optional; used when row source is blank"/></div>
+      <div className="field"><label>Default population year</label><input inputMode="numeric" value={defaultPopulationYear} disabled={busy} onChange={e=>{setDefaultPopulationYear(e.target.value);resetProgress();}} placeholder="Optional, e.g. 2024"/></div>
+      <label className="check-field settlement-verified-check"><input type="checkbox" checked={verified} disabled={busy} onChange={e=>{setVerified(e.target.checked);resetProgress();}}/> Mark imported records verified</label>
     </div>
 
-    <div className="field"><label>File</label><input type="file" accept={format==="csv"?".csv,text/csv":".geojson,.json,application/geo+json,application/json"} onChange={e=>e.target.files?.[0]&&readFile(e.target.files[0])}/></div>
+    <div className="field"><label>File</label><input type="file" disabled={busy} accept={format==="csv"?".csv,text/csv":".geojson,.json,application/geo+json,application/json"} onChange={e=>e.target.files?.[0]&&readFile(e.target.files[0])}/></div>
 
     <div className="actions">
       {format==="csv"&&<button className="btn" type="button" onClick={template}>Download CSV template</button>}
       <button className="btn" type="button" onClick={exportGeoJson}>Export settlement GeoJSON</button>
-      <button className="btn primary" disabled={busy||!items.length||!source.trim()} onClick={importSettlements}>{busy?"Importing…":"Validate & import settlements"}</button>
+      <button className="btn primary" disabled={busy||!items.length||!source.trim()||cursor>=items.length} onClick={importSettlements}>{busy?"Importing batch…":cursor>0&&cursor<items.length?"Resume import":cursor===items.length&&items.length>0?"Import complete":"Validate & import settlements"}</button>
+      {busy&&<button className="btn" onClick={()=>{stopAfterBatch.current=true;setPaused(true);}}>Pause after current batch</button>}
+      {progress?.errors.length?<button className="btn" onClick={downloadErrors}>Download rejected rows ({progress.errors.length})</button>:null}
     </div>
 
     {fileName&&<div className="notice"><strong>{fileName}</strong> · {items.length} records loaded for preview/import.</div>}
@@ -238,6 +240,17 @@ export default function SettlementManager(){
       }</tbody>
     </table></div>}
 
+    {progress&&<div className="card stack" role="status" aria-live="polite">
+      <div className="section-head"><h3>Settlement import progress</h3><strong>{Math.round(progress.processed/progress.total*100)}%</strong></div>
+      <progress value={progress.processed} max={progress.total} style={{width:"100%"}}/>
+      <div className="muted">{progress.processed.toLocaleString()} / {progress.total.toLocaleString()} records processed · {progress.batches} batches finished{paused?" · paused":""}</div>
+      <div className="stats">
+        <div className="stat"><strong>{progress.imported}</strong><span>Imported</span></div>
+        <div className="stat"><strong>{progress.skipped}</strong><span>Duplicates skipped</span></div>
+        <div className="stat"><strong>{progress.failed}</strong><span>Rejected (review)</span></div>
+      </div>
+      <div className="muted">Batches of {CHUNK_SIZE} are saved independently. Resume retries the next unconfirmed batch and skips already imported records.</div>
+    </div>}
     {message&&<div className={message.startsWith("Imported")||message.includes("verified")?"success":"notice"}>{message}</div>}
 
     {!!imports.length&&<div className="stack">
