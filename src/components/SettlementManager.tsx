@@ -3,7 +3,7 @@ import {useCallback,useMemo,useState,useEffect,useRef} from "react";
 
 type ImportFormat="csv"|"geojson";
 type ImportProgress={processed:number;total:number;imported:number;skipped:number;failed:number;autoAssignedLga:number;batches:number;errors:{row:number;message:string}[]};
-const CHUNK_SIZE=100;
+const CHUNK_SIZE=50;
 
 function parseCsv(text:string){
   const rows:string[][]=[];
@@ -52,8 +52,9 @@ export default function SettlementManager(){
   const[cursor,setCursor]=useState(0);
   const[progress,setProgress]=useState<ImportProgress|null>(null);
   const[paused,setPaused]=useState(false);
+  const[batchMessage,setBatchMessage]=useState("");
   const stopAfterBatch=useRef(false);
-  const resetProgress=()=>{setCursor(0);setProgress(null);setPaused(false);stopAfterBatch.current=false;};
+  const resetProgress=()=>{setCursor(0);setProgress(null);setPaused(false);setBatchMessage("");stopAfterBatch.current=false;};
 
   const load=useCallback(async()=>{
     const r=await fetch("/api/gis/settlements");
@@ -64,6 +65,7 @@ export default function SettlementManager(){
   useEffect(()=>{void load();},[load]);
 
   const items=format==="csv"?rows:features;
+  const visibleProgress=progress||{processed:0,total:items.length,imported:0,skipped:0,failed:0,autoAssignedLga:0,batches:0,errors:[]};
   const preview=useMemo(()=>items.slice(0,8),[items]);
 
   async function readFile(file:File){
@@ -92,7 +94,7 @@ export default function SettlementManager(){
 
   async function importSettlements(){
     if(busy||!items.length||!source.trim()||cursor>=items.length)return;
-    setBusy(true);setPaused(false);setMessage("");
+    setBusy(true);setPaused(false);setMessage("");setBatchMessage("Starting import…");
     stopAfterBatch.current=false;
     const total=items.length;
     let next=cursor;
@@ -110,6 +112,7 @@ export default function SettlementManager(){
           ...(format==="csv"?{rows:batch}:{features:batch})
         };
         const batchNumber=Math.floor(next/CHUNK_SIZE)+1;
+        setBatchMessage("Processing batch "+batchNumber+" of "+Math.ceil(total/CHUNK_SIZE)+" ("+batch.length+" records)…");
         let response:Response;
         try{
           response=await fetch("/api/gis/settlements/import",{
@@ -137,17 +140,21 @@ export default function SettlementManager(){
             aggregate.errors.push({row:next-batch.length+Number(e.row||0),message:String(e.message||"Invalid record")});
           }
         }
+        setBatchMessage("Batch "+batchNumber+" finished. "+next+" of "+total+" records confirmed.");
         setCursor(next);
         setProgress({...aggregate,errors:[...aggregate.errors]});
       }
       if(next>=total){
+        setBatchMessage("Completed all "+aggregate.batches+" batches.");
         setMessage("Import complete: "+aggregate.imported+" added, "+aggregate.skipped+
           " duplicates skipped, "+aggregate.failed+" rejected. "+
           aggregate.autoAssignedLga+" LGA assignments calculated.");
       }else if(stopAfterBatch.current){
+        setBatchMessage("Paused after the current batch.");
         setMessage("Import paused after "+next+" of "+total+" records. Use Resume import when ready.");
       }
     }catch(e){
+      setBatchMessage("A batch could not be confirmed. Check the error and select Resume import.");
       setPaused(true);
       setMessage(e instanceof Error?e.message:"Import interrupted. Resume from the last confirmed batch.");
     }finally{
@@ -192,7 +199,7 @@ export default function SettlementManager(){
 
   return <section className="card stack">
     <div className="section-head">
-      <div><h2>Settlements & communities</h2><div className="muted">Import point locations with provenance. Population is optional and remains explicitly sourced when present.</div></div>
+      <div><h2>Settlements & communities</h2><div className="muted">Import point locations with provenance. Population is optional and remains explicitly sourced when present.</div><small className="muted">Batch importer v2 · 50 records per request · progress visible from 0%</small></div>
       <button className="btn" onClick={load}>Refresh</button>
     </div>
 
@@ -240,17 +247,19 @@ export default function SettlementManager(){
       }</tbody>
     </table></div>}
 
-    {progress&&<div className="card stack" role="status" aria-live="polite">
-      <div className="section-head"><h3>Settlement import progress</h3><strong>{Math.round(progress.processed/progress.total*100)}%</strong></div>
-      <progress value={progress.processed} max={progress.total} style={{width:"100%"}}/>
-      <div className="muted">{progress.processed.toLocaleString()} / {progress.total.toLocaleString()} records processed · {progress.batches} batches finished{paused?" · paused":""}</div>
+    {!!items.length&&<div className="card stack" role="status" aria-live="polite">
+      <div className="section-head"><h3>Settlement import progress</h3><strong>{Math.round(visibleProgress.processed/visibleProgress.total*100)}%</strong></div>
+      <progress value={visibleProgress.processed} max={visibleProgress.total} style={{width:"100%",height:18}}/>
+      <div className="muted">{visibleProgress.processed.toLocaleString()} / {visibleProgress.total.toLocaleString()} records processed · {visibleProgress.batches} batch(es) completed</div>
+      <strong>{batchMessage||(busy?"Starting import…":cursor===0?"File ready. Click Validate & import settlements to begin.":paused?"Import paused. Click Resume import.":"Import complete.")}</strong>
       <div className="stats">
-        <div className="stat"><strong>{progress.imported}</strong><span>Imported</span></div>
-        <div className="stat"><strong>{progress.skipped}</strong><span>Duplicates skipped</span></div>
-        <div className="stat"><strong>{progress.failed}</strong><span>Rejected (review)</span></div>
+        <div className="stat"><strong>{visibleProgress.imported}</strong><span>Imported</span></div>
+        <div className="stat"><strong>{visibleProgress.skipped}</strong><span>Already present</span></div>
+        <div className="stat"><strong>{visibleProgress.failed}</strong><span>Rejected for review</span></div>
       </div>
-      <div className="muted">Batches of {CHUNK_SIZE} are saved independently. Resume retries the next unconfirmed batch and skips already imported records.</div>
+      <div className="muted">Each successful batch of {CHUNK_SIZE} records is saved separately. A lost connection can be resumed from the last confirmed batch; previous matches are skipped on retry.</div>
     </div>}
+
     {message&&<div className={message.startsWith("Imported")||message.includes("verified")?"success":"notice"}>{message}</div>}
 
     {!!imports.length&&<div className="stack">
