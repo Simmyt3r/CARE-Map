@@ -1,4 +1,4 @@
-import {put} from "@vercel/blob";
+import {uploadPhotoToCloudinary,PhotoStorageError} from "@/lib/photo-storage";
 import {NextResponse} from "next/server";
 import {getSession,isStaff} from "@/lib/auth";
 import {error} from "@/lib/http";
@@ -25,9 +25,6 @@ export async function GET(_:Request,context:{params:Promise<{kind:string;id:stri
 export async function POST(request:Request,context:{params:Promise<{kind:string;id:string}>}){
   const session=await getSession();
   if(!isStaff(session))return error("Staff access required",403,"FORBIDDEN");
-  const token=process.env.BLOB_READ_WRITE_TOKEN;
-  if(!token)return error("Photo storage is not configured yet. Add BLOB_READ_WRITE_TOKEN in Infrastructure settings.",503,"STORAGE_NOT_CONFIGURED");
-
   const{kind,id}=await context.params;
   const entityType=entityMap[kind];
   if(!entityType)return error("Unsupported resource type",400);
@@ -39,10 +36,9 @@ export async function POST(request:Request,context:{params:Promise<{kind:string;
   if(!allowedTypes.has(file.type))return error("Only JPEG, PNG and WebP images are allowed.");
   if(file.size>4*1024*1024)return error("Image must be 4 MB or smaller.");
 
-  const safeName=file.name.replace(/[^a-zA-Z0-9._-]+/g,"-").slice(-120)||"photo.jpg";
-  const pathname="care-map/"+entityType+"/"+id+"/"+Date.now()+"-"+safeName;
+
   try{
-    const blob=await put(pathname,file,{access:"public",addRandomSuffix:true,token});
+    const blob=await uploadPhotoToCloudinary(file,entityType,id);
     const result=await query<{id:string}>(
       "INSERT INTO photos(entity_type,entity_id,url,caption,uploaded_by) VALUES($1,$2,$3,$4,$5) RETURNING id",
       [entityType,id,blob.url,caption||null,session.sub]
@@ -52,6 +48,7 @@ export async function POST(request:Request,context:{params:Promise<{kind:string;
     ]);
     return NextResponse.json({data:{id:result.rows[0].id,url:blob.url,caption}},{status:201});
   }catch(e){
-    return error(e instanceof Error?e.message:"Photo upload failed.",500,"UPLOAD_FAILED");
+    if(e instanceof PhotoStorageError)return error(e.message,e.status,"PHOTO_STORAGE_ERROR");
+    return error("Photo storage or database operation failed. Contact the administrator.","Photo upload failed.",500,"UPLOAD_FAILED");
   }
 }
