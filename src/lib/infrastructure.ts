@@ -43,6 +43,8 @@ export type DataReadiness={
   admins:number;
 };
 
+function tlsUri(databaseUrl:string){const u=new URL(databaseUrl);for(const p of ["sslmode","sslrootcert","sslcert","sslkey"])u.searchParams.delete(p);return u.toString();}
+
 function ssl(caCert?:string){
   const ca=caCert?.trim().replace(/\\n/g,"\n");
   return ca?{ca,rejectUnauthorized:true}:{rejectUnauthorized:false};
@@ -59,7 +61,7 @@ export function describeDatabaseUrl(value?:string){
 export async function checkDatabase(config:AivenConfig):Promise<DbCheck>{
   if(!config.databaseUrl?.trim())return{ok:false,error:"Database service URI is required."};
   const info=describeDatabaseUrl(config.databaseUrl);
-  const client=new pg.Client({connectionString:config.databaseUrl,ssl:ssl(config.caCert),connectionTimeoutMillis:10000});
+  const client=new pg.Client({connectionString:tlsUri(config.databaseUrl),ssl:ssl(config.caCert),connectionTimeoutMillis:10000});
   try{
     await client.connect();
     const base=await client.query<{database:string;user_name:string;version:string;postgis_enabled:boolean;tables:string}>(
@@ -133,7 +135,7 @@ async function migrationStatusOnClient(client:Client):Promise<MigrationStatus>{
 }
 
 export async function initializeDatabase(config:AivenConfig){
-  const client=new pg.Client({connectionString:config.databaseUrl,ssl:ssl(config.caCert),connectionTimeoutMillis:10000});
+  const client=new pg.Client({connectionString:tlsUri(config.databaseUrl),ssl:ssl(config.caCert),connectionTimeoutMillis:10000});
   await client.connect();
   try{
     await ensureMigrationLedger(client);
@@ -173,7 +175,7 @@ export async function initializeDatabase(config:AivenConfig){
 
 export async function bootstrapAdmin(config:AivenConfig,email:string,password:string,name="CARE-Map Administrator"){
   if(password.length<12)throw new Error("Administrator password must be at least 12 characters.");
-  const client=new pg.Client({connectionString:config.databaseUrl,ssl:ssl(config.caCert),connectionTimeoutMillis:10000});
+  const client=new pg.Client({connectionString:tlsUri(config.databaseUrl),ssl:ssl(config.caCert),connectionTimeoutMillis:10000});
   await client.connect();
   try{
     const exists=await client.query("SELECT to_regclass('public.users') AS users_table");
@@ -208,7 +210,7 @@ export async function currentInfrastructureSnapshot(){
     database=await checkDatabase({databaseUrl,caCert:process.env.AIVEN_CA_CERT});
     if(database.ok){
       const client=new pg.Client({
-        connectionString:databaseUrl,
+        connectionString:tlsUri(databaseUrl),
         ssl:ssl(process.env.AIVEN_CA_CERT),
         connectionTimeoutMillis:10000
       });
