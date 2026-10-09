@@ -1,7 +1,9 @@
 "use client";
-import {useCallback,useMemo,useState,useEffect} from "react";
+import {useCallback,useMemo,useState,useEffect,useRef} from "react";
 
 type ImportFormat="csv"|"geojson";
+type ImportProgress={processed:number;total:number;imported:number;skipped:number;failed:number;autoAssignedLga:number;batches:number;errors:{row:number;message:string}[]};
+const CHUNK_SIZE=100;
 
 function parseCsv(text:string){
   const rows:string[][]=[];
@@ -47,6 +49,11 @@ export default function SettlementManager(){
   const[imports,setImports]=useState<any[]>([]);
   const[message,setMessage]=useState("");
   const[busy,setBusy]=useState(false);
+  const[cursor,setCursor]=useState(0);
+  const[progress,setProgress]=useState<ImportProgress|null>(null);
+  const[paused,setPaused]=useState(false);
+  const stopAfterBatch=useRef(false);
+  const resetProgress=()=>{setCursor(0);setProgress(null);setPaused(false);stopAfterBatch.current=false;};
 
   const load=useCallback(async()=>{
     const r=await fetch("/api/gis/settlements");
@@ -60,7 +67,7 @@ export default function SettlementManager(){
   const preview=useMemo(()=>items.slice(0,8),[items]);
 
   async function readFile(file:File){
-    setMessage("");setFileName(file.name);
+    setMessage("");setFileName(file.name);resetProgress();
     try{
       const text=await file.text();
       if(format==="csv"){
@@ -84,30 +91,76 @@ export default function SettlementManager(){
   }
 
   async function importSettlements(){
-    if(!items.length||!source.trim())return;
-    setBusy(true);setMessage("");
-    const payload={
-      source:source.trim(),
-      format,
-      verified,
-      defaultPopulationSource:defaultPopulationSource.trim()||null,
-      defaultPopulationYear:defaultPopulationYear.trim()||null,
-      ...(format==="csv"?{rows}:{features})
+    if(busy||!items.length||!source.trim()||cursor>=items.length)return;
+    setBusy(true);setPaused(false);setMessage("");
+    stopAfterBatch.current=false;
+    const total=items.length;
+    let next=cursor;
+    const aggregate:ImportProgress=progress?{...progress,errors:[...progress.errors]}:{
+      processed:0,total,imported:0,skipped:0,failed:0,autoAssignedLga:0,batches:0,errors:[]
     };
-    const r=await fetch("/api/gis/settlements/import",{
-      method:"POST",
-      headers:{"content-type":"application/json"},
-      body:JSON.stringify(payload)
-    });
-    const j=await r.json().catch(()=>({}));
-    setBusy(false);
-    if(!r.ok)return setMessage(j.error?.message||"Settlement import failed.");
-    const d=j.data;
-    setMessage(
-      "Imported "+d.imported+" of "+d.total+" settlements. "+
-      d.failed+" failed. "+d.autoAssignedLga+" LGAs were assigned spatially."
-    );
-    await load();
+    try{
+      while(next<total){
+        if(stopAfterBatch.current){setPaused(true);break;}
+        const batch=items.slice(next,next+CHUNK_SIZE);
+        const payload={
+          source:source.trim(),format,verified,
+          defaultPopulationSource:defaultPopulationSource.trim()||null,
+          defaultPopulationYear:defaultPopulationYear.trim()||null,
+          ...(format==="csv"?{rows:batch}:{features:batch})
+        };
+        const batchNumber=Math.floor(next/CHUNK_SIZE)+1;
+        let response:Response;
+        try{
+          response=await fetch("/api/gis/settlements/import",{
+            method:"POST",headers:{"content-type":"application/json"},
+            body:JSON.stringify(payload),cache:"no-store"
+          });
+        }catch{
+          throw new Error("Network error in batch "+batchNumber+". Previous batches remain saved. Select Resume import to safely retry.");
+        }
+        const result=await response.json().catch(()=>({}));
+        if(!response.ok){
+          const detail=String(result.error?.message||result.message||"HTTP "+response.status);
+          throw new Error("Batch "+batchNumber+" failed: "+detail+". Resume import to retry this batch.");
+        }
+        const d=result.data||{};
+        next+=batch.length;
+        aggregate.processed=next;
+        aggregate.imported+=Number(d.imported||0);
+        aggregate.skipped+=Number(d.skipped||0);
+        aggregate.failed+=Number(d.failed||0);
+        aggregate.autoAssignedLga+=Number(d.autoAssignedLga||0);
+        aggregate.batches++;
+        if(Array.isArray(d.errors)){
+          for(const e of d.errors){
+            aggregate.errors.push({row:next-batch.length+Number(e.row||0),message:String(e.message||"Invalid record")});
+          }
+        }
+        setCursor(next);
+        setProgress({...aggregate,errors:[...aggregate.errors]});
+      }
+      if(next>=total){
+        setMessage("Import complete: "+aggregate.imported+" added, "+aggregate.skipped+
+          " duplicates skipped, "+aggregate.failed+" rejected. "+
+          aggregate.autoAssignedLga+" LGA assignments calculated.");
+      }else if(stopAfterBatch.current){
+        setMessage("Import paused after "+next+" of "+total+" records. Use Resume import when ready.");
+      }
+    }catch(e){
+      setPaused(true);
+      setMessage(e instanceof Error?e.message:"Import interrupted. Resume from the last confirmed batch.");
+    }finally{
+      setBusy(false);
+      await load();
+    }
+  }
+
+  function downloadErrors(){
+    if(!progress?.errors.length)return;
+    const csvEscape=(value:string)=>JSON.stringify(value);
+    download("care-map-settlement-import-errors.csv",
+      "row,error\n"+progress.errors.map(e=>e.row+","+csvEscape(e.message)).join("\n")+"\n","text/csv");
   }
 
   async function toggleVerified(row:any){
