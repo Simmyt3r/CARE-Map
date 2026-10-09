@@ -6,7 +6,7 @@
 This runbook is for authorized client IT/GIS administrators deploying and maintaining the CARE-Map Next.js application. Required: authorized GitHub repository access, Vercel project ownership, an Aiven for PostgreSQL service with PostGIS support, DNS/domain access, and trained administrators. No production password, access token, database URI or private certificate belongs in this document.
 
 ## 2. System topology
-Browser/PWA -> Vercel-hosted Next.js application/API -> Aiven PostgreSQL/PostGIS. Uploaded field photos and acceptance evidence use Vercel Blob; Sentinel-2 scene discovery uses Earth Search STAC and optional Copernicus processing credentials. Scheduled endpoint jobs handle risk refresh, monitoring and privacy retention. See [Architecture](../architecture/overview.md).
+Browser/PWA -> Vercel-hosted Next.js application/API -> Aiven PostgreSQL/PostGIS. New field photos and acceptance evidence use Cloudinary through authenticated server-side uploads; Sentinel-2 scene discovery uses Earth Search STAC and optional Copernicus processing credentials. Scheduled endpoint jobs handle risk refresh, monitoring and privacy retention. See [Architecture](../architecture/overview.md).
 
 ## 3. Required configuration
 | Name | Scope | Description |
@@ -17,7 +17,7 @@ Browser/PWA -> Vercel-hosted Next.js application/API -> Aiven PostgreSQL/PostGIS
 | CRON_SECRET | Server secret | Strong scheduler secret, 24+ characters |
 | ADMIN_EMAIL | Bootstrap-only | Initial admin identity |
 | ADMIN_PASSWORD | Bootstrap-only | Strong initial admin password |
-| BLOB_READ_WRITE_TOKEN | Optional server secret | Vercel Blob uploads |
+| CLOUDINARY_CLOUD_NAME | Server configuration | Cloudinary product environment name |\n| CLOUDINARY_API_KEY | Server secret | Cloudinary server-side API key |\n| CLOUDINARY_API_SECRET | Server secret | Cloudinary server-side API secret |
 | CDSE_CLIENT_ID / CDSE_CLIENT_SECRET | Optional server secrets | Copernicus processing authorization |
 | DATA_CONTROLLER_NAME / DATA_CONTROLLER_ADDRESS / PRIVACY_CONTACT_EMAIL | Production governance | Legally approved privacy ownership/contact |
 | PRIVACY_LAWFUL_BASIS_REPORTS / PRIVACY_LAWFUL_BASIS_ACCOUNTS / PRIVACY_LEGAL_REVIEWED_AT / PRIVACY_REVIEWER | Production governance | Approved privacy wording and review evidence |
@@ -32,7 +32,7 @@ Never use `NEXT_PUBLIC_` for secrets. Use the project's `.env.example` as the cu
 5. Run `npm run db:migrate`; check PostGIS, schema objects, and the `care_map_schema_migrations` checksum ledger for migrations 001–015.
 6. Run `npm run db:seed-admin` once using controlled administrator credentials. Remove bootstrap password exposure afterwards.
 7. Configure the same required server secrets in Vercel; deploy the pinned commit and connect the approved domain over HTTPS.
-8. Configure Vercel Blob, satellite credentials, scheduled endpoints and privacy metadata if the corresponding features are in scope.
+8. Configure Cloudinary, satellite credentials, scheduled endpoints and privacy metadata if the corresponding features are in scope.
 9. Import **verified** pilot LGA polygons, resource points and other authorized datasets using the GIS workbench.
 10. Run the administrator Production Readiness Center and per-LGA Field Acceptance Test Center. Do not go live until required gates pass and authorized sign-off is recorded.
 
@@ -62,7 +62,7 @@ All incoming location data must include source, collection date, validation stat
 - Define monitoring thresholds, alert destinations, working hours and escalation contacts with the client before go-live.
 
 ## 7. Backup and recovery
-**Client decision required:** database backup frequency, retention, storage geography, RPO and RTO. Enable and verify Aiven backups; separately inventory and protect Blob files. Perform a restore drill into a non-production database and confirm migrations, spatial indexes, application access, photos and representative features. Never restore over production without approved incident/change procedures.
+**Client decision required:** database backup frequency, retention, storage geography, RPO and RTO. Enable and verify Aiven backups; separately inventory and protect Cloudinary media and historical Cloudinary and historical Blob files. Perform a restore drill into a non-production database and confirm migrations, spatial indexes, application access, photos and representative features. Never restore over production without approved incident/change procedures.
 
 ## 8. Releases and rollback
 Use version-tagged releases, review changes, run CI and migration checks in staging, back up production, deploy in a change window and run smoke tests. Avoid assuming SQL migrations are reversible: application rollback and database rollback are different actions. If a migration is incompatible, follow an approved forward-fix or tested database restore plan. Record the deployed commit, operator, timestamp and post-deployment evidence.
@@ -72,7 +72,7 @@ Use version-tagged releases, review changes, run CI and migration checks in stag
 - Authorized staff login, role checks and revoked account behavior.
 - Viewport maps expose approved GeoJSON only.
 - Create and verify a designated test report, assignment and resolution.
-- Create/read a field inspection and photo if Blob is configured.
+- Create/read a field inspection and photo if Cloudinary is configured.
 - GPS and offline report submission/synchronization on a real device.
 - Export a vetted GeoJSON file and open it in QGIS.
 - Test satellite discovery/processing only if Copernicus integration is enabled.
