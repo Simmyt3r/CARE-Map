@@ -36,6 +36,21 @@ Never use `NEXT_PUBLIC_` for secrets. Use the project's `.env.example` as the cu
 9. Import **verified** pilot LGA polygons, resource points and other authorized datasets using the GIS workbench.
 10. Run the administrator Production Readiness Center and per-LGA Field Acceptance Test Center. Do not go live until required gates pass and authorized sign-off is recorded.
 
+
+## 4A. First-time command-line setup (recommended)
+From a trusted local checkout of the repository, install dependencies and create a private `.env.local` file containing `DATABASE_URL`, `AIVEN_CA_CERT`, `ADMIN_EMAIL`, and a **new rotated** `ADMIN_PASSWORD` of at least 12 characters. Do not commit the file, paste credentials into chat or expose them in command logs. For PEM CA material in a dotenv file, put its line breaks in one quoted value as literal `\\n` sequences. Use a Node.js version supporting `--env-file` (Node 20.6+).
+
+Run:
+
+```bash
+npm install
+node --env-file=.env.local scripts/setup.mjs
+```
+
+The script first validates the configuration, then executes the existing checksum-tracked migrations and admin seeding. It stops on the first failure, runs no destructive reset, and does **not** configure Vercel secrets. Re-running it skips applied matching migrations and resets the specified administrator's password: avoid re-running unnecessarily. If `AIVEN_CA_CERT` verification fails, fix the CA/connection configuration rather than disabling verification. The `npm run setup` alias works only when variables are already exported in the invoking environment.
+
+**Separate Vercel setup:** `SESSION_SECRET` and `CRON_SECRET` must be independently generated and saved in Vercel Production environment; redeploy for them to take effect. Confirm current post-deploy health and readiness with an authorized administrator.
+
 ## 5. GIS data management
 All incoming location data must include source, collection date, validation status, coordinate-reference system and responsible reviewer. WGS84 longitude/latitude order is mandatory for GeoJSON. Check geometry validity, duplicated points, LGA coverage and GPS accuracy; never manufacture survey-grade precision. Back up database before large imports. Keep migration scripts immutable after application.
 
