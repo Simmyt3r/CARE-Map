@@ -46,6 +46,6 @@ export async function POST(request:Request,context:{params:Promise<{id:string}>}
     return NextResponse.json({data:{id:result.rows[0].id,url:blob.url,caption}},{status:201});
   }catch(e){
     if(e instanceof PhotoStorageError)return error(e.message,e.status,"PHOTO_STORAGE_ERROR");
-    return error("Photo storage or database operation failed. Contact the administrator.","Evidence photo upload failed.",500,"UPLOAD_FAILED");
+    return error("Photo storage or database operation failed. Contact the administrator.",500,"UPLOAD_FAILED");
   }
 }
