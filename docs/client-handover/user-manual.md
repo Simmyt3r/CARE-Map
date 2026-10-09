@@ -63,7 +63,7 @@ Manage authorized accounts/roles; promptly deactivate departed users; examine au
 | Report remains queued | Reconnect without clearing browser storage; check whether the report was received before resubmitting |
 | Import rejected | Inspect row-level validation, coordinate ordering, geometry and required fields |
 | Satellite analysis fails | Check imagery availability, cloud quality, credentials and service status; escalate to GIS lead |
-| Photo upload fails | Check file type, size, connectivity and Blob configuration with IT |
+| Photo upload fails | Check JPEG/PNG/WebP type, the 4 MB size limit, connectivity and the three Cloudinary server credentials in Vercel Production with IT |
 
 ## 11. Safe use
 Do not upload credentials, confidential personal information or unredacted sensitive evidence. Use only approved data and authorized purposes. Report suspected data errors and security/privacy incidents through the client's designated support channel (to be supplied before launch).
