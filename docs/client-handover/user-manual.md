@@ -70,3 +70,12 @@ Do not upload credentials, confidential personal information or unredacted sensi
 
 ## 12. Training and sign-off
 Demonstrate each role-specific workflow on the intended devices. Record attendees, training dates, practical exercises and observed issues. This manual is not substitute for client-administered field acceptance.
+
+
+### Large settlement imports (slow connection recovery)
+
+In **Staff → GIS Workbench → Settlements & communities**, select CSV or GeoJSON and upload a file containing up to 2,000 settlement points. The browser now sends sequential batches of **100** records; each successful batch is committed separately, with a visible progress bar, added/duplicate/rejected counters, and an option to **Pause after current batch** or **Resume import**. Do not close or reload the page while running. After an interruption, reuse the same file and source, then choose Resume import. Existing records with the same settlement code or matching source/name/coordinates are skipped rather than re-created. Download the rejected-row CSV to inspect unmapped points, invalid attributes, or LGA-boundary mismatches. The user must independently review source coordinates, population provenance, and the final map before declaring settlements verified.
+
+The PostgreSQL API accepts a maximum of **200 records per request**; direct API clients must split large datasets. A successful browser import means all batches were processed, not that all features passed validation. Review the final **Imported**, **Duplicates skipped**, and **Rejected** counts, refresh the inventory, and keep verification unchecked until the GIS unit confirms the data.
+
+If an older deployment times out when importing a file, do not repeatedly submit the full file. Deploy the corrected importer, refresh CARE-Map, then retry through the batch interface. The final imported count must be confirmed in the database. A partially processed source can contain records from prior batches; the new importer skips identical existing records without resetting or deleting data.
