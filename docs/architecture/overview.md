@@ -18,7 +18,7 @@ flowchart TD
   W --> API[Server-side Next.js API routes]
   API --> AUTH[JWT HTTP-only session and role checks]
   API --> PG[(Aiven PostgreSQL + PostGIS)]
-  API --> B[Vercel Blob photos and evidence]
+  API --> B[Cloudinary photos and evidence]
   API --> ES[Earth Search STAC discovery]
   API --> C[Copernicus satellite processing]
   JOB[Scheduled risk/vegetation/privacy jobs] --> API
@@ -35,7 +35,7 @@ flowchart TD
 6. **Operations and governance:** explainable rule-based priority scores, dashboards, audit logs, users/roles, migrations and readiness checks, privacy request/breach registers, translation approval and per-device/LGA acceptance evidence.
 
 ## Data and trust boundaries
-- **System of record:** Aiven PostgreSQL/PostGIS; photos and evidence reside in Vercel Blob, with metadata/reference records in PostgreSQL.
+- **System of record:** Aiven PostgreSQL/PostGIS; new photos and evidence reside in Cloudinary (historical Blob URLs remain referenced), with metadata/reference records in PostgreSQL.
 - **Geospatial format:** geographic coordinates use WGS84 (EPSG:4326); GeoJSON is longitude then latitude. Spatial indexes support area/distance queries; use geography/metre calculations where appropriate.
 - **Public reporting:** community submissions are unverified until reviewed by authorized staff. Never treat a report as an authoritative asset, verified river, or hazard polygon without approval.
 - **Public API:** exposes only explicitly approved/public-safe data. Database credentials and signed session secrets remain server-only.
@@ -44,7 +44,7 @@ flowchart TD
 - **Risk:** rule-based scoring, **not** a trained or scientifically validated ML model. Satellite-derived vegetation loss needs qualified review and ground truth.
 
 ## Deployment and operations
-Vercel hosts the web app/API, Aiven provides PostgreSQL with PostGIS, Vercel Blob holds images. Migrations 001–015 are run with `npm run db:migrate` and checksummed in `care_map_schema_migrations`. Scheduled operations require configured credentials. Environment: `DATABASE_URL`, `AIVEN_CA_CERT`, `SESSION_SECRET`, `CRON_SECRET`, administrator bootstrap; optional Blob and Copernicus credentials.
+Vercel hosts the web app/API, Aiven provides PostgreSQL with PostGIS, Cloudinary holds new images. Migrations 001–015 are run with `npm run db:migrate` and checksummed in `care_map_schema_migrations`. Scheduled operations require configured credentials. Environment: `DATABASE_URL`, `AIVEN_CA_CERT`, `SESSION_SECRET`, `CRON_SECRET`, administrator bootstrap; Cloudinary and optional Copernicus credentials.
 
 ## Verification and remaining launch gates
 Source implementation exists, **not** proof that the client's production environment is configured. Before handover: provision live Aiven/Vercel services; verify TLS, migrations and PostGIS; import validated pilot-LGA and intervention datasets; complete legal/privacy review; run CI and performance/security checks; run real-device/offline/GPS UAT and get written client sign-off.
