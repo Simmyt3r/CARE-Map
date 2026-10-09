@@ -19,7 +19,7 @@ type Snapshot={
   caConfigured:boolean;
   sessionSecretConfigured:boolean;
   cronSecretConfigured:boolean;
-  blobConfigured:boolean;
+  cloudinaryConfigured:boolean;
   remoteSensingConfigured:boolean;
   adminSeedConfigured:boolean;
   databaseHost:string|null;
@@ -62,7 +62,9 @@ export default function InfrastructurePanel({snapshot}:{snapshot:Snapshot}){
   const[caCert,setCaCert]=useState("");
   const[sessionSecret,setSessionSecret]=useState(()=>randomSecret(32));
   const[cronSecret,setCronSecret]=useState(()=>randomSecret(32));
-  const[blobToken,setBlobToken]=useState("");
+  const[cloudinaryCloudName,setCloudinaryCloudName]=useState("");
+  const[cloudinaryApiKey,setCloudinaryApiKey]=useState("");
+  const[cloudinaryApiSecret,setCloudinaryApiSecret]=useState("");
   const[cdseClientId,setCdseClientId]=useState("");
   const[cdseClientSecret,setCdseClientSecret]=useState("");
   const[dataControllerName,setDataControllerName]=useState("");
@@ -84,7 +86,9 @@ export default function InfrastructurePanel({snapshot}:{snapshot:Snapshot}){
     if(caCert)lines.push('AIVEN_CA_CERT="'+escapeEnv(caCert.replaceAll("\n","\\n"))+'"');
     if(sessionSecret)lines.push('SESSION_SECRET="'+sessionSecret+'"');
     if(cronSecret)lines.push('CRON_SECRET="'+cronSecret+'"');
-    if(blobToken)lines.push('BLOB_READ_WRITE_TOKEN="'+escapeEnv(blobToken)+'"');
+    if(cloudinaryCloudName)lines.push('CLOUDINARY_CLOUD_NAME="'+escapeEnv(cloudinaryCloudName)+'"');
+    if(cloudinaryApiKey)lines.push('CLOUDINARY_API_KEY="'+escapeEnv(cloudinaryApiKey)+'"');
+    if(cloudinaryApiSecret)lines.push('CLOUDINARY_API_SECRET="'+escapeEnv(cloudinaryApiSecret)+'"');
     if(cdseClientId)lines.push('CDSE_CLIENT_ID="'+escapeEnv(cdseClientId)+'"');
     if(cdseClientSecret)lines.push('CDSE_CLIENT_SECRET="'+escapeEnv(cdseClientSecret)+'"');
     if(dataControllerName)lines.push('DATA_CONTROLLER_NAME="'+escapeEnv(dataControllerName)+'"');
@@ -97,7 +101,7 @@ export default function InfrastructurePanel({snapshot}:{snapshot:Snapshot}){
     if(adminEmail)lines.push('ADMIN_EMAIL="'+escapeEnv(adminEmail)+'"');
     if(adminPassword)lines.push('ADMIN_PASSWORD="'+escapeEnv(adminPassword)+'"');
     return lines.join("\n");
-  },[databaseUrl,caCert,sessionSecret,cronSecret,blobToken,cdseClientId,cdseClientSecret,dataControllerName,dataControllerAddress,privacyContactEmail,privacyReportsBasis,privacyAccountsBasis,privacyLegalReviewedAt,privacyReviewer,adminEmail,adminPassword]);
+  },[databaseUrl,caCert,sessionSecret,cronSecret,cloudinaryCloudName,cloudinaryApiKey,cloudinaryApiSecret,cdseClientId,cdseClientSecret,dataControllerName,dataControllerAddress,privacyContactEmail,privacyReportsBasis,privacyAccountsBasis,privacyLegalReviewedAt,privacyReviewer,adminEmail,adminPassword]);
 
   const required=snapshot.readinessItems.filter(x=>x.required);
   const optional=snapshot.readinessItems.filter(x=>!x.required);
@@ -164,7 +168,7 @@ export default function InfrastructurePanel({snapshot}:{snapshot:Snapshot}){
         <Status ok={snapshot.caConfigured} label="Aiven CA certificate"/>
         <Status ok={snapshot.sessionSecretConfigured} label="Session signing secret"/>
         <Status ok={snapshot.cronSecretConfigured} label="Cron secret"/>
-        <Status ok={snapshot.blobConfigured} label="Photo storage"/>
+        <Status ok={snapshot.cloudinaryConfigured} label="Cloudinary photo storage"/>
         <Status ok={snapshot.remoteSensingConfigured} label="Copernicus remote sensing"/>
       </div>
       {snapshot.databaseConfigured&&<div className="notice">Configured database: <strong>{snapshot.databaseHost||"unknown host"}</strong> / {snapshot.databaseName||"unknown database"} · {snapshot.database.ok?"reachable":"unreachable"}{snapshot.database.postgisEnabled?" · PostGIS "+(snapshot.database.postgisVersion||""):""}</div>}
@@ -188,7 +192,15 @@ export default function InfrastructurePanel({snapshot}:{snapshot:Snapshot}){
         <div><h2>2. Application secrets</h2><div className="muted">Generate strong values, then store them as Vercel Secret environment variables.</div></div>
         <div className="field"><label>SESSION_SECRET</label><div className="secret-row"><input readOnly value={sessionSecret}/><button className="btn" onClick={()=>setSessionSecret(randomSecret(32))}>Regenerate</button></div></div>
         <div className="field"><label>CRON_SECRET</label><div className="secret-row"><input readOnly value={cronSecret}/><button className="btn" onClick={()=>setCronSecret(randomSecret(32))}>Regenerate</button></div></div>
-        <div className="field"><label>Vercel Blob token</label><input type="password" autoComplete="off" value={blobToken} onChange={e=>setBlobToken(e.target.value)} placeholder="vercel_blob_rw_…"/></div>
+        <div className="stack">
+          <strong>Cloudinary photo storage</strong>
+          <div className="muted">All image uploads use private server-side credentials. Copy these into Vercel Production environment variables and redeploy. Never prefix API secrets with NEXT_PUBLIC_.</div>
+          <div className="field"><label>CLOUDINARY_CLOUD_NAME</label><input value={cloudinaryCloudName} onChange={e=>setCloudinaryCloudName(e.target.value)} placeholder="Cloudinary cloud name"/></div>
+          <div className="field"><label>CLOUDINARY_API_KEY</label><input type="password" autoComplete="off" value={cloudinaryApiKey} onChange={e=>setCloudinaryApiKey(e.target.value)} placeholder="Cloudinary API key"/></div>
+          <div className="field"><label>CLOUDINARY_API_SECRET</label><input type="password" autoComplete="off" value={cloudinaryApiSecret} onChange={e=>setCloudinaryApiSecret(e.target.value)} placeholder="Cloudinary API secret"/></div>
+          <div className="notice">Uploaded image links use Cloudinary's public delivery URLs. Restrict uploads to redacted, non-sensitive field photos. Historical Vercel Blob image links remain unchanged.</div>
+          <a href="https://console.cloudinary.com/" target="_blank" rel="noreferrer">Open Cloudinary dashboard ↗</a>
+        </div>
       </div>
 
       <div className="card stack">
