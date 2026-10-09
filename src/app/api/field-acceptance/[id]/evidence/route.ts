@@ -1,4 +1,4 @@
-import {put} from "@vercel/blob";
+import {uploadPhotoToCloudinary,PhotoStorageError} from "@/lib/photo-storage";
 import {NextResponse} from "next/server";
 import {getSession,isStaff} from "@/lib/auth";
 import {error} from "@/lib/http";
@@ -26,9 +26,6 @@ export async function GET(_:Request,context:{params:Promise<{id:string}>}){
 export async function POST(request:Request,context:{params:Promise<{id:string}>}){
   const session=await getSession();
   if(!isStaff(session))return error("Staff access required",403,"FORBIDDEN");
-  const token=process.env.BLOB_READ_WRITE_TOKEN;
-  if(!token)return error("Photo storage is not configured yet. Add BLOB_READ_WRITE_TOKEN in Infrastructure settings.",503,"STORAGE_NOT_CONFIGURED");
-
   const{id}=await context.params;
   if(!uuid.test(id))return error("Invalid acceptance run ID.");
 
@@ -51,11 +48,9 @@ export async function POST(request:Request,context:{params:Promise<{id:string}>}
     if(!check.rowCount)return error("Acceptance check not found.",404);
   }
 
-  const safeName=file.name.replace(/[^a-zA-Z0-9._-]+/g,"-").slice(-120)||"evidence.jpg";
-  const pathname="care-map/field-acceptance/"+id+"/"+Date.now()+"-"+safeName;
 
   try{
-    const blob=await put(pathname,file,{access:"public",addRandomSuffix:true,token});
+    const blob=await uploadPhotoToCloudinary(file,"field-acceptance",id);
     const result=await query<{id:string}>(`
       INSERT INTO field_acceptance_evidence(run_id,check_key,url,caption,uploaded_by)
       VALUES($1,$2,$3,$4,$5)
@@ -69,6 +64,7 @@ export async function POST(request:Request,context:{params:Promise<{id:string}>}
 
     return NextResponse.json({data:{id:result.rows[0].id,url:blob.url,caption,checkKey}},{status:201});
   }catch(e){
-    return error(e instanceof Error?e.message:"Acceptance evidence upload failed.",500,"UPLOAD_FAILED");
+    if(e instanceof PhotoStorageError)return error(e.message,e.status,"PHOTO_STORAGE_ERROR");
+    return error("Photo storage or database operation failed. Contact the administrator.","Acceptance evidence upload failed.",500,"UPLOAD_FAILED");
   }
 }
