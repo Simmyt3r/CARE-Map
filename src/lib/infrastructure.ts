@@ -432,10 +432,10 @@ export async function currentInfrastructureSnapshot(){
       action:"Import verified watershed/catchment boundaries for landscape planning."
     },
     {
-      id:"photos",label:"Field photo storage",category:"infrastructure",
-      state:process.env.BLOB_READ_WRITE_TOKEN?"ready":"warning",required:false,
-      detail:process.env.BLOB_READ_WRITE_TOKEN?"Vercel Blob is configured.":"Evidence-photo storage is not configured.",
-      action:"Add BLOB_READ_WRITE_TOKEN before field evidence/photo workflows."
+      id:"photos",label:"Cloudinary field photo storage",category:"infrastructure",
+      state:process.env.CLOUDINARY_CLOUD_NAME&&process.env.CLOUDINARY_API_KEY&&process.env.CLOUDINARY_API_SECRET?"ready":"warning",required:false,
+      detail:process.env.CLOUDINARY_CLOUD_NAME&&process.env.CLOUDINARY_API_KEY&&process.env.CLOUDINARY_API_SECRET?"Cloudinary configuration is present (upload connectivity requires a test).":"Cloudinary photo storage is not configured.",
+      action:"Add CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET to Vercel Production and redeploy."
     },
     {
       id:"remote-sensing",label:"Copernicus processing",category:"infrastructure",
@@ -451,7 +451,7 @@ export async function currentInfrastructureSnapshot(){
     caConfigured:Boolean(process.env.AIVEN_CA_CERT),
     sessionSecretConfigured:Boolean(process.env.SESSION_SECRET&&process.env.SESSION_SECRET.length>=32),
     cronSecretConfigured:Boolean(process.env.CRON_SECRET&&process.env.CRON_SECRET.length>=24),
-    blobConfigured:Boolean(process.env.BLOB_READ_WRITE_TOKEN),
+    cloudinaryConfigured:Boolean(process.env.CLOUDINARY_CLOUD_NAME&&process.env.CLOUDINARY_API_KEY&&process.env.CLOUDINARY_API_SECRET),
     remoteSensingConfigured:Boolean(process.env.CDSE_CLIENT_ID&&process.env.CDSE_CLIENT_SECRET),
     adminSeedConfigured:Boolean(process.env.ADMIN_EMAIL&&process.env.ADMIN_PASSWORD),
     databaseHost:details?.host||null,databaseName:details?.database||null,database,
