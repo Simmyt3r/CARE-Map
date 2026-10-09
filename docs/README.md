@@ -1,31 +1,37 @@
-# CARE-Map Documentation
+# CARE-Map Documentation and Client Handover Index
 
-This folder contains the planning and architecture documentation for CARE-Map (Community Asset & Resource Environment Map) — the Benue ACReSAL Smart Asset, Forest, River & Borehole Tracking System.
+**Updated:** 2026-10-09 | **Release:** working implementation, not yet production/field accepted.
 
-For the general project pitch, see the [root README](../README.md).
+CARE-Map is the Benue ACReSAL Smart Asset, Forest, River & Borehole Tracking System. The repository implements substantial functionality; the client must separately approve requirements, provision services, validate GIS data and complete acceptance testing.
 
-## Contents
+## The five essential client-facing documents
 
-### Planning
-- [Requirements](planning/requirements.md) — functional and non-functional requirements, with traceable IDs
-- [Roadmap](planning/roadmap.md) — proposed phased delivery plan
-- [Scope](planning/scope.md) — in-scope / out-of-scope boundaries, assumptions, and constraints
-- [Data Privacy & Retention](planning/data-privacy.md) — NDPA-grounded retention rules and data subject rights
+| No. | Controlled document | Link | Current status |
+|---|---|---|---|
+| 1 | Software Requirements Specification (SRS) | [Requirements](planning/requirements.md) | Implemented baseline, client review pending |
+| 2 | Software Architecture Document (SAD) | [Architecture Overview](architecture/overview.md) | Current implementation architecture; external launch dependencies |
+| 3 | Installation, Deployment & Operations Guide | [Deployment and Operations](client-handover/deployment-operations.md) | Draft runbook; production not certified |
+| 4 | User Manual | [User Manual](client-handover/user-manual.md) | Draft by role; client training pending |
+| 5 | UAT, Handover & Support Plan | [Acceptance and Support](client-handover/acceptance-support.md) | Unsigned acceptance template and negotiated support schedule |
 
-### Architecture
-- [Architecture Overview](architecture/overview.md) — components, diagram, and data flow
-- [Data Model](architecture/data-model.md) — entities and a PostgreSQL/PostGIS schema
-- [API Contracts](architecture/api-contracts.md) — REST endpoints, auth, and request/response conventions
-- [Technology Stack](architecture/tech-stack.md) — accepted stack and rationale
-- [Architecture Decision Records](architecture/decisions/) — a dated log of significant architecture decisions
-  - [0001 — Record Architecture Decisions](architecture/decisions/0001-record-architecture-decisions.md) (Accepted)
-  - [0002 — Adopt Initial Technology Stack](architecture/decisions/0002-adopt-initial-technology-stack.md) (Accepted)
+**Client delivery condition:** These five documents are necessary but not sufficient. Formal data ownership, code/IP license, support SLAs, privacy approval and acceptance signatures require specific client authorization.
 
-### Design
-- [Wireframes](design/README.md) — low-fidelity screens for the public map, report submission, staff data entry, and the dashboard
+## Supporting technical references
+- [Project README](../README.md) and [Implementation](IMPLEMENTATION.md)
+- [Production Readiness](production-readiness.md) and [Field Acceptance](field-acceptance.md)
+- [Detailed Data Model](architecture/data-model.md) (historical draft; refer to applied SQL migrations as implementation authority)
+- [API Contracts](architecture/api-contracts.md) (confirm routes against current source/API)
+- [Technology Stack](architecture/tech-stack.md) and [ADR-0003: Aiven/PostGIS/Next.js](architecture/decisions/0003-adopt-aiven-postgis-nextjs.md)
+- [GIS Boundaries](lga-boundaries.md), [Coverage Analysis](intervention-coverage.md), [Settlement Access](settlement-access.md), [River Exposure](river-corridor-exposure.md), [Hazard Zones](hazard-zones.md), [Catchments](catchments-landscape-planning.md)
+- [Remote Sensing](remote-sensing.md), [Map Composer](map-composer.md), [Localization](localization.md)
+- [Planning Scope](planning/scope.md), [Roadmap](planning/roadmap.md), [Data Privacy](planning/data-privacy.md), [Design](design/README.md)
 
-## Documentation Conventions
+## Source of truth and status convention
+1. **Code and applied migrations** establish what has actually been implemented.
+2. **Approved SRS + release baseline** establish contractually promised scope, only after written sign-off.
+3. **Live readiness checks and observed field/UAT evidence** establish operational fitness for the specific deployment.
+4. Unreviewed old planning documents are **historical context**, not proof of current implementation or signed client scope.
+5. Do not label unverified scientific outputs, risk scoring, security/load targets or remote-sensing accuracy as independently certified.
 
-- Requirements use stable IDs (`FR-##`, `NFR-##`) so they can be referenced from designs, tickets, and tests later.
-- Architecture decisions are recorded as ADRs. Once **Accepted**, an ADR is not edited — a changed decision gets a new ADR that supersedes the old one.
-- Every doc describing something not yet built or formally confirmed is marked **Draft** or **Proposed** in its header, until the team signs off and it moves to **Accepted**.
+## Documentation maintenance
+Update the architecture index and SRS for material changes; issue new numbered migrations rather than changing applied files. Document the Git commit/version, author, date, review and approval for each client delivery. Architecture decisions are preserved as ADRs; new decisions supersede accepted ADRs rather than rewriting history.
