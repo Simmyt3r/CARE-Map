@@ -54,7 +54,7 @@ export default function PrivacyPage(){
       </div>
       <div className="card stack"><h2>Sharing, security and complaints</h2>
         <p>Access to non-public personal data is restricted to authorized CARE-Map staff/admin workflows. Database, session, and audit controls are used to reduce unauthorized access.</p>
-        <p>Third-party infrastructure may process data on behalf of CARE-Map where necessary to operate the service, such as hosting, database, and evidence-photo storage providers. Final processor/cross-border records require legal review before public launch.</p>
+        <p>Third-party infrastructure may process data on behalf of CARE-Map, including Vercel for application hosting, Aiven for database hosting, and Cloudinary for new photo storage. Older photos may remain on Vercel Blob. Cloudinary photo delivery URLs currently use publicly accessible links, so staff must upload only approved, non-sensitive and redacted evidence. Final processor/cross-border records and storage permissions require legal review before public launch.</p>
         <p>You may also lodge a complaint with the Nigeria Data Protection Commission.</p>
       </div>
     </section>
