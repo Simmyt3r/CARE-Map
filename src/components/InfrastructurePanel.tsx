@@ -79,6 +79,32 @@ export default function InfrastructurePanel({snapshot}:{snapshot:Snapshot}){
   const[adminPassword,setAdminPassword]=useState("");
   const[result,setResult]=useState<InfraActionResult|null>(null);
   const[pending,startTransition]=useTransition();
+  const[integrationBusy,setIntegrationBusy]=useState<"cloudinary"|"copernicus"|null>(null);
+  const[integrationResults,setIntegrationResults]=useState<Record<string,{ok:boolean;message:string}>>({});
+
+  async function testIntegration(provider:"cloudinary"|"copernicus"){
+    setIntegrationBusy(provider);
+    setIntegrationResults(old=>({...old,[provider]:{ok:false,message:"Checking provider authentication…"}}));
+    try{
+      const response=await fetch("/api/admin/integrations/test",{
+        method:"POST",
+        headers:{"content-type":"application/json"},
+        body:JSON.stringify({provider}),
+        cache:"no-store"
+      });
+      const result=await response.json().catch(()=>({}));
+      setIntegrationResults(old=>({
+        ...old,
+        [provider]:{
+          ok:Boolean(response.ok&&result.ok),
+          message:String(result.message||"Integration test failed.")
+        }
+      }));
+    }catch{
+      setIntegrationResults(old=>({...old,[provider]:{ok:false,message:"Connection test could not finish. Check browser network and Vercel logs."}}));
+    }finally{setIntegrationBusy(null);}
+  }
+
 
   const envBundle=useMemo(()=>{
     const lines:string[]=[];
@@ -174,6 +200,30 @@ export default function InfrastructurePanel({snapshot}:{snapshot:Snapshot}){
       {snapshot.databaseConfigured&&<div className="notice">Configured database: <strong>{snapshot.databaseHost||"unknown host"}</strong> / {snapshot.databaseName||"unknown database"} · {snapshot.database.ok?"reachable":"unreachable"}{snapshot.database.postgisEnabled?" · PostGIS "+(snapshot.database.postgisVersion||""):""}</div>}
       {snapshot.migrations.pending.length>0&&<div className="notice"><strong>Pending migration files:</strong> {snapshot.migrations.pending.join(", ")}</div>}
       {!snapshot.database.ok&&snapshot.database.error&&<div className="error">{snapshot.database.error}</div>}
+    </section>
+
+    <section className="card stack">
+      <div>
+        <h2>Live integration tests</h2>
+        <div className="muted">Confirm the configured cloud services directly from CARE-Map. Tests check authentication without sending photos or consuming Sentinel-2 imagery processing quota.</div>
+      </div>
+      <div className="grid two">
+        <div className="stack">
+          <strong>Cloudinary photo storage</strong>
+          <button className="btn" type="button" disabled={integrationBusy!==null} onClick={()=>testIntegration("cloudinary")}>
+            {integrationBusy==="cloudinary"?"Testing Cloudinary…":"Test Cloudinary connection"}
+          </button>
+          {integrationResults.cloudinary&&<div className={integrationResults.cloudinary.ok?"success":"notice"} role="status">{integrationResults.cloudinary.message}</div>}
+        </div>
+        <div className="stack">
+          <strong>Copernicus Sentinel Hub</strong>
+          <button className="btn" type="button" disabled={integrationBusy!==null} onClick={()=>testIntegration("copernicus")}>
+            {integrationBusy==="copernicus"?"Testing Copernicus…":"Test Copernicus authentication"}
+          </button>
+          {integrationResults.copernicus&&<div className={integrationResults.copernicus.ok?"success":"notice"} role="status">{integrationResults.copernicus.message}</div>}
+        </div>
+      </div>
+      <div className="notice">Passing these connection tests confirms server-side credentials and API reachability. Perform a small photo upload and a real AOI NDVI comparison separately to verify end-to-end workflows.</div>
     </section>
 
     <section className="card stack">
