@@ -89,13 +89,28 @@ async function accessToken(){
     method:"POST",
     headers:{"content-type":"application/x-www-form-urlencoded"},
     body,
-    cache:"no-store"
+    cache:"no-store",
+    signal:AbortSignal.timeout(12000)
   });
   if(!response.ok)throw new Error("Copernicus authentication failed.");
   const json=await response.json() as {access_token?:string;expires_in?:number};
   if(!json.access_token)throw new Error("Copernicus authentication returned no access token.");
   global.__careMapCdseToken={token:json.access_token,expiresAt:Date.now()+Math.max(60,Number(json.expires_in||3600))*1000};
   return json.access_token;
+}
+
+/**
+ * Staff-only connectivity preflight. Validates the existing OAuth client
+ * without running paid/quota-bearing imagery processing or exposing tokens.
+ */
+export async function checkCopernicusAuthentication(){
+  if(!remoteSensingConfigured())return {ok:false,message:"Add CDSE_CLIENT_ID and CDSE_CLIENT_SECRET to Vercel Production."};
+  try{
+    await accessToken();
+    return {ok:true,message:"Copernicus OAuth authentication successful. NDVI processing still requires a sample analysis."};
+  }catch{
+    return {ok:false,message:"Copernicus authentication failed or timed out. Check OAuth client credentials, expiry and service availability."};
+  }
 }
 
 function statsEvalscript(threshold:number){
