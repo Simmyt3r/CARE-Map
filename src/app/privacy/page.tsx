@@ -32,6 +32,8 @@ export default function PrivacyPage(){
         <p><strong>Community accounts:</strong> name, email, password hash, account status, and reports linked to the account.</p>
         <p><strong>Configured lawful basis for account processing:</strong> {accountsBasis}.</p>
         <p><strong>Field evidence:</strong> photos, captions, inspection records, GPS accuracy, and other operational evidence where staff workflows require them.</p>
+        <p><strong>Intervention focal persons:</strong> designated community contacts provide names, telephone numbers, roles and coordination consent for maintenance support and extension visits. This information is available only to authorized staff, not on the public map or community competition page. Approved retention and lawful basis require program privacy review.</p>
+        <p><strong>Community maintenance evaluations:</strong> staff record project condition scores, evidence notes, reviewed non-sensitive site photographs and reviewer decisions. Rankings support stewardship assessment, not automated grant or project allocation.</p>
         <p>CARE-Map does not ask anonymous reporters to provide a name or contact detail.</p>
       </div>
       <div className="card stack"><h2>Why we process it</h2>
