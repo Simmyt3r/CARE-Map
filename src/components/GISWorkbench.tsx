@@ -51,10 +51,20 @@ export default function GISWorkbench(){
   const[message,setMessage]=useState("");
   const[busy,setBusy]=useState(false);
   const[quality,setQuality]=useState<Quality|null>(null);
+  const[qualityLoading,setQualityLoading]=useState(false);
+  const[qualityError,setQualityError]=useState("");
 
   async function loadQuality(){
-    const r=await fetch("/api/gis/quality");
-    if(r.ok){const j=await r.json();setQuality(j.data);}
+    setQualityLoading(true);setQualityError("");
+    try{
+      const r=await fetch("/api/gis/quality",{cache:"no-store"});
+      const j=await r.json().catch(()=>({}));
+      if(!r.ok)throw new Error(j.error?.message||"GIS quality checks are unavailable.");
+      setQuality(j.data);
+    }catch(e){
+      setQuality(null);
+      setQualityError(e instanceof Error?e.message:"Unable to refresh GIS quality checks.");
+    }finally{setQualityLoading(false);}
   }
   useEffect(()=>{loadQuality();},[]);
 
@@ -98,11 +108,29 @@ export default function GISWorkbench(){
   }
 
   return <div className="stack">
+    <div className="card stack">
+      <div className="section-head" style={{marginBottom:0}}>
+        <div><span className="page-eyebrow">CARE-Map / GIS data management</span><h2>Choose a workflow</h2>
+          <p className="muted" style={{margin:"5px 0 0"}}>Open only the import you need. A selected file remains in place when its section is collapsed.</p>
+        </div>
+      </div>
+      <nav className="gis-jump-links" aria-label="GIS workflow sections">
+        <a href="#gis-bulk">Assets</a><a href="#gis-boundaries">LGA boundaries</a>
+        <a href="#gis-settlements">Settlements</a><a href="#gis-hazards">Hazards</a>
+        <a href="#gis-catchments">Catchments</a><a href="#gis-quality">Data quality</a>
+        <a href="#gis-export">Exports</a>
+      </nav>
+      <div className="gis-status-strip"><strong>Source before verification</strong>
+        <span>Imported does not mean verified</span><span>Review geometry and provenance</span>
+      </div>
+    </div>
+    <details id="gis-bulk" className="gis-section-details gis-section" open>
+      <summary>Asset & infrastructure bulk import</summary>
     <section className="card stack">
       <div className="section-head"><div><h2>Bulk GIS import</h2><div className="muted">Import field coordinates from CSV or GIS features from GeoJSON. Each batch is limited to 1,000 records and creates an audit trail.</div></div><span className="badge">{total} loaded</span></div>
       <div className="grid three">
-        <div className="field"><label>Format</label><select value={format} onChange={e=>setFormat(e.target.value as "csv"|"geojson")}><option value="csv">CSV coordinates</option><option value="geojson">GeoJSON FeatureCollection</option></select></div>
-        <div className="field"><label>Resource type</label><select value={kind} onChange={e=>setKind(e.target.value as ImportKind)}><option value="boreholes">Boreholes</option><option value="assets">Assets</option>{format==="geojson"&&<><option value="forest-sites">Forest / afforestation sites</option><option value="rivers">Rivers</option></>}</select></div>
+        <div className="field"><label>Format</label><select value={format} onChange={e=>{setFormat(e.target.value as "csv"|"geojson");setRows([]);setFeatures([]);setFileName("");setMessage("");}}><option value="csv">CSV coordinates</option><option value="geojson">GeoJSON FeatureCollection</option></select></div>
+        <div className="field"><label>Resource type</label><select value={kind} onChange={e=>{setKind(e.target.value as ImportKind);setRows([]);setFeatures([]);setFileName("");setMessage("");}}><option value="boreholes">Boreholes</option><option value="assets">Assets</option>{format==="geojson"&&<><option value="forest-sites">Forest / afforestation sites</option><option value="rivers">Rivers</option></>}</select></div>
         <div className="field"><label>File</label><input type="file" accept={format==="csv"?".csv,text/csv":".geojson,.json,application/geo+json,application/json"} onChange={e=>e.target.files?.[0]&&readFile(e.target.files[0])}/></div>
       </div>
       {format==="csv"&&<div className="actions"><button className="btn" type="button" onClick={template}>Download CSV template</button></div>}
@@ -111,28 +139,40 @@ export default function GISWorkbench(){
       <div className="actions"><button className="btn primary" disabled={busy||!total||total>1000} onClick={importData}>{busy?"Importing…":"Validate & import"}</button>{total>1000&&<span className="error">Split this file into batches of 1,000 or fewer.</span>}</div>
       {message&&<div className={message.startsWith("Imported")?"success":"notice"}>{message}</div>}
     </section>
+    </details>
 
-    <LgaBoundaryManager/>
+    <details id="gis-boundaries" className="gis-section-details gis-section">
+      <summary>LGA administrative boundaries</summary>
+      <LgaBoundaryManager/>
+    </details>
+    <details id="gis-settlements" className="gis-section-details gis-section">
+      <summary>Settlements & communities</summary>
+      <SettlementManager/>
+    </details>
+    <details id="gis-hazards" className="gis-section-details gis-section">
+      <summary>Flood & erosion hazard zones</summary>
+      <HazardZoneManager/>
+    </details>
+    <details id="gis-catchments" className="gis-section-details gis-section">
+      <summary>Catchments & landscape units</summary>
+      <CatchmentManager/>
+    </details>
 
-    <SettlementManager/>
-
-    <HazardZoneManager/>
-
-    <CatchmentManager/>
-
-    <section className="card stack">
-      <div className="section-head"><div><h2>GIS data quality</h2><div className="muted">Automated checks for weak GPS accuracy, missing maintenance, possible duplicate boreholes, unverified rivers, and stale community reports.</div></div><button className="btn" onClick={loadQuality}>Refresh checks</button></div>
+    <section id="gis-quality" className="card stack gis-section">
+      <div className="section-head"><div><h2>GIS data quality</h2><div className="muted">Automated checks for weak GPS accuracy, missing maintenance, possible duplicate boreholes, unverified rivers, and stale community reports.</div></div><button className="btn" disabled={qualityLoading} onClick={loadQuality}>{qualityLoading?"Checking…":"Refresh checks"}</button></div>
+      {qualityError&&<div className="error" role="alert">{qualityError} <button type="button" className="btn" onClick={loadQuality}>Retry</button></div>}
+      {qualityLoading&&<div className="notice" role="status">Loading database quality checks…</div>}
       <div className="stats">
         <div className="stat"><strong>{quality?.counts.pointIssues??"–"}</strong><span>Point data issues</span></div>
         <div className="stat"><strong>{quality?.counts.possibleDuplicates??"–"}</strong><span>Possible duplicates</span></div>
         <div className="stat"><strong>{quality?.counts.unverifiedRivers??"–"}</strong><span>Unverified rivers</span></div>
         <div className="stat"><strong>{quality?.counts.staleReports??"–"}</strong><span>Stale reports</span></div>
       </div>
-      {quality?.pointIssues?.length?<div className="table-wrap"><table><thead><tr><th>Type</th><th>Name</th><th>LGA</th><th>Issue</th><th>Accuracy</th></tr></thead><tbody>{quality.pointIssues.slice(0,30).map((r:any)=><tr key={r.entity_type+r.id}><td>{r.entity_type}</td><td>{r.name}</td><td>{r.lga_code}</td><td><span className="badge">{r.quality_issue}</span></td><td>{r.gps_accuracy_m?Number(r.gps_accuracy_m).toFixed(1)+" m":"Not recorded"}</td></tr>)}</tbody></table></div>:<div className="notice">No point-quality issues detected, or the database is not configured yet.</div>}
+      {quality?.pointIssues?.length?<div className="table-wrap"><table><thead><tr><th>Type</th><th>Name</th><th>LGA</th><th>Issue</th><th>Accuracy</th></tr></thead><tbody>{quality.pointIssues.slice(0,30).map((r:any)=><tr key={r.entity_type+r.id}><td>{r.entity_type}</td><td>{r.name}</td><td>{r.lga_code}</td><td><span className="badge">{r.quality_issue}</span></td><td>{r.gps_accuracy_m?Number(r.gps_accuracy_m).toFixed(1)+" m":"Not recorded"}</td></tr>)}</tbody></table></div>:<div className="notice">{quality?"No point-quality issues detected in this check.":"Quality results are not available yet."}</div>}
       {!!quality?.possibleDuplicateBoreholes?.length&&<div><h3>Possible duplicate boreholes</h3><div className="table-wrap"><table><thead><tr><th>Borehole A</th><th>Borehole B</th><th>LGA</th><th>Distance</th></tr></thead><tbody>{quality.possibleDuplicateBoreholes.map((r:any)=><tr key={r.a_id+r.b_id}><td>{r.a_name}</td><td>{r.b_name}</td><td>{r.lga_code}</td><td>{r.distance_m} m</td></tr>)}</tbody></table></div></div>}
     </section>
 
-    <section className="card stack">
+    <section id="gis-export" className="card stack gis-section">
       <div><h2>Export for QGIS / analysis</h2><div className="muted">Download the current authoritative dataset for QGIS, ArcGIS, Excel, Python or archival work.</div></div>
       <div className="actions">
         <a className="btn primary" href="/api/gis/export?format=geojson&kind=all">Download GeoJSON</a>
