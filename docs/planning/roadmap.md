@@ -1,7 +1,7 @@
 # Roadmap
 
-**Status:** Core product implementation built
-**Last updated:** 2026-10-07
+**Status:** Core implementation built; feature development paused in favor of reliability and acceptance
+**Last updated:** 2026-10-13
 
 ## Phase 0 — Planning & Design ✅
 - [x] Requirements
@@ -64,7 +64,7 @@ Production gate: run the migration against the real Aiven service and field-test
 - [x] CI workflow
 - [x] Admin user management
 - [ ] Validate offline behavior in target LGAs
-- [x] Vercel Blob field-photo storage integration
+- [x] New Cloudinary photo upload integration (historical Vercel Blob references remain; client privacy approval pending)
 - [x] Resource photo gallery
 - [x] Localization framework and reviewed translation-pack governance
 - [ ] Import and approve human-reviewed Tiv/Idoma/Igede content packs
@@ -172,7 +172,7 @@ Production gate: run the migration against the real Aiven service and field-test
 - [x] Automatically acknowledge the originating satellite alert when the verification report is resolved or rejected
 - [x] Audit field-verification creation and evidence uploads
 
-**Production gate:** apply migration 006 and configure BLOB_READ_WRITE_TOKEN before using evidence-photo closure in the field. Validate the workflow with a known site before operational rollout.
+**Production gate:** apply migration 006 and configure the server-only Cloudinary credentials and validate non-sensitive photo delivery before using evidence-photo closure in the field. Validate the workflow with a known site before operational rollout.
 
 
 ## Phase 10 — Map Composer ✅ Baseline complete
@@ -414,7 +414,7 @@ Production gate: run the migration against the real Aiven service and field-test
 - [x] Required-check completion enforcement
 - [x] Deterministic pass/fail/conditional final result
 - [x] Explicit reopen workflow preserving test history
-- [x] Dedicated Vercel Blob acceptance-evidence storage
+- [x] Cloudinary acceptance-evidence upload (historical Vercel Blob references may remain)
 - [x] Audited run creation, updates and evidence uploads
 - [x] Latest-result-per-pilot-LGA summary
 - [x] Production Readiness gate requires latest passing run for every pilot LGA
@@ -487,3 +487,23 @@ Production gate: run the migration against the real Aiven service and field-test
 **External content gate remains open:** actual Tiv, Idoma and Igede wording must be supplied and reviewed by fluent human language reviewers. CARE-Map intentionally does not ship machine-guessed local-language strings.
 
 **Production rule:** a local-language pack appears to public users only after complete key coverage, explicit human review approval and separate public enablement. Legal/privacy translations require separate legal/privacy review.
+
+
+## October 2026 — Stabilization / no-new-features directive
+
+This section supersedes roadmap suggestions to add more modules unless the project owner separately approves a scope change. **Implementation checks are not acceptance checks.**
+
+- [x] Shared fresh multi-reading high-accuracy browser GPS capture in the existing report, intervention, asset and inspection flows.
+- [x] Cancel support, stale/invalid GPS rejection, low-confidence feedback and manual-coordinate provenance clearing.
+- [x] Server checks for location/capture metadata and LGA-point consistency where boundaries exist; offline reports retain their original timestamps.
+- [x] GPS regression tests and [field acceptance checklist](../quality/gps-field-acceptance.md) in the repository.
+- [x] New Cloudinary-backed site and assessment evidence flows in code; do not upload unredacted or sensitive data to publicly accessible asset URLs.
+- [x] Community-extension workflows and migrations 016/017 in repository; confirm these have actually been applied to the target Aiven database before use.
+- [x] Session-authenticated administrator migration dashboard without re-entering configured database credentials.
+- [x] Sentinel-2 baseline/comparison clear-pixel quality gate and more defensive AOI validation in source.
+- [ ] Confirm the **live production commit** includes the latest approved GPS fixes (a CI pass cannot prove deployment).
+- [ ] Perform known-point field GPS tests, real Android/network/offline report tests, and independent LGA boundary/source checks.
+- [ ] Test Cloudinary photo delivery, Copernicus processing, GIS imports, backup/restore and permission boundaries end-to-end.
+- [ ] Resolve high/critical defects, complete performance, privacy/security and scientific validation and obtain formal client acceptance.
+
+Do not convert checked code implementation items above into claims of government approval, dataset verification or completed UAT.
