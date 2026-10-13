@@ -1,5 +1,6 @@
 "use client";
 import {useCallback,useEffect,useState} from "react";
+import {useFieldGps} from "@/lib/field-gps";
 
 type Project={
   id:string;project_code:string;project_name:string;project_type:string;
@@ -38,6 +39,15 @@ export default function ExtensionCenter({admin}:{admin:boolean}){
   const[lgas,setLgas]=useState<Lga[]>([]);
   const[tab,setTab]=useState<"projects"|"visits"|"competition">("projects");
   const[form,setForm]=useState({...newProject});
+  const gps=useFieldGps(fix=>setForm(x=>({
+    ...x,latitude:fix.latitude.toFixed(7),longitude:fix.longitude.toFixed(7),
+    gpsAccuracy:fix.accuracyMeters.toFixed(1),capturedAt:fix.capturedAt,
+    captureSource:"device_gps"
+  })),setMessage);
+  function manualCoordinate(key:"latitude"|"longitude",value:string){
+    gps.cancel();
+    setForm(x=>({...x,[key]:value,gpsAccuracy:"",capturedAt:"",captureSource:"manual"}));
+  }
   const[busy,setBusy]=useState(false);
   const[loading,setLoading]=useState(false);
   const[projectSearch,setProjectSearch]=useState("");
@@ -83,19 +93,6 @@ export default function ExtensionCenter({admin}:{admin:boolean}){
     }catch(e){setMessage(e instanceof Error?e.message:"Unable to save.");return false;}
     finally{setBusy(false);}
   }
-  function locate(){
-    if(!navigator.geolocation)return setMessage("This browser does not provide GPS.");
-    setMessage("Requesting accurate device coordinates…");
-    navigator.geolocation.getCurrentPosition(p=>{
-      setForm(x=>({...x,
-        latitude:String(p.coords.latitude),longitude:String(p.coords.longitude),
-        gpsAccuracy:p.coords.accuracy.toFixed(1),capturedAt:new Date(p.timestamp).toISOString(),
-        captureSource:"device_gps"
-      }));
-      setMessage("GPS captured ±"+Math.round(p.coords.accuracy)+" m. Accuracy over 30 m needs recapture before verification.");
-    },()=>setMessage("GPS unavailable. Manual coordinates can be saved but cannot be verified as field GPS."),
-    {enableHighAccuracy:true,maximumAge:0,timeout:20000});
-  }
   async function uploadAssessmentPhoto(assessmentId:string,file:File){
     setBusy(true);setMessage("Uploading field evidence…");
     try{
@@ -114,6 +111,7 @@ export default function ExtensionCenter({admin}:{admin:boolean}){
 
   async function submitProject(e:React.FormEvent){
     e.preventDefault();
+    gps.cancel();
     const lat=Number(form.latitude),lng=Number(form.longitude);
     if(!form.latitude.trim()||!form.longitude.trim()||!Number.isFinite(lat)||!Number.isFinite(lng)){
       setMessage("Enter valid latitude and longitude.");return;
@@ -170,13 +168,16 @@ export default function ExtensionCenter({admin}:{admin:boolean}){
           <div className="field"><label>Benue LGA</label><select required value={form.lgaCode} onChange={e=>setForm(x=>({...x,lgaCode:e.target.value}))}><option value="">Choose LGA</option>{lgas.map(l=><option key={l.code} value={l.code}>{l.name}</option>)}</select></div>
           <div className="field"><label>Project status</label><select value={form.projectStatus} onChange={e=>setForm(x=>({...x,projectStatus:e.target.value}))}>{["planned","active","completed","needs_maintenance","closed"].map(s=><option key={s} value={s}>{s.replaceAll("_"," ")}</option>)}</select></div>
           <div className="extension-form-divider"><span>02</span><div><strong>Project coordinates</strong><small>Device GPS is preferred; all locations require review.</small></div></div>
-          <div className="field"><label>Latitude</label><input required inputMode="decimal" value={form.latitude} onChange={e=>setForm(x=>({...x,latitude:e.target.value,captureSource:"manual",capturedAt:"",gpsAccuracy:""}))}/></div>
-          <div className="field"><label>Longitude</label><input required inputMode="decimal" value={form.longitude} onChange={e=>setForm(x=>({...x,longitude:e.target.value,captureSource:"manual",capturedAt:"",gpsAccuracy:""}))}/></div>
+          <div className="field"><label>Latitude</label><input required inputMode="decimal" value={form.latitude} onChange={e=>manualCoordinate("latitude",e.target.value)}/></div>
+          <div className="field"><label>Longitude</label><input required inputMode="decimal" value={form.longitude} onChange={e=>manualCoordinate("longitude",e.target.value)}/></div>
         </div>
-        <div className="actions"><button type="button" className="btn" onClick={locate}>Capture device GPS + accuracy</button>
+        <div className="actions"><button type="button" className="btn" disabled={gps.capturing||busy} onClick={gps.capture}>{gps.capturing?"Refining GPS…":"Capture device GPS"}</button>
+          {gps.capturing&&<button type="button" className="btn" onClick={()=>{gps.cancel();setMessage("GPS acquisition cancelled.");}}>Cancel</button>}
           <span className="muted">{form.gpsAccuracy?"Reported ±"+form.gpsAccuracy+" m · ":""}{form.captureSource.replaceAll("_"," ")}</span>
         </div>
         <div className="extension-form-divider"><span>03</span><div><strong>Community focal person</strong><small>Contact details are available to staff only.</small></div></div>
+        <p className="muted">GPS continuously refines for up to 30 seconds. Target accuracy ≤30 m. Keep the device stationary and review the project marker. Manual edits clear device-GPS provenance.</p>
+        {form.captureSource==="device_gps"&&Number(form.gpsAccuracy)>30&&<div className="notice" role="status">GPS is low-confidence (±{form.gpsAccuracy} m). Recapture before requesting verification.</div>}
         <div className="grid two">
           <div className="field"><label>Community contact name</label><input required value={form.contactName} onChange={e=>setForm(x=>({...x,contactName:e.target.value}))}/></div>
           <div className="field"><label>Community contact phone</label><input required type="tel" value={form.contactPhone} onChange={e=>setForm(x=>({...x,contactPhone:e.target.value}))}/></div>
@@ -187,7 +188,7 @@ export default function ExtensionCenter({admin}:{admin:boolean}){
           <input type="checkbox" required checked={form.contactConsent} onChange={e=>setForm(x=>({...x,contactConsent:e.target.checked}))}/>
           Contact has agreed to receive CARE-Map project coordination communications.
         </label>
-        <button className="btn primary" disabled={busy||!form.contactConsent}>Save intervention & contact</button>
+        <button className="btn primary" disabled={busy||gps.capturing||!form.contactConsent}>Save intervention & contact</button>
       </form>
       <section className="card stack">
         <div className="section-head"><div><h2>Registered interventions</h2>
