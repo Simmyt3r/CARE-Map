@@ -1,5 +1,5 @@
 import {NextResponse} from "next/server";
-import {getSession,isStaff} from "@/lib/auth";
+import {getSession,isStaff,isAdmin} from "@/lib/auth";
 import {error} from "@/lib/http";
 import {query} from "@/lib/db";
 import type {RemoteSensingRow} from "@/lib/remote-sensing";
@@ -31,11 +31,17 @@ export async function PATCH(request:Request,context:{params:Promise<{id:string}>
   const{id}=await context.params;
   const body=await request.json().catch(()=>null) as {publishToMap?:boolean}|null;
   if(typeof body?.publishToMap!=="boolean")return error("publishToMap must be true or false.");
+  if(body.publishToMap&&!isAdmin(session))return error("Only administrators can publish verified satellite analyses.",403,"FORBIDDEN");
   const result=await query(
-    "UPDATE remote_sensing_analyses SET publish_to_map=$1 WHERE id=$2 RETURNING id,publish_to_map",
+    `UPDATE remote_sensing_analyses SET publish_to_map=$1
+      WHERE id=$2 AND ($1=FALSE OR (status='completed'
+        AND baseline_clear_fraction>=minimum_clear_fraction
+        AND comparison_clear_fraction>=minimum_clear_fraction
+        AND baseline_vegetation_ha IS NOT NULL AND comparison_vegetation_ha IS NOT NULL))
+      RETURNING id,publish_to_map`,
     [body.publishToMap,id]
   );
-  if(!result.rowCount)return error("Analysis not found",404);
+  if(!result.rowCount)return error("Cannot publish: analysis is missing, awaiting quality review or has insufficient clear-pixel coverage.",409);
   await query("INSERT INTO audit_logs(actor_id,action,entity_type,entity_id,metadata) VALUES($1,'publish_update','remote_sensing_analysis',$2,$3)",[
     session.sub,id,JSON.stringify({publishToMap:body.publishToMap})
   ]);
