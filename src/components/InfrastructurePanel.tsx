@@ -1,6 +1,6 @@
 "use client";
 import {useMemo,useState,useTransition} from "react";
-import {bootstrapAdminAction,initializeAivenAction,testAivenAction,type InfraActionResult} from "@/app/staff/infrastructure/actions";
+import {bootstrapAdminAction,testAivenAction,type InfraActionResult} from "@/app/staff/infrastructure/actions";
 
 type ReadinessState="ready"|"warning"|"blocked";
 type ReadinessItem={
@@ -227,14 +227,38 @@ export default function InfrastructurePanel({snapshot}:{snapshot:Snapshot}){
     </section>
 
     <section className="card stack">
-      <div><h2>1. Aiven PostgreSQL + PostGIS</h2><div className="muted">Paste the Aiven service URI and CA certificate. Values are submitted only when you test or initialize the database.</div></div>
-      <div className="field"><label>Aiven PostgreSQL service URI</label><input type="password" autoComplete="off" value={databaseUrl} onChange={e=>setDatabaseUrl(e.target.value)} placeholder="postgresql://avnadmin:••••@host:port/defaultdb?sslmode=require"/></div>
-      <div className="field"><label>Aiven CA certificate</label><textarea value={caCert} onChange={e=>setCaCert(e.target.value)} placeholder={"-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----"}/></div>
-      <div className="actions">
-        <button className="btn" disabled={pending||!databaseUrl} onClick={()=>run(()=>testAivenAction({databaseUrl,caCert}))}>Test connection</button>
-        <button className="btn primary" disabled={pending||!databaseUrl} onClick={()=>run(()=>initializeAivenAction({databaseUrl,caCert}))}>Initialize / upgrade schema</button>
+      <div className="section-head">
+        <div>
+          <h2>1. Database migrations</h2>
+          <p className="muted" style={{margin:"6px 0 0"}}>
+            Your signed-in administrator account is sufficient. The migration manager uses the Aiven connection already saved in Vercel and will not request a database URL, password or setup token again.
+          </p>
+        </div>
+        <span className="badge">{snapshot.migrations.applied} / {snapshot.migrations.expected} applied</span>
       </div>
-      <div className="notice">Schema upgrades now use a migration ledger with SHA-256 checksums. Applied migration files are skipped; checksum drift blocks the upgrade so historical SQL cannot be silently rewritten.</div>
+      <div className="actions">
+        <a className="btn primary" href="/staff/admin/migrations">Open migration manager</a>
+        {snapshot.migrations.pending.length>0&&<span className="muted">{snapshot.migrations.pending.length} pending</span>}
+      </div>
+      {snapshot.migrations.checksumMismatches.length>0&&<div className="error" role="alert">
+        Existing migration checksum mismatches must be resolved before running an upgrade.
+      </div>}
+      <details className="geojson-details">
+        <summary>Advanced: test a different Aiven connection manually</summary>
+        <p className="muted">Only for database troubleshooting or initial configuration. This is not required to apply pending migrations to the configured production database.</p>
+        <div className="field"><label>Aiven PostgreSQL service URI</label>
+          <input type="password" autoComplete="off" value={databaseUrl}
+            onChange={e=>setDatabaseUrl(e.target.value)}
+            placeholder="postgresql://user:password@host:port/defaultdb"/>
+        </div>
+        <div className="field"><label>Aiven CA certificate</label>
+          <textarea value={caCert} onChange={e=>setCaCert(e.target.value)}
+            placeholder={"-----BEGIN CERTIFICATE-----\\n...\\n-----END CERTIFICATE-----"}/>
+        </div>
+        <div className="actions">
+          <button className="btn" disabled={pending||!databaseUrl} onClick={()=>run(()=>testAivenAction({databaseUrl,caCert}))}>Test manual connection</button>
+        </div>
+      </details>
     </section>
 
     <section className="grid two">
