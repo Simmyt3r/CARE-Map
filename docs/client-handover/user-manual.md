@@ -1,5 +1,5 @@
 # CARE-Map User Manual
-**Document:** CM-USR-001 | **Version:** 1.0-draft | **Date:** 2026-10-09  
+**Document:** CM-USR-001 | **Version:** 1.1-draft | **Updated:** 2026-10-13  
 **Audience:** public users, community reporters, GIS/field officers, supervisors and system administrators. **Status:** Training draft; confirm screens against the client deployment.
 
 ## 1. What the platform does
@@ -10,8 +10,8 @@ CARE-Map displays verified ACReSAL interventions, supports geographically locate
 |---|---|
 | Visitor | Public map/resource pages, anonymous community report, QR-to-report |
 | Registered community | Public functions plus personal report tracking and account privacy controls |
-| Staff / GIS officer | Authorized resource editing, GIS import/export and spatial analysis, inspections, report review, operational work, NDVI monitoring and field acceptance |
-| Admin | Staff functions plus account/role governance, readiness, privacy, localization and audit review |
+| Staff / GIS officer | Authorized resource editing, GIS import/export and spatial analysis, inspections, report review, ACReSAL extension visits and stewardship assessments, NDVI monitoring and field acceptance |
+| Admin | Staff functions plus account/role governance, community assessment/location approval, migration management, readiness, privacy, localization and audit review |
 
 ## 3. Public map and resource lookup
 1. Open the approved CARE-Map URL in a supported browser.
@@ -23,14 +23,14 @@ CARE-Map displays verified ACReSAL interventions, supports geographically locate
 ## 4. Reporting a community problem
 1. Open the **Report** page or scan an approved resource QR code.
 2. Select the report category (for example, intervention issue or small stream).
-3. Enter a clear factual description, select GPS location when permitted, or supply coordinates manually; confirm the pin is appropriate.
+3. Enter a clear factual description. For a field location, tap **Use GPS** and keep the device still while it refines the estimate (up to 30 seconds). Aim for a reported accuracy of **30 m or better**. Check the position on the map or against a known landmark. If GPS fails, enter coordinates manually and preserve the **manual/unverified** source label.
 4. Provide contact details only when offered and necessary, review the consent/privacy notice, then submit.
 5. Save the report reference/status. If offline, the browser may queue the report; keep site storage intact and reconnect to synchronize. Do not assume it reached staff until submission is confirmed.
 
 ## 5. GIS/field officer workflow
 1. Sign in using the client-issued staff account.
 2. In staff resource/data tools, select borehole, asset, forest or river; record mandatory attributes and valid GPS/GeoJSON geometry.
-3. Record source, accuracy/provenance, current condition and maintenance details. Add inspection evidence when permitted.
+3. Use **Capture GPS** rather than copying a previous position, wait for accuracy feedback, and confirm the selected LGA matches the point. Record source, GPS accuracy/time, current condition and maintenance details. Manual edits clear device GPS metadata. Add approved, redacted inspection evidence when permitted.
 4. Review possible duplicates and geometry errors before saving.
 5. In report review, confirm facts, assign owner/priority/deadline and update statuses without erasing historical event records.
 6. For physical asset QR labels, print the label and confirm it opens the correct resource before affixing.
@@ -45,7 +45,7 @@ CARE-Map displays verified ACReSAL interventions, supports geographically locate
 1. Open the remote-sensing workspace; draw an area of interest or reuse a validated forest polygon.
 2. Choose baseline/comparison periods and discover Sentinel-2 Level-2A scenes.
 3. Review cloud masking/clear-pixel quality; run NDVI comparison and inspect previews, dates, area and quality limitations.
-4. Publish a reviewed result only when supported by source imagery and checks.
+4. A comparison must have valid NDVI and at least **60% clear pixels in each** date window for the normal completed state. Cloud-obscured results are marked `needs_review` and must not be published; a signed-in administrator controls publication of valid, reviewed results.
 5. For recurring monitoring, choose an approved area/cadence and review alerts; verify suspected vegetation loss in the field with evidence before operational closure.
 **Important:** NDVI change is not a stand-alone finding of illegal clearing, erosion or restoration success. Seasonal changes, water, sensor artifacts and clouds must be considered.
 
@@ -53,13 +53,13 @@ CARE-Map displays verified ACReSAL interventions, supports geographically locate
 Choose layers and LGA, apply filters, view legends/counts and produce printable maps. Show map date, sources, projection/scale conventions and author. Export GeoJSON for independent GIS review.
 
 ## 9. Administrator workflow
-Manage authorized accounts/roles; promptly deactivate departed users; examine audit history and import jobs. Use Production Readiness before release, Field Acceptance for device/LGA testing, Privacy Center for rights/breach processes, and Localization Center to review and publish approved language packs. Administrative actions are auditable.
+Manage authorized accounts/roles; promptly deactivate departed users; examine audit history and import jobs. To apply new SQL migrations, open **Admin → Database migrations** (`/staff/admin/migrations`) while signed in: no second Aiven password/setup token is requested. Confirm a backup and change approval before applying any pending files. Use Production Readiness before release, Field Acceptance for device/LGA testing, Privacy Center for rights/breach processes, and Localization Center to review and publish approved language packs. Administrative actions are auditable.
 
 ## 10. Common problems
 | Symptom | First action |
 |---|---|
 | Blank or incomplete map | Check connectivity, selected filters, browser and known resource availability; ask IT to inspect health/readiness |
-| GPS unavailable | Allow browser location permission, move outdoors, verify HTTPS and record manual coordinates only with provenance |
+| GPS unavailable or inaccurate | Check HTTPS and browser/location permissions, use outdoors with a still device, retry the 30-second capture; inspect the reported accuracy. Values above 100 m are not auto-applied as GPS. Manual coordinates remain explicitly labelled and need review |
 | Report remains queued | Reconnect without clearing browser storage; check whether the report was received before resubmitting |
 | Import rejected | Inspect row-level validation, coordinate ordering, geometry and required fields |
 | Satellite analysis fails | Check imagery availability, cloud quality, credentials and service status; escalate to GIS lead |
@@ -74,8 +74,27 @@ Demonstrate each role-specific workflow on the intended devices. Record attendee
 
 ### Large settlement imports (slow connection recovery)
 
-In **Staff → GIS Workbench → Settlements & communities**, select CSV or GeoJSON and upload a file containing up to 2,000 settlement points. The browser now sends sequential batches of **100** records; each successful batch is committed separately, with a visible progress bar, added/duplicate/rejected counters, and an option to **Pause after current batch** or **Resume import**. Do not close or reload the page while running. After an interruption, reuse the same file and source, then choose Resume import. Existing records with the same settlement code or matching source/name/coordinates are skipped rather than re-created. Download the rejected-row CSV to inspect unmapped points, invalid attributes, or LGA-boundary mismatches. The user must independently review source coordinates, population provenance, and the final map before declaring settlements verified.
+In **Staff → GIS Workbench → Settlements & communities**, select CSV or GeoJSON and upload a file containing up to 2,000 settlement points per file. The browser now sends sequential batches of **50** records; each successful batch is committed separately, with a visible progress bar, added/duplicate/rejected counters, and an option to **Pause after current batch** or **Resume import**. Do not close or reload the page while running. After an interruption, reuse the same file and source, then choose Resume import. Existing records with the same settlement code or matching source/name/coordinates are skipped rather than re-created. Download the rejected-row CSV to inspect unmapped points, invalid attributes, or LGA-boundary mismatches. The user must independently review source coordinates, population provenance, and the final map before declaring settlements verified.
 
 The PostgreSQL API accepts a maximum of **200 records per request**; direct API clients must split large datasets. A successful browser import means all batches were processed, not that all features passed validation. Review the final **Imported**, **Duplicates skipped**, and **Rejected** counts, refresh the inventory, and keep verification unchecked until the GIS unit confirms the data.
 
 If an older deployment times out when importing a file, do not repeatedly submit the full file. Deploy the corrected importer, refresh CARE-Map, then retry through the batch interface. The final imported count must be confirmed in the database. A partially processed source can contain records from prior batches; the new importer skips identical existing records without resetting or deleting data.
+
+
+## 13. ACReSAL extension and community project maintenance
+
+- Open **Staff → Extension & communities** (`/staff/extension`) to register project codes, intervention type, community and LGA, location and a consenting local focal person's name/phone/role. The contact is **staff-only**.
+- Record a guidance, inspection or maintenance-support visit and its next follow-up date. Report a project problem from the public `/extension` page without publishing the focal person's contact details.
+- For the community stewardship comparison, submit observations with **non-sensitive Cloudinary photo evidence**. A different administrator must verify an assessment before it can count. Only comparable project types and adequate observations can be ranked; ranking does **not** automatically award another project.
+- Review the [community extension guidance](../planning/community-extension.md) and [GPS field checklist](../quality/gps-field-acceptance.md) before recording operational observations.
+
+## 14. Mobile location capture quality
+
+1. Use the approved HTTPS domain. Enable phone location services and allow the site to access location.
+2. Start capture and keep the phone still; the app chooses the best recent reported accuracy it receives for up to 30 seconds. A good fix may complete sooner.
+3. **≤30 m** is the target estimated accuracy; **30–100 m** is low-confidence; **>100 m** is not automatically accepted. These are software quality thresholds, not survey precision.
+4. If GPS permission is denied or no usable fix arrives, correct device permissions, move to better reception and retry. You can cancel collection.
+5. If you manually alter latitude or longitude, the former accuracy, timestamp and GPS source are cleared. Do not claim the result was acquired by GPS.
+6. Confirm the point lies in the right community/LGA and compare critical interventions against reliable reference positions before marking verified.
+
+**Important:** Confirm the production deployment includes the latest GPS code before following these updated instructions. Source documentation can be newer than the live release.
