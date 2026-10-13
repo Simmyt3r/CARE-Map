@@ -1,6 +1,6 @@
 "use server";
 import {getSession,isAdmin} from "@/lib/auth";
-import {bootstrapAdmin,checkDatabase,initializeDatabase,type AivenConfig} from "@/lib/infrastructure";
+import {bootstrapAdmin,checkDatabase,type AivenConfig} from "@/lib/infrastructure";
 
 export type InfraActionResult={ok:boolean;message:string;details?:Record<string,string|number|boolean|null|undefined>};
 
@@ -21,16 +21,6 @@ export async function testAivenAction(input:{databaseUrl:string;caCert?:string})
     host:check.host,database:check.database,user:check.user,postgresVersion:check.postgresVersion,
     postgisEnabled:Boolean(check.postgisEnabled),postgisVersion:check.postgisVersion,tables:check.tables
   }};
-}
-
-export async function initializeAivenAction(input:{databaseUrl:string;caCert?:string}):Promise<InfraActionResult>{
-  await requireAdmin();
-  try{
-    const result=await initializeDatabase(clean(input));
-    return{ok:true,message:"PostGIS and CARE-Map schema initialized successfully.",details:{migrations:result.migrations,appliedNow:result.appliedNow,skipped:result.skipped,postgisVersion:result.postgisVersion}};
-  }catch(e){
-    return{ok:false,message:e instanceof Error?e.message:"Database initialization failed."};
-  }
 }
 
 export async function bootstrapAdminAction(input:{databaseUrl:string;caCert?:string;email:string;password:string;name?:string}):Promise<InfraActionResult>{
