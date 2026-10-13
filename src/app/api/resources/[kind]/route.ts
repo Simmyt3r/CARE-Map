@@ -3,6 +3,7 @@ import {getSession,isStaff} from "@/lib/auth";
 import {error} from "@/lib/http";
 import {createResource,isResourceKind,listResources} from "@/lib/resources";
 import {query} from "@/lib/db";
+import {validateFieldPoint,validateLgaPoint} from "@/lib/location-quality";
 export const runtime="nodejs";export const dynamic="force-dynamic";
 export async function GET(request:Request,context:{params:Promise<{kind:string}>}){
  const{kind}=await context.params;if(!isResourceKind(kind))return error("Unknown resource",404);
@@ -14,6 +15,13 @@ export async function POST(request:Request,context:{params:Promise<{kind:string}
  const{kind}=await context.params;if(!isResourceKind(kind))return error("Unknown resource",404);
  const session=await getSession();if(!isStaff(session))return error("Staff access required",403,"FORBIDDEN");
  const body=await request.json().catch(()=>null);if(!body||typeof body!=="object")return error("Invalid JSON body",400);
- try{const created=await createResource(kind,body,session.sub);await query("INSERT INTO audit_logs(actor_id,action,entity_type,entity_id) VALUES($1,'create',$2,$3)",[session.sub,kind,created.id]);return NextResponse.json({data:created},{status:201});}
+ try{
+  if(kind==="boreholes"||kind==="assets"){
+    const checked=validateFieldPoint(body);
+    await validateLgaPoint(String(body.lgaCode||""),checked);
+    Object.assign(body,{latitude:checked.latitude,longitude:checked.longitude,
+      gpsAccuracy:checked.gpsAccuracy,capturedAt:checked.capturedAt,captureSource:checked.captureSource});
+  }
+  const created=await createResource(kind,body,session.sub);await query("INSERT INTO audit_logs(actor_id,action,entity_type,entity_id) VALUES($1,'create',$2,$3)",[session.sub,kind,created.id]);return NextResponse.json({data:created},{status:201});}
  catch(e){return error(e instanceof Error?e.message:"Unable to create resource",400);}
 }
