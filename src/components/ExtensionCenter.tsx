@@ -42,7 +42,6 @@ export default function ExtensionCenter({admin}:{admin:boolean}){
   const[loading,setLoading]=useState(false);
   const[projectSearch,setProjectSearch]=useState("");
   const[projectTypeFilter,setProjectTypeFilter]=useState("all");
-  const[upgrading,setUpgrading]=useState(false);
   const[message,setMessage]=useState("");
   const[visit,setVisit]=useState({interventionId:"",visitDate:today,visitType:"training",
     guidance:"",outcome:"",nextVisitDue:""});
@@ -83,18 +82,6 @@ export default function ExtensionCenter({admin}:{admin:boolean}){
       return true;
     }catch(e){setMessage(e instanceof Error?e.message:"Unable to save.");return false;}
     finally{setBusy(false);}
-  }
-  async function upgradeSchema(){
-    if(!window.confirm("Apply pending CARE-Map SQL migrations to the configured Aiven database? Confirm backups and change approval first."))return;
-    setUpgrading(true);setMessage("Applying pending database migrations…");
-    try{
-      const response=await fetch("/api/admin/schema-upgrade",{method:"POST",headers:{"Content-Type":"application/json"}});
-      const json=await response.json().catch(()=>({}));
-      if(!response.ok)throw new Error(json.message||"Migration failed.");
-      setMessage("Database schema up to date. "+json.data.appliedNow+" migration(s) applied.");
-      await load();
-    }catch(e){setMessage(e instanceof Error?e.message:"Migration could not complete.");}
-    finally{setUpgrading(false);}
   }
   function locate(){
     if(!navigator.geolocation)return setMessage("This browser does not provide GPS.");
@@ -163,8 +150,8 @@ export default function ExtensionCenter({admin}:{admin:boolean}){
         <button className="btn" aria-pressed={tab==="visits"} type="button" onClick={()=>setTab("visits")}>Extension visits</button>
         <button className="btn" aria-pressed={tab==="competition"} type="button" onClick={()=>setTab("competition")}>Community competition</button>
       </div>
-      {admin&&<div className="notice"><strong>First-time rollout:</strong> Apply migration 016 before creating projects. Use the controlled schema upgrade after confirming the Aiven backup and change approval.
-        <div className="actions"><button className="btn" disabled={upgrading||busy} onClick={()=>void upgradeSchema()}>{upgrading?"Applying migrations…":"Apply pending database migrations"}</button></div>
+      {admin&&<div className="notice"><strong>First-time rollout:</strong> Apply pending migrations 016 and 017 before creating projects. Your existing admin session is sufficient; no additional credentials are required.
+        <div className="actions"><a className="btn" href="/staff/admin/migrations">Open Admin Migrations</a></div>
       </div>}
       {loading&&<div role="status" className="notice">Loading extension records…</div>}
       {message&&<div role="status" className={/failed|could not|invalid|error/i.test(message)?"error":"notice"}>{message}</div>}
