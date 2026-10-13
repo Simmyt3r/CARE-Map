@@ -556,3 +556,14 @@ main:has(.staff-workspace)>.shell{max-width:1720px}
   .staff-workspace-main{display:block}
   .card{box-shadow:none}
 }
+
+/* Extension workspace: guided registration and compact review sections */
+.extension-form-divider{display:flex;align-items:center;gap:10px;border-top:1px solid var(--line);padding-top:16px;margin-top:6px;grid-column:1/-1}
+.extension-form-divider>span{display:grid;place-items:center;width:36px;height:36px;flex-shrink:0;border-radius:11px;background:#e4f3e9;color:var(--brand);font-size:13px;font-weight:900}
+.extension-form-divider>div{display:grid;gap:2px}
+.extension-form-divider strong{font-size:15px}
+.extension-form-divider small{color:var(--muted);font-size:12px}
+@media(max-width:650px){
+  .extension-form-divider{padding-top:12px}
+  .staff-workspace-main .card .btn{max-width:100%}
+}
