@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 import {useEffect,useState} from "react";
+import {useFieldGps} from "@/lib/field-gps";
 
 type Kind="boreholes"|"assets"|"forest-sites"|"rivers";
 
@@ -19,6 +20,13 @@ export default function ResourceOperations({kind,row,onClose,onUpdated}:{kind:Ki
     verified:Boolean(row.verified)
   });
   const[inspection,setInspection]=useState({condition:"good",notes:"",latitude:"",longitude:"",gpsAccuracy:""});
+  const gps=useFieldGps(fix=>setInspection(x=>({...x,
+    latitude:fix.latitude.toFixed(7),longitude:fix.longitude.toFixed(7),
+    gpsAccuracy:fix.accuracyMeters.toFixed(1)})),setMessage);
+  function editInspectionCoordinate(key:"latitude"|"longitude",value:string){
+    gps.cancel();
+    setInspection(x=>({...x,[key]:value,gpsAccuracy:""}));
+  }
   const[inspections,setInspections]=useState<any[]>([]);
   const[maintenance,setMaintenance]=useState({performedAt:new Date().toISOString().slice(0,10),notes:""});
   const[photos,setPhotos]=useState<any[]>([]);
@@ -47,15 +55,8 @@ export default function ResourceOperations({kind,row,onClose,onUpdated}:{kind:Ki
     setMessage("Record updated.");onUpdated();
   }
 
-  function captureInspectionGps(){
-    if(!navigator.geolocation)return setMessage("GPS is not available on this device.");
-    navigator.geolocation.getCurrentPosition(p=>{
-      setInspection(x=>({...x,latitude:p.coords.latitude.toFixed(6),longitude:p.coords.longitude.toFixed(6),gpsAccuracy:p.coords.accuracy.toFixed(1)}));
-      setMessage("Inspection GPS captured with ±"+Math.round(p.coords.accuracy)+" m reported accuracy.");
-    },()=>setMessage("Could not capture GPS. Enter coordinates manually."),{enableHighAccuracy:true,timeout:12000,maximumAge:0});
-  }
-
   async function addInspection(){
+    gps.cancel();
     setBusy(true);setMessage("");
     const body={
       condition:inspection.condition,
@@ -124,8 +125,9 @@ export default function ResourceOperations({kind,row,onClose,onUpdated}:{kind:Ki
           <h3>Field inspection</h3>
           <div className="field"><label>Condition</label><select value={inspection.condition} onChange={e=>setInspection(x=>({...x,condition:e.target.value}))}><option value="good">Good</option><option value="fair">Fair</option><option value="poor">Poor</option><option value="critical">Critical</option></select></div>
           <div className="field"><label>Inspection notes</label><textarea value={inspection.notes} onChange={e=>setInspection(x=>({...x,notes:e.target.value}))} placeholder="What did you observe on site?"/></div>
-          <div className="grid three"><div className="field"><label>Latitude</label><input value={inspection.latitude} onChange={e=>setInspection(x=>({...x,latitude:e.target.value}))}/></div><div className="field"><label>Longitude</label><input value={inspection.longitude} onChange={e=>setInspection(x=>({...x,longitude:e.target.value}))}/></div><div className="field"><label>Accuracy (m)</label><input value={inspection.gpsAccuracy} onChange={e=>setInspection(x=>({...x,gpsAccuracy:e.target.value}))}/></div></div>
-          <div className="actions"><button className="btn" onClick={captureInspectionGps}>Capture inspection GPS</button><button className="btn primary" disabled={busy} onClick={addInspection}>Save inspection</button></div>
+          <div className="grid three"><div className="field"><label>Latitude</label><input inputMode="decimal" value={inspection.latitude} onChange={e=>editInspectionCoordinate("latitude",e.target.value)}/></div><div className="field"><label>Longitude</label><input value={inspection.longitude} onChange={e=>editInspectionCoordinate("longitude",e.target.value)}/></div><div className="field"><label>Accuracy (m)</label><input readOnly value={inspection.gpsAccuracy?inspection.gpsAccuracy+" m":"Not available"}/></div></div>
+          <div className="actions"><button className="btn" disabled={gps.capturing||busy} onClick={gps.capture}>{gps.capturing?"Refining GPS…":"Capture inspection GPS"}</button>
+            {gps.capturing&&<button className="btn" type="button" onClick={()=>{gps.cancel();setMessage("GPS capture stopped.");}}>Cancel GPS</button>}<button className="btn primary" disabled={busy||gps.capturing} onClick={addInspection}>Save inspection</button></div>
           {!!inspections.length&&<div className="inspection-list">{inspections.slice(0,5).map(i=><div key={i.id}><span className="badge">{i.condition}</span><strong>{new Date(i.inspected_at).toLocaleDateString()}</strong><small>{i.inspector_name||"Staff"}{i.gps_accuracy_m?" · ±"+Number(i.gps_accuracy_m).toFixed(1)+" m":""}</small>{i.notes&&<p>{i.notes}</p>}</div>)}</div>}
         </section>
 
