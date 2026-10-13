@@ -1,11 +1,11 @@
-import {describe,expect,it,vi} from "vitest";
+import {describe,expect,it} from "vitest";
 import {bestGpsSample,describeGpsError,usableGpsSample} from "../src/lib/field-gps";
 import {validateFieldPoint} from "../src/lib/location-quality";
 import {reportSchema} from "../src/lib/validators";
 
 const now=Date.parse("2026-10-13T15:00:00Z");
 function sample(latitude:number,longitude:number,accuracy:number,timestamp=now){
-  return {coords:{latitude,longitude,accuracy},timestamp} as Pick<GeolocationPosition,"coords"|"timestamp">;
+  return {coords:{latitude,longitude,accuracy},timestamp} as unknown as Pick<GeolocationPosition,"coords"|"timestamp">;
 }
 function field(overrides:Record<string,unknown>={}){
   return {latitude:7.73,longitude:8.53,gpsAccuracy:12.3,
