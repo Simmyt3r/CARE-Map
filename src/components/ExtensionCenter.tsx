@@ -10,7 +10,8 @@ type Project={
 type Score={
   id:string;intervention_id:string;project_name:string;community_name:string;
   assessed_on:string;evaluator_name:string;evidence_notes:string;verification_status:string;
-  maintenance_score:number;function_score:number;cleanliness_score:number;participation_score:number
+  maintenance_score:number;function_score:number;cleanliness_score:number;participation_score:number;
+  evidence_photo_url:string|null
 };
 type Leader={
   id:string;project_name:string;community_name:string;project_type:string;score:number|null;
@@ -100,6 +101,22 @@ export default function ExtensionCenter({admin}:{admin:boolean}){
     },()=>setMessage("GPS unavailable. Manual coordinates can be saved but cannot be verified as field GPS."),
     {enableHighAccuracy:true,maximumAge:0,timeout:20000});
   }
+  async function uploadAssessmentPhoto(assessmentId:string,file:File){
+    setBusy(true);setMessage("Uploading field evidence…");
+    try{
+      const formData=new FormData();
+      formData.set("file",file);
+      const response=await fetch("/api/extension/assessments/"+assessmentId+"/photo",{
+        method:"POST",body:formData
+      });
+      const result=await response.json().catch(()=>({}));
+      if(!response.ok)throw new Error(result.error?.message||"Evidence upload failed.");
+      setMessage("Photo evidence uploaded. An independent administrator may verify the assessment.");
+      await load();
+    }catch(e){setMessage(e instanceof Error?e.message:"Evidence upload failed.");}
+    finally{setBusy(false);}
+  }
+
   async function submitProject(e:React.FormEvent){
     e.preventDefault();
     const lat=Number(form.latitude),lng=Number(form.longitude);
@@ -211,7 +228,7 @@ export default function ExtensionCenter({admin}:{admin:boolean}){
     {tab==="competition"&&<>
       <section className="card stack">
         <h2>Community stewardship competition</h2>
-        <p className="muted">Compare communities only within the same project type over the latest 90 days. Maintenance (35%), functionality (30%), site care (15%) and participation (20%) contribute to each 100-point score. At least two independently verified assessments, a verified location and two eligible competing projects are required.</p>
+        <p className="muted">Compare communities only within the same project type over the latest 90 days. Maintenance (35%), functionality (30%), site care (15%) and participation (20%) contribute to each 100-point score. At least two independently verified photo-backed assessments, a verified location and two eligible competing projects are required.</p>
         <div className="notice">A high score is not an entitlement to another project. The program team must review equity, technical feasibility, funding and approvals before allocating any reward.</div>
         <div className="table-wrap"><table>
           <thead><tr><th>Project type</th><th>Community / project</th><th>Score</th><th>Verified reviews</th><th>Rank</th><th>Eligibility</th></tr></thead>
@@ -239,13 +256,22 @@ export default function ExtensionCenter({admin}:{admin:boolean}){
 
       <section className="card stack">
         <h2>Assessment review queue</h2>
+        <div className="notice">Each assessment requires a non-sensitive field evidence photo in Cloudinary plus a separate administrator review before its score can count. Do not include faces, private contacts or other personal identifiers.</div>
         {admin&&<div className="field"><label>Administrator review notes</label><input value={reviewNotes} onChange={e=>setReviewNotes(e.target.value)} placeholder="Reason for acceptance or rejection (10+ characters)"/></div>}
         <div className="table-wrap"><table>
           <thead><tr><th>Community</th><th>Assessment</th><th>Evaluator</th><th>Evidence</th><th>State / review</th></tr></thead>
           <tbody>{data.assessments.map(a=><tr key={a.id}>
             <td>{a.community_name}<small>{a.project_name}</small></td>
             <td>{String(a.assessed_on).slice(0,10)}<small>{[a.maintenance_score,a.function_score,a.cleanliness_score,a.participation_score].join(" / ")}</small></td>
-            <td>{a.evaluator_name}</td><td>{a.evidence_notes}</td><td>{a.verification_status}
+            <td>{a.evaluator_name}</td><td>{a.evidence_notes}
+              <div className="stack">
+                {a.evidence_photo_url?<a href={a.evidence_photo_url} target="_blank" rel="noreferrer">View field photo evidence</a>:
+                  a.verification_status==="pending"?<label className="btn">Attach field photo
+                    <input type="file" hidden accept="image/jpeg,image/png,image/webp" disabled={busy}
+                      onChange={e=>{const file=e.target.files?.[0];if(file)void uploadAssessmentPhoto(a.id,file);e.currentTarget.value="";}}/>
+                  </label>:<small>No photo attached</small>}
+              </div>
+            </td><td>{a.verification_status}
               {admin&&a.verification_status==="pending"&&<div className="actions">
                 <button className="btn" disabled={busy||reviewNotes.trim().length<10} onClick={()=>void save({action:"review_assessment",assessmentId:a.id,decision:"verified",reviewerNotes:reviewNotes})}>Verify</button>
                 <button className="btn" disabled={busy||reviewNotes.trim().length<10} onClick={()=>void save({action:"review_assessment",assessmentId:a.id,decision:"rejected",reviewerNotes:reviewNotes})}>Reject</button>
