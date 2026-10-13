@@ -70,7 +70,7 @@ export default function ResourceOperations({kind,row,onClose,onUpdated}:{kind:Ki
     const r=await fetch("/api/resources/"+kind+"/"+row.id+"/inspections",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)});
     const j=await r.json().catch(()=>({}));setBusy(false);
     if(!r.ok)return setMessage(j.error?.message||"Inspection could not be saved.");
-    setInspection({condition:"good",notes:"",latitude:"",longitude:"",gpsAccuracy:""});
+    setInspection({condition:"good",notes:"",latitude:"",longitude:"",gpsAccuracy:"",capturedAt:"",captureSource:"manual"});
     setMessage("Inspection recorded.");await loadInspections();
   }
 
