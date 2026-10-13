@@ -99,7 +99,8 @@ export async function GET(){
         WITH scores AS (
           SELECT p.id,p.project_name,p.project_code,p.project_type,p.community_name,p.lga_code,
              p.location_review,p.contact_consent,p.project_status,
-             COUNT(a.id)::int reviews,
+             COUNT(DISTINCT a.assessed_on)::int reviews,
+             COALESCE(MAX(a.assessed_on)-MIN(a.assessed_on),0)::int observation_days,
              ROUND(AVG((a.maintenance_score*0.35 + a.function_score*0.30 +
                         a.cleanliness_score*0.15 + a.participation_score*0.20)*20)::numeric,1) score
           FROM community_interventions p
@@ -108,7 +109,7 @@ export async function GET(){
             AND a.assessed_on BETWEEN CURRENT_DATE - INTERVAL '90 days' AND CURRENT_DATE
           GROUP BY p.id
         ), ranked AS (
-          SELECT *, (reviews>=2 AND location_review='verified' AND contact_consent
+          SELECT *, (reviews>=2 AND observation_days>=14 AND location_review='verified' AND contact_consent
             AND project_status IN ('active','completed')) eligible
           FROM scores
         ), competition AS (
@@ -130,7 +131,7 @@ export async function GET(){
     ]);
     return NextResponse.json({projects:projects.rows,visits:visits.rows,
       assessments:assessments.rows,leaderboard:leaderboard.rows,rewards:rewards.rows,
-      policy:{periodDays:90,minVerifiedAssessments:2,minEligiblePeers:2,
+      policy:{periodDays:90,minVerifiedAssessments:2,minObservationDays:14,minEligiblePeers:2,
         thresholdMeters:30,weights:{maintenance:35,functionality:30,cleanliness:15,participation:20},
         note:"Scores require independent admin verification. Ranking is decision support, never an automatic extra-project award."}
     },{headers:{"Cache-Control":"no-store"}});
@@ -223,7 +224,8 @@ export async function POST(request:Request){
       const eligible=await query<{project_type:string;eligible:boolean;peer_count:string;rank:string}>(`
         WITH scores AS (
           SELECT p.id,p.project_type,p.location_review,p.contact_consent,p.project_status,
-            COUNT(a.id) reviews,
+            COUNT(DISTINCT a.assessed_on) reviews,
+            COALESCE(MAX(a.assessed_on)-MIN(a.assessed_on),0) observation_days,
             AVG((a.maintenance_score*.35+a.function_score*.30+
               a.cleanliness_score*.15+a.participation_score*.20)*20) score
           FROM community_interventions p
@@ -232,7 +234,7 @@ export async function POST(request:Request){
             AND a.assessed_on BETWEEN $2::date AND $3::date
           GROUP BY p.id
         ), candidates AS (
-          SELECT *, (reviews>=2 AND location_review='verified' AND contact_consent
+          SELECT *, (reviews>=2 AND observation_days>=14 AND location_review='verified' AND contact_consent
             AND project_status IN ('active','completed')) eligible
           FROM scores
         ), ranked AS (
@@ -246,7 +248,7 @@ export async function POST(request:Request){
       const info=eligible.rows[0];
       if(!info)return error("Intervention not found.",404);
       if(input.decision!=="declined"&&(!info.eligible||Number(info.peer_count)<2||Number(info.rank)!==1)){
-        return error("Recommendations require at least two eligible same-type communities and a top-ranked project with two verified evaluations.",409);
+        return error("Recommendations require at least two eligible same-type communities and a top-ranked project with two photo-backed verified assessments at least 14 days apart.",409);
       }
       const r=await query<{id:string}>(`
         INSERT INTO community_reward_decisions(period_start,period_end,project_type,intervention_id,decision,justification,decision_by)
