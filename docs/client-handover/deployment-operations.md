@@ -1,5 +1,5 @@
 # CARE-Map Installation, Deployment and Operations Guide
-**Document:** CM-DEP-001 | **Version:** 1.0-draft | **Date:** 2026-10-09  
+**Document:** CM-DEP-001 | **Version:** 1.1-draft | **Updated:** 2026-10-13  
 **Owner:** To be agreed | **Status:** Technical handover draft, deployment not certified
 
 ## 1. Purpose and prerequisites
@@ -17,19 +17,25 @@ Browser/PWA -> Vercel-hosted Next.js application/API -> Aiven PostgreSQL/PostGIS
 | CRON_SECRET | Server secret | Strong scheduler secret, 24+ characters |
 | ADMIN_EMAIL | Bootstrap-only | Initial admin identity |
 | ADMIN_PASSWORD | Bootstrap-only | Strong initial admin password |
-| CLOUDINARY_CLOUD_NAME | Server configuration | Cloudinary product environment name |\n| CLOUDINARY_API_KEY | Server secret | Cloudinary server-side API key |\n| CLOUDINARY_API_SECRET | Server secret | Cloudinary server-side API secret |
+| CLOUDINARY_CLOUD_NAME | Server configuration | Cloudinary product environment name |
+| CLOUDINARY_API_KEY | Server secret | Cloudinary server-side API key |
+| CLOUDINARY_API_SECRET | Server secret | Cloudinary server-side API secret |
 | CDSE_CLIENT_ID / CDSE_CLIENT_SECRET | Optional server secrets | Copernicus processing authorization |
 | DATA_CONTROLLER_NAME / DATA_CONTROLLER_ADDRESS / PRIVACY_CONTACT_EMAIL | Production governance | Legally approved privacy ownership/contact |
 | PRIVACY_LAWFUL_BASIS_REPORTS / PRIVACY_LAWFUL_BASIS_ACCOUNTS / PRIVACY_LEGAL_REVIEWED_AT / PRIVACY_REVIEWER | Production governance | Approved privacy wording and review evidence |
 
 Never use `NEXT_PUBLIC_` for secrets. Use the project's `.env.example` as the current configuration inventory. Follow least-privilege access, TLS, administrator MFA where available, and credential rotation after staff turnover.
 
+## Deployment and source status
+
+**GitHub source != live Vercel release.** Check the target deployment's Git commit SHA, environment variables and logs against the approved release. GitHub CI and a `READY` deployment do not demonstrate live GPS acceptance or prove that Aiven received migrations. At the last verified check on 2026-10-13, the live domain ran commit `f9f63f03`, while newer GPS improvements existed in the default branch. Recheck both SHAs at the actual rollout; do not assume they are still different.
+
 ## 4. First deployment
 1. Securely provision Aiven PostgreSQL, confirm connectivity, and obtain the service CA.
 2. Clone the GitHub repository to an approved workstation/CI environment; pin the reviewed release commit.
 3. Run `npm install`, `npm run lint`, `npm run typecheck`, `npm test`, and `npm run build`. Resolve failures before rollout.
 4. Set `DATABASE_URL`, `AIVEN_CA_CERT`, `SESSION_SECRET`, `CRON_SECRET` and bootstrap admin credentials in the secure server environment.
-5. Run `npm run db:migrate`; check PostGIS, schema objects, and the `care_map_schema_migrations` checksum ledger for migrations 001–015.
+5. Run `npm run db:migrate`; check PostGIS, schema objects, and the `care_map_schema_migrations` checksum ledger for the **current repository migration files (001–017)**. Never assume these have been applied merely because they appear in GitHub.
 6. Run `npm run db:seed-admin` once using controlled administrator credentials. Remove bootstrap password exposure afterwards.
 7. Configure the same required server secrets in Vercel; deploy the pinned commit and connect the approved domain over HTTPS.
 8. Configure Cloudinary, satellite credentials, scheduled endpoints and privacy metadata if the corresponding features are in scope.
@@ -62,7 +68,7 @@ All incoming location data must include source, collection date, validation stat
 - Define monitoring thresholds, alert destinations, working hours and escalation contacts with the client before go-live.
 
 ## 7. Backup and recovery
-**Client decision required:** database backup frequency, retention, storage geography, RPO and RTO. Enable and verify Aiven backups; separately inventory and protect Cloudinary media and historical Cloudinary and historical Blob files. Perform a restore drill into a non-production database and confirm migrations, spatial indexes, application access, photos and representative features. Never restore over production without approved incident/change procedures.
+**Client decision required:** database backup frequency, retention, storage geography, RPO and RTO. Enable and verify Aiven backups; separately inventory and protect new Cloudinary assets and historical Vercel Blob files. Perform a restore drill into a non-production database and confirm migrations, spatial indexes, application access, photos and representative features. Never restore over production without approved incident/change procedures.
 
 ## 8. Releases and rollback
 Use version-tagged releases, review changes, run CI and migration checks in staging, back up production, deploy in a change window and run smoke tests. Avoid assuming SQL migrations are reversible: application rollback and database rollback are different actions. If a migration is incompatible, follow an approved forward-fix or tested database restore plan. Record the deployed commit, operator, timestamp and post-deployment evidence.
@@ -73,7 +79,7 @@ Use version-tagged releases, review changes, run CI and migration checks in stag
 - Viewport maps expose approved GeoJSON only.
 - Create and verify a designated test report, assignment and resolution.
 - Create/read a field inspection and photo if Cloudinary is configured.
-- GPS and offline report submission/synchronization on a real device.
+- GPS collection and offline report submission/synchronization on a real device: follow the [GPS field acceptance checklist](../quality/gps-field-acceptance.md), compare captured positions with independently known reference points, and confirm manual coordinate edits clear device-GPS provenance.
 - Export a vetted GeoJSON file and open it in QGIS.
 - Test satellite discovery/processing only if Copernicus integration is enabled.
 - Record Production Readiness and Field Acceptance evidence.
@@ -92,3 +98,12 @@ The setup checks that there is no active administrator, runs the existing checks
 ### Administrator migration flow (October 2026)
 
 Once an administrator is signed in, open **Admin → Database migrations** (`/staff/admin/migrations`) and review the pending SQL files, applied migration count and checksum status. After confirming an Aiven backup and change approval, select **Apply pending migrations**. The server uses the Production `DATABASE_URL` and `AIVEN_CA_CERT` values already configured in Vercel, verifies the existing administrator session, checks the request origin and retains SHA-256 ledger protection. There is no extra credential prompt; advanced manual connection testing remains available on the Infrastructure page for troubleshooting only. This is not permission to run migrations as an unauthenticated user. Session expiry still requires a normal sign-in.
+
+
+### GPS / site verification release gate
+
+All four acquisition forms (community reports, staff point assets, project interventions and inspections) use a shared high-accuracy reading flow in the latest source. Review the field checklist at [GPS acceptance](../quality/gps-field-acceptance.md). Staff collection expects a fresh reported GPS reading; public offline reports may synchronize later with the original observation time. Input validation, estimated device accuracy and point-in-LGA checks do not substitute for physical ground-truth verification. Record the tested production SHA, device, reference point, offset and outcome before approval.
+
+### No-new-features maintenance policy
+
+Following the October 2026 stabilization decision, prioritize defect fixes, tested performance improvements, documented data-quality checks, backups, privacy and field acceptance. Avoid new modules unless separately authorized by the project owner.
