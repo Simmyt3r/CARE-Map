@@ -4,7 +4,7 @@ export type FieldPoint={
   latitude:number;
   longitude:number;
   gpsAccuracy:number|null;
-  captureSource:"manual"|"device_gps"|"csv_import"|"geojson_import"|"api_import";
+  captureSource:"manual"|"device_gps"|"csv_import"|"geojson_import"|"api_import"|"survey_import";
   capturedAt:string|null;
 };
 
@@ -18,28 +18,34 @@ export function validateFieldPoint(input:Record<string,unknown>):FieldPoint{
      latitude< -90||latitude>90||longitude< -180||longitude>180)
     throw new Error("Coordinates must be finite WGS84 latitude (-90 to 90) and longitude (-180 to 180).");
   const captureSource=String(input.captureSource||"manual");
-  if(!["manual","device_gps","csv_import","geojson_import","api_import"].includes(captureSource))
+  if(!["manual","device_gps","csv_import","geojson_import","api_import","survey_import"].includes(captureSource))
     throw new Error("Unrecognized coordinate source.");
   const gpsAccuracy=input.gpsAccuracy===null||input.gpsAccuracy===undefined||
      input.gpsAccuracy===""?null:Number(input.gpsAccuracy);
-  if(gpsAccuracy!==null&&(!Number.isFinite(gpsAccuracy)||gpsAccuracy<0||gpsAccuracy>100000))
+  if(gpsAccuracy!==null&&(!Number.isFinite(gpsAccuracy)||gpsAccuracy<=0||gpsAccuracy>100000))
     throw new Error("Reported GPS accuracy must be between 0 and 100,000 metres.");
   let capturedAt:string|null=null;
   if(input.capturedAt!=null&&input.capturedAt!==""){
     const parsed=new Date(String(input.capturedAt));
-    if(Number.isNaN(parsed.getTime())||parsed.getTime()>Date.now()+5*60000)
+    if(Number.isNaN(parsed.getTime())||parsed.getTime()>Date.now()+60_000)
       throw new Error("Location capture time must be a valid past timestamp.");
     capturedAt=parsed.toISOString();
   }
-  if(captureSource==="device_gps"&&(gpsAccuracy===null||!capturedAt))
-    throw new Error("Device GPS records must include reported accuracy and capture time.");
+  if(captureSource==="manual"&&(gpsAccuracy!==null||capturedAt!==null))
+    throw new Error("Manually entered coordinates cannot retain device GPS accuracy or capture timestamp.");
+  if(captureSource==="device_gps"){
+    if(gpsAccuracy===null||!capturedAt)
+      throw new Error("Device GPS records must include reported accuracy and capture time.");
+    if(Date.now()-new Date(capturedAt).getTime()>15*60_000)
+      throw new Error("Device GPS fix is older than 15 minutes. Recapture on site or switch to a clearly labelled manually reviewed location.");
+  }
   return {latitude,longitude,gpsAccuracy,
     captureSource:captureSource as FieldPoint["captureSource"],capturedAt};
 }
 
 export function locationWarnings(point:FieldPoint):string[]{
   const warnings:string[]=[];
-  if(point.captureSource!=="device_gps")warnings.push("Location was not obtained from live device GPS.");
+  if(point.captureSource!=="device_gps")warnings.push("Coordinates are not supported by a fresh device GPS fix.");
   if(point.gpsAccuracy===null)warnings.push("No measured GPS accuracy.");
   else if(point.gpsAccuracy>30)warnings.push("Reported accuracy exceeds 30 metres.");
   if(!point.capturedAt)warnings.push("Location capture time is missing.");
