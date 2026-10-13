@@ -35,7 +35,7 @@ Advanced capability gates include:
 - verified river geometry
 - verified hazard polygons
 - verified catchments
-- Vercel Blob photo storage
+- Cloudinary photo storage (new uploads; historical Blob URLs may still exist)
 - Copernicus OAuth processing credentials
 - at least one reviewed/enabled local-language translation pack
 
@@ -86,7 +86,9 @@ An older CARE-Map database may have all schema objects but no migration ledger.
 
 The readiness page reports this as migration history not initialized.
 
-Running Initialize / upgrade schema creates the ledger and processes the migration files. Existing migrations were written with guarded CREATE/ALTER/index/backfill operations so this acts as the one-time ledger bootstrap for legacy installations.
+After initial bootstrap, a signed-in administrator can open **Staff → Administration → Database migrations** (`/staff/admin/migrations`) and apply *pending* migrations using existing server-side `DATABASE_URL` and `AIVEN_CA_CERT`, without re-entering database credentials. This requires backup/change approval and an active admin session. The one-time `/setup` flow is only for first-time initialization when no administrator exists.
+
+Running the initial setup/upgrade creates the ledger and processes the migration files. Existing migrations were written with guarded CREATE/ALTER/index/backfill operations so this acts as the one-time ledger bootstrap for legacy installations.
 
 After that bootstrap, future runs skip recorded migrations.
 
@@ -127,17 +129,22 @@ It does not expose secret values.
 
 1. Configure DATABASE_URL and AIVEN_CA_CERT.
 2. Test the Aiven connection.
-3. Initialize/upgrade PostGIS and all migrations.
+3. For first installation initialize PostGIS and create the first admin using the approved `/setup` process; thereafter apply pending migrations through `/staff/admin/migrations` with the existing admin session (no second password form).
 4. Configure SESSION_SECRET and CRON_SECRET.
 5. Bootstrap the administrator account.
 6. Import approved pilot-LGA boundaries.
 7. Import or collect baseline intervention coordinates.
 8. Complete formal privacy/legal review and configure controller/contact/lawful-basis/reviewer settings.
 9. Apply migration 014 and verify the Privacy Center has no overdue cases.
-10. Configure optional Blob/Copernicus capabilities as needed.
+10. Configure Cloudinary and Copernicus capabilities as needed, using server-only credentials; remove successful bootstrap secrets.
 11. Redeploy and use Recheck readiness.
 12. Use the Field Acceptance Test Center on target devices in every pilot LGA.
-13. Resolve failed/conditional runs and recheck readiness before public launch.
+13. Complete the [GPS field checklist](quality/gps-field-acceptance.md) on target phones at known reference points; reject unverifiable coordinates.
+14. Resolve failed/conditional runs and recheck readiness before public launch.
+
+## Implementation and release parity
+
+The repository currently contains migration files **001–017**, including ACReSAL extension stewardship and maintenance-photo evidence. Confirm the target database actually applied them, the ledger checksums match, and the current Vercel deployment contains the relevant code before using those workflows. A Vercel `READY` state alone does not establish which commit is live or that field acceptance passed.
 
 ## What the panel does not prove
 
@@ -150,4 +157,4 @@ A green readiness score means the software and required baseline configuration a
 - scientific validation of hazard or remote-sensing products
 - staff training
 
-Those remain human governance tasks, because apparently software is still not permitted to chair every committee.
+Those remain human governance tasks requiring designated ACReSAL/client approval.
