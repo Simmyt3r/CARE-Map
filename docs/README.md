@@ -1,6 +1,6 @@
 # CARE-Map Documentation and Client Handover Index
 
-**Updated:** 2026-10-09 | **Release:** working implementation, not yet production/field accepted.
+**Updated:** 2026-10-13 | **Release:** implementation / quality-hardening baseline; deployment and field acceptance are separate checks.
 
 CARE-Map is the Benue ACReSAL Smart Asset, Forest, River & Borehole Tracking System. The repository implements substantial functionality; the client must separately approve requirements, provision services, validate GIS data and complete acceptance testing.
 
@@ -24,7 +24,19 @@ CARE-Map is the Benue ACReSAL Smart Asset, Forest, River & Borehole Tracking Sys
 - [Technology Stack](architecture/tech-stack.md) and [ADR-0003: Aiven/PostGIS/Next.js](architecture/decisions/0003-adopt-aiven-postgis-nextjs.md)
 - [GIS Boundaries](lga-boundaries.md), [Coverage Analysis](intervention-coverage.md), [Settlement Access](settlement-access.md), [River Exposure](river-corridor-exposure.md), [Hazard Zones](hazard-zones.md), [Catchments](catchments-landscape-planning.md)
 - [Remote Sensing](remote-sensing.md), [Map Composer](map-composer.md), [Localization](localization.md)
+- [ACReSAL Extension and Community Stewardship](planning/community-extension.md) (project contacts, visits, evidence-backed assessment and reward governance)
+- [GPS Field Acceptance and Regression Checklist](quality/gps-field-acceptance.md) (current capture thresholds, known limits and device tests)
 - [Planning Scope](planning/scope.md), [Roadmap](planning/roadmap.md), [Data Privacy](planning/data-privacy.md), [Design](design/README.md)
+
+## October 2026 quality baseline
+
+- Staff and public forms share **high-accuracy GPS sampling** with estimated accuracy, timestamp and coordinate-provenance validation. The target is **≤30 m reported accuracy**; this does not independently verify geographic position. Refer to the [field checklist](quality/gps-field-acceptance.md).
+- **Cloudinary** stores new uploaded photos and evidence; historical Vercel Blob references remain where present. No sensitive evidence should use public image delivery URLs.
+- **Copernicus Sentinel Hub** powers Sentinel-2 NDVI processing. A comparison needs sufficient clear-pixel coverage in *both* date windows and administrative review before public publication.
+- Schema migrations **001–017** are in the repository. Whether each one is **applied to Aiven** must be checked in the migration ledger; a Git commit or Vercel `READY` deployment is not evidence that migrations ran.
+- The administrator migration page is `/staff/admin/migrations`. It uses an existing **administrator session** and server-stored Aiven credentials, without a second credential prompt. Permissions and approval still apply.
+- Documentation updates and GitHub CI passing do **not** prove the most recent commit has deployed to the production domain. Compare the deployment commit to the release commit before acceptance.
+- This project is in a **stabilization phase**: prioritize defects, GPS accuracy, performance, security, datasets and field acceptance over new features.
 
 ## Source of truth and status convention
 1. **Code and applied migrations** establish what has actually been implemented.
