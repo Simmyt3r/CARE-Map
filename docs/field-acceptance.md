@@ -110,11 +110,13 @@ Do not clear browser/site storage between the queue and reconnect steps.
 
 ## Evidence
 
-When Vercel Blob is configured, staff can attach JPEG, PNG, or WebP evidence images to a specific acceptance check.
+When Cloudinary is configured, staff can attach JPEG, PNG, or WebP evidence images to a specific acceptance check.
 
 Evidence records are stored separately from operational resource/report photos and are linked by `(run_id, check_key)`.
 
-Maximum evidence image size is 4 MB.\n\nThe current evidence uploader follows CARE-Map's existing public Vercel Blob pattern. Upload only redacted, non-sensitive evidence. Do not upload passwords, tokens, personal identifiers, private contact details, or confidential records.
+Maximum evidence image size is 4 MB.
+
+New uploads use Cloudinary and currently have publicly accessible delivery URLs. Upload **only approved, redacted, non-sensitive evidence**. Do not upload passwords, tokens, personal identifiers, private contact details or confidential records. Older Vercel Blob links can remain in historical records.
 
 Useful evidence includes:
 
@@ -156,6 +158,12 @@ The required readiness gate is green only when every configured pilot LGA has a 
 - Attach evidence for failures and intermittent behavior.
 - Reopen and rerun after fixes.
 - Keep a failed run rather than deleting history.
+
+## GPS regression appendix
+
+The required **High-accuracy GPS capture** check must be evaluated against the [GPS field acceptance checklist](quality/gps-field-acceptance.md). Record observed coordinate and browser-reported horizontal accuracy, a known reference-point coordinate, actual positional offset measured independently, timestamp, fix acquisition time and whether GPS provenance was cleared after manual edits. Repeat permission-denied, weak-signal, offline-sync and cancel-while-capturing scenarios.
+
+Do not call GPS *verified* merely because the browser reports an accuracy estimate ≤30 m. Acceptance must include independent location comparison and authoritative boundary review.
 
 ## What a pass means
 
