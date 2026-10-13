@@ -39,6 +39,9 @@ export default function ExtensionCenter({admin}:{admin:boolean}){
   const[tab,setTab]=useState<"projects"|"visits"|"competition">("projects");
   const[form,setForm]=useState({...newProject});
   const[busy,setBusy]=useState(false);
+  const[loading,setLoading]=useState(false);
+  const[projectSearch,setProjectSearch]=useState("");
+  const[projectTypeFilter,setProjectTypeFilter]=useState("all");
   const[upgrading,setUpgrading]=useState(false);
   const[message,setMessage]=useState("");
   const[visit,setVisit]=useState({interventionId:"",visitDate:today,visitType:"training",
@@ -50,6 +53,7 @@ export default function ExtensionCenter({admin}:{admin:boolean}){
     decision:"recommended",justification:""});
 
   const load=useCallback(async()=>{
+    setLoading(true);
     const [a,b]=await Promise.all([
       fetch("/api/extension",{cache:"no-store"}),
       fetch("/api/lgas",{cache:"no-store"})
@@ -59,6 +63,7 @@ export default function ExtensionCenter({admin}:{admin:boolean}){
       leaderboard:aj.leaderboard||[],visits:aj.visits||[],rewards:aj.rewards||[]});
     else setMessage(aj.error?.message||"Could not load extension records. Apply database migration 016.");
     if(b.ok)setLgas(bj.data||[]);
+    setLoading(false);
   },[]);
   useEffect(()=>{void load();},[load]);
 
@@ -131,12 +136,18 @@ export default function ExtensionCenter({admin}:{admin:boolean}){
     if(success){setForm({...newProject,lgaCode:form.lgaCode});}
   }
   const eligible=data.leaderboard.filter(x=>x.eligible&&Number(x.eligible_peers)>=2);
+  const visibleProjects=data.projects.filter(p=>{
+    const search=projectSearch.trim().toLowerCase();
+    return (projectTypeFilter==="all"||p.project_type===projectTypeFilter)&&
+      (!search||[p.project_name,p.project_code,p.community_name,p.lga_code]
+        .some(value=>String(value).toLowerCase().includes(search)));
+  });
   return <div className="stack">
     <section className="card stack">
       <div className="section-head">
         <div><h2>Community extension & stewardship</h2>
           <p className="muted">Manage interventions, protect local contact details, document guidance and evaluate care for comparable projects.</p></div>
-        <button className="btn" onClick={()=>void load()}>Refresh</button>
+        <button className="btn" disabled={loading} onClick={()=>void load()}>{loading?"Refreshing…":"Refresh"}</button>
       </div>
       <div className="stats">
         <div className="stat"><strong>{data.projects.length}</strong><span>Interventions</span></div>
@@ -144,21 +155,23 @@ export default function ExtensionCenter({admin}:{admin:boolean}){
         <div className="stat"><strong>{data.visits.length}</strong><span>Recent extension visits</span></div>
         <div className="stat"><strong>{eligible.length}</strong><span>Competition eligible</span></div>
       </div>
-      <div className="staff-tabs">
-        <button className="btn" type="button" onClick={()=>setTab("projects")}>Project contacts & locations</button>
-        <button className="btn" type="button" onClick={()=>setTab("visits")}>Extension visits</button>
-        <button className="btn" type="button" onClick={()=>setTab("competition")}>Community competition</button>
+      <div className="staff-tabs" aria-label="Extension workflow">
+        <button className="btn" aria-pressed={tab==="projects"} type="button" onClick={()=>setTab("projects")}>Projects & contacts</button>
+        <button className="btn" aria-pressed={tab==="visits"} type="button" onClick={()=>setTab("visits")}>Extension visits</button>
+        <button className="btn" aria-pressed={tab==="competition"} type="button" onClick={()=>setTab("competition")}>Community competition</button>
       </div>
       {admin&&<div className="notice"><strong>First-time rollout:</strong> Apply migration 016 before creating projects. Use the controlled schema upgrade after confirming the Aiven backup and change approval.
         <div className="actions"><button className="btn" disabled={upgrading||busy} onClick={()=>void upgradeSchema()}>{upgrading?"Applying migrations…":"Apply pending database migrations"}</button></div>
       </div>}
-      {message&&<div role="status" className="notice">{message}</div>}
+      {loading&&<div role="status" className="notice">Loading extension records…</div>}
+      {message&&<div role="status" className={/failed|could not|invalid|error/i.test(message)?"error":"notice"}>{message}</div>}
     </section>
 
     {tab==="projects"&&<>
       <form className="card stack" onSubmit={submitProject}>
         <h2>Register ACReSAL intervention</h2>
         <p className="muted">Every intervention needs a community focal person who agrees to be contacted. Their telephone number stays in staff-only records.</p>
+        <div className="extension-form-divider"><span>01</span><div><strong>Intervention details</strong><small>Identify the project and community.</small></div></div>
         <div className="grid two">
           <div className="field"><label>Project code</label><input required value={form.projectCode} onChange={e=>setForm(x=>({...x,projectCode:e.target.value}))} placeholder="BEN-MAK-001"/></div>
           <div className="field"><label>Project name</label><input required value={form.projectName} onChange={e=>setForm(x=>({...x,projectName:e.target.value}))}/></div>
@@ -166,12 +179,14 @@ export default function ExtensionCenter({admin}:{admin:boolean}){
           <div className="field"><label>Community name</label><input required value={form.communityName} onChange={e=>setForm(x=>({...x,communityName:e.target.value}))}/></div>
           <div className="field"><label>Benue LGA</label><select required value={form.lgaCode} onChange={e=>setForm(x=>({...x,lgaCode:e.target.value}))}><option value="">Choose LGA</option>{lgas.map(l=><option key={l.code} value={l.code}>{l.name}</option>)}</select></div>
           <div className="field"><label>Project status</label><select value={form.projectStatus} onChange={e=>setForm(x=>({...x,projectStatus:e.target.value}))}>{["planned","active","completed","needs_maintenance","closed"].map(s=><option key={s} value={s}>{s.replaceAll("_"," ")}</option>)}</select></div>
+          <div className="extension-form-divider"><span>02</span><div><strong>Project coordinates</strong><small>Device GPS is preferred; all locations require review.</small></div></div>
           <div className="field"><label>Latitude</label><input required inputMode="decimal" value={form.latitude} onChange={e=>setForm(x=>({...x,latitude:e.target.value,captureSource:"manual",capturedAt:"",gpsAccuracy:""}))}/></div>
           <div className="field"><label>Longitude</label><input required inputMode="decimal" value={form.longitude} onChange={e=>setForm(x=>({...x,longitude:e.target.value,captureSource:"manual",capturedAt:"",gpsAccuracy:""}))}/></div>
         </div>
         <div className="actions"><button type="button" className="btn" onClick={locate}>Capture device GPS + accuracy</button>
           <span className="muted">{form.gpsAccuracy?"Reported ±"+form.gpsAccuracy+" m · ":""}{form.captureSource.replaceAll("_"," ")}</span>
         </div>
+        <div className="extension-form-divider"><span>03</span><div><strong>Community focal person</strong><small>Contact details are available to staff only.</small></div></div>
         <div className="grid two">
           <div className="field"><label>Community contact name</label><input required value={form.contactName} onChange={e=>setForm(x=>({...x,contactName:e.target.value}))}/></div>
           <div className="field"><label>Community contact phone</label><input required type="tel" value={form.contactPhone} onChange={e=>setForm(x=>({...x,contactPhone:e.target.value}))}/></div>
@@ -185,10 +200,27 @@ export default function ExtensionCenter({admin}:{admin:boolean}){
         <button className="btn primary" disabled={busy||!form.contactConsent}>Save intervention & contact</button>
       </form>
       <section className="card stack">
-        <h2>Registered interventions</h2>
-        <div className="table-wrap"><table>
+        <div className="section-head"><div><h2>Registered interventions</h2>
+          <p className="muted" style={{margin:"4px 0 0"}}>{visibleProjects.length} of {data.projects.length} projects shown</p></div></div>
+        <div className="grid two">
+          <div className="field"><label htmlFor="extension-project-search">Search community, code, project or LGA</label>
+            <input id="extension-project-search" type="search" placeholder="Find an intervention…" value={projectSearch}
+              onChange={e=>setProjectSearch(e.target.value)}/>
+          </div>
+          <div className="field"><label htmlFor="extension-type-filter">Project type</label>
+            <select id="extension-type-filter" value={projectTypeFilter} onChange={e=>setProjectTypeFilter(e.target.value)}>
+              <option value="all">All project types</option>
+              {typeChoices.map(([value,label])=><option key={value} value={value}>{label}</option>)}
+            </select>
+          </div>
+        </div>
+        {!visibleProjects.length&&<div className="empty-state">
+          <strong>{data.projects.length?"No matching interventions":"No interventions recorded"}</strong>
+          <p>{data.projects.length?"Try another search or project type.":"Register the first project and consenting community contact above."}</p>
+        </div>}
+        {!!visibleProjects.length&&<div className="table-wrap"><table>
           <thead><tr><th>Project</th><th>Community / LGA</th><th>Focal contact (staff only)</th><th>Location</th><th>Review</th></tr></thead>
-          <tbody>{data.projects.map(p=><tr key={p.id}>
+          <tbody>{visibleProjects.map(p=><tr key={p.id}>
             <td><strong>{p.project_name}</strong><small>{p.project_code} · {p.project_type.replaceAll("_"," ")}</small></td>
             <td>{p.community_name}<small>{p.lga_code}</small></td>
             <td>{p.contact_name}<small>{p.contact_phone} · {p.contact_role||"Contact"}</small></td>
@@ -201,7 +233,7 @@ export default function ExtensionCenter({admin}:{admin:boolean}){
                   decision:"rejected",notes:"Location requires new field capture or clarification."})}>Reject</button>
               </div>}</td>
           </tr>)}</tbody>
-        </table></div>
+        </table></div>}
       </section>
     </>}
 
@@ -218,10 +250,12 @@ export default function ExtensionCenter({admin}:{admin:boolean}){
         <div className="field"><label>Observations / community response</label><textarea value={visit.outcome} onChange={e=>setVisit(x=>({...x,outcome:e.target.value}))}/></div>
         <button className="btn primary" disabled={busy}>Save extension visit</button>
       </form>
-      <section className="card stack"><h2>Recent extension visits</h2><div className="table-wrap"><table>
+      <section className="card stack"><h2>Recent extension visits</h2>
+        {!data.visits.length&&<div className="empty-state"><strong>No extension visits recorded</strong><p>Start by recording a field visit above.</p></div>}
+        {!!data.visits.length&&<div className="table-wrap"><table>
         <thead><tr><th>Date</th><th>Project</th><th>Activity</th><th>Guidance</th><th>Follow-up</th></tr></thead>
         <tbody>{data.visits.map(v=><tr key={v.id}><td>{String(v.visit_date).slice(0,10)}</td><td>{v.community_name} · {v.project_name}</td><td>{v.visit_type.replaceAll("_"," ")}</td><td>{v.guidance}</td><td>{v.next_visit_due?String(v.next_visit_due).slice(0,10):"None"}</td></tr>)}</tbody>
-      </table></div></section>
+      </table></div>}</section>
     </>}
 
     {tab==="competition"&&<>
