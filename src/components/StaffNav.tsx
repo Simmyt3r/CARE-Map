@@ -25,6 +25,7 @@ const groups:NavGroup[]=[
   ]},
   {title:"Administration",items:[
     {href:"/staff/admin",label:"User accounts",short:"US",admin:true,exact:true},
+    {href:"/staff/admin/migrations",label:"Database migrations",short:"DB",admin:true},
     {href:"/staff/admin/governance",label:"Governance",short:"GV",admin:true},
     {href:"/staff/admin/privacy",label:"Data privacy",short:"PR",admin:true},
     {href:"/staff/admin/localization",label:"Localization",short:"LN",admin:true},
