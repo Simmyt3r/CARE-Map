@@ -1,6 +1,6 @@
 # CARE-Map Remote Sensing & NDVI
 
-**Status:** Implemented baseline  
+**Status:** Implemented and quality-gated in source; live provider and GIS-unit acceptance require field verification  
 **Satellite source:** Sentinel-2 Level-2A surface reflectance  
 **Catalog discovery:** Earth Search STAC v1  
 **Processing/statistics:** Copernicus Data Space Ecosystem Sentinel Hub APIs
@@ -18,7 +18,7 @@ A staff user can:
 5. Review mean NDVI, clear-pixel coverage, vegetated area, area change and percentage change.
 6. Compare baseline/comparison NDVI image previews.
 7. Save the analysis in PostGIS.
-8. Publish the completed AOI as a vegetation-change layer on the public map.
+8. Have an administrator publish the **quality-passing, reviewed** AOI as a public vegetation-change layer. Analyses needing review are not publishable.
 
 ## NDVI
 
@@ -61,6 +61,8 @@ The baseline excludes unusable/cloud-contaminated SCL classes including:
 - snow/ice
 
 Cloud-masked pixels are excluded. CARE-Map reports clear-pixel coverage so a result with poor usable coverage is visible to the analyst instead of quietly pretending the clouds were vegetation.
+
+**Quality publication gate (current source):** Each baseline and comparison period must have valid NDVI/vegetation statistics and at least **60% clear-pixel coverage** (the configured default minimum). Insufficient observations are saved with status `needs_review`, with publication disabled. The public map excludes analyses that fail the coverage threshold, even if an older record had previously been marked for publication. Passing this automated gate does not replace GIS/M&E review.
 
 ## Observation window
 
@@ -244,13 +246,13 @@ All endpoints are staff-protected.
 
 ## Current limitations
 
-The baseline intentionally does not claim more precision than the data supports.
+The baseline intentionally does not claim more precision than the data supports. AOIs are checked for WGS84 coordinate validity, ring closure, nonzero polygon area, excessive vertices and overly broad bounding extents; these are software validation checks, not proof of georeferencing accuracy.
 
 - NDVI is a vegetation proxy, not a complete ecological condition score.
 - The area estimate depends on the configured threshold.
-- Results with low clear-pixel coverage should be treated cautiously.
+- Results with low clear-pixel coverage remain `needs_review` and cannot normally be published.
 - Least-cloud mosaics may combine pixels acquired on different dates within the observation window.
-- The public layer publishes the AOI/change severity, not raw provider statistics.
+- The public layer publishes only a quality-passing reviewed AOI/change severity, not raw provider statistics; administrator approval is required.
 - Field validation is still required for operational conclusions.
 
 Future extensions can add:
@@ -352,3 +354,8 @@ Resolve/reject report
       ↓
 Satellite alert acknowledged
 ```
+
+
+## Field quality and acceptance status (2026-10-13)
+
+The Vercel environment may have Copernicus credentials configured, but their presence does **not** prove successful provider authentication, rate/quota capacity, processing integrity or ground truth. Test representative AOIs and both image periods, record the source scene IDs, clear-pixel fractions, dates, cloud behavior, vegetation threshold, published status and operator's interpretation. Use geographically validated reference boundaries. This is quality hardening, not an expansion into new remote sensing models.
