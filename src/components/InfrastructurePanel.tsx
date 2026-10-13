@@ -248,7 +248,7 @@ export default function InfrastructurePanel({snapshot}:{snapshot:Snapshot}){
           <div className="field"><label>CLOUDINARY_CLOUD_NAME</label><input value={cloudinaryCloudName} onChange={e=>setCloudinaryCloudName(e.target.value)} placeholder="Cloudinary cloud name"/></div>
           <div className="field"><label>CLOUDINARY_API_KEY</label><input type="password" autoComplete="off" value={cloudinaryApiKey} onChange={e=>setCloudinaryApiKey(e.target.value)} placeholder="Cloudinary API key"/></div>
           <div className="field"><label>CLOUDINARY_API_SECRET</label><input type="password" autoComplete="off" value={cloudinaryApiSecret} onChange={e=>setCloudinaryApiSecret(e.target.value)} placeholder="Cloudinary API secret"/></div>
-          <div className="notice">Uploaded image links use Cloudinary's public delivery URLs. Restrict uploads to redacted, non-sensitive field photos. Historical Vercel Blob image links remain unchanged.</div>
+          <div className="notice">Uploaded image links use Cloudinary public delivery URLs. Restrict uploads to redacted, non-sensitive field photos. Historical Vercel Blob image links remain unchanged.</div>
           <a href="https://console.cloudinary.com/" target="_blank" rel="noreferrer">Open Cloudinary dashboard ↗</a>
         </div>
       </div>
