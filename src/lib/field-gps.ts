@@ -36,7 +36,7 @@ export function describeGpsError(code:number){
 }
 
 /** Watch multiple high-accuracy fixes; reject stale/invalid readings, keep the best.
- * After the 30-second limit, a weak fix is offered with a visible warning,
+ * After the 30-second limit, a usable weaker fix is offered with a visible warning,
  * rather than silently labelled verified. Manual edits must cancel the watch.
  */
 export function useFieldGps(
@@ -49,6 +49,7 @@ export function useFieldGps(
   useEffect(()=>{callbackRef.current={onFix,onMessage};},[onFix,onMessage]);
   const watchId=useRef<number|null>(null);
   const timeoutId=useRef<ReturnType<typeof setTimeout>|null>(null);
+  const settlingTimer=useRef<ReturnType<typeof setTimeout>|null>(null);
   const generation=useRef(0);
   const best=useRef<FieldGpsFix|null>(null);
   const started=useRef(0);
@@ -65,6 +66,10 @@ export function useFieldGps(
     if(timeoutId.current!==null){
       clearTimeout(timeoutId.current);
       timeoutId.current=null;
+    }
+    if(settlingTimer.current!==null){
+      clearTimeout(settlingTimer.current);
+      settlingTimer.current=null;
     }
   },[]);
   const cancel=useCallback(()=>{
@@ -134,6 +139,16 @@ export function useFieldGps(
         ?"GPS interrupted. Best reading ±"+Math.round(point.accuracyMeters)+" m; review or recapture before using."
         :describeGpsError(e.code),point);
     },{enableHighAccuracy:true,maximumAge:0,timeout:duration});
+
+    // Some mobile browsers emit only one reading. Do not wait the full 30 seconds
+    // (which would make it stale) if it is already accurate after settling.
+    settlingTimer.current=setTimeout(()=>{
+      const point=best.current;
+      if(current()&&point&&point.accuracyMeters<=target&&
+         Date.now()-Date.parse(point.capturedAt)<=GPS_MAX_SAMPLE_AGE_MS){
+        finish("GPS acquired (reported ±"+Math.round(point.accuracyMeters)+" m). Confirm the point is on-site.",point);
+      }
+    },8000);
 
     timeoutId.current=setTimeout(()=>{
       const point=best.current;
