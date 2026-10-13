@@ -9,7 +9,7 @@ The four existing capture forms (community reports, staff boreholes/assets, ACRe
 - Target: **≤30 m** reported horizontal accuracy. This is a field-collection target, **not** survey-grade or a guarantee of positional truth.
 - A single excellent fix may settle after about 8 seconds; distinct good fixes can end acquisition sooner.
 - Fixes older than 15 seconds during live acquisition, invalid coordinates/uncertainty, impossible timestamps and the (0,0) null-island sentinel are rejected.
-- A fix between 30 m and 100 m may be entered with a clear *low-confidence* warning and requires later review. Accuracy above 100 m is not auto-populated as device GPS.
+- A fix between 30 m and 100 m may be auto-populated with a clear *low-confidence* warning and requires later review. Accuracy above 100 m is not auto-populated as device GPS.
 - Permission, location-service and timing failures show actionable explanations. Cancel stops geolocation watching; leaving the form stops watchers.
 - Manually modifying either coordinate **clears** the previous GPS estimate, capture time and `device_gps` provenance. Attempting a new capture also clears the prior provenance to prevent a failed attempt from leaving an old location falsely tagged as current.
 - The server rejects manual coordinates carrying GPS metadata and live device locations more than 15 minutes old in staff resource and intervention workflows.
@@ -37,3 +37,8 @@ The browser may derive location from GPS, Wi-Fi, cell networks or other signals.
 ### Acceptance record
 
 Record device model, Android/Chrome version, accuracy (metres), reference point and independently measured offset, browser permissions, response time and pass/fail for each applicable scenario. Do not claim live GPS acceptance solely from passing CI.
+
+
+## Source-to-deployment parity
+
+Before using this checklist, compare the Git commit on the production Vercel deployment against the reviewed GPS implementation. The code may be merged and tested in GitHub without being the version currently served by the public/staff domain. Record both SHA values on the acceptance form and **block acceptance** if they differ.
