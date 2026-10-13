@@ -17,6 +17,7 @@ export function validateFieldPoint(input:Record<string,unknown>):FieldPoint{
   if(!Number.isFinite(latitude)||!Number.isFinite(longitude)||
      latitude< -90||latitude>90||longitude< -180||longitude>180)
     throw new Error("Coordinates must be finite WGS84 latitude (-90 to 90) and longitude (-180 to 180).");
+  if(latitude===0&&longitude===0)throw new Error("Coordinates at 0,0 are not a valid CARE-Map field position.");
   const captureSource=String(input.captureSource||"manual");
   if(!["manual","device_gps","csv_import","geojson_import","api_import","survey_import"].includes(captureSource))
     throw new Error("Unrecognized coordinate source.");
