@@ -18,6 +18,7 @@ CARE-Map is the Benue ACReSAL Smart Asset, Forest, River & Borehole Tracking Sys
 
 ## Supporting technical references
 - [Project README](../README.md) and [Implementation](IMPLEMENTATION.md)
+- [October 2026 documentation changelog](CHANGELOG.md) (GPS, cloud storage, API corrections and field-readiness status)
 - [Production Readiness](production-readiness.md) and [Field Acceptance](field-acceptance.md)
 - [Detailed Data Model](architecture/data-model.md) (historical draft; refer to applied SQL migrations as implementation authority)
 - [API Contracts](architecture/api-contracts.md) (confirm routes against current source/API)
