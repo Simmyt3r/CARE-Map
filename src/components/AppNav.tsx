@@ -10,6 +10,7 @@ export default function AppNav(){
     <nav className="nav">
       <Link href="/">{t("nav.publicMap")}</Link>
       <Link href="/report">{t("nav.reportIssue")}</Link>
+      <Link href="/extension">Extension</Link>
       <Link href="/register">{t("nav.register")}</Link>
       <Link href="/privacy">{t("nav.privacy")}</Link>
       <Link href="/login">{t("nav.staffLogin")}</Link>
