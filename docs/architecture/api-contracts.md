@@ -1,7 +1,29 @@
 # API Contracts
 
-**Status:** Detailed Draft — ready for implementation review
-**Last updated:** 2026-09-10
+**Status:** Historical pre-implementation API draft; **not** the current deployed REST contract
+**Last updated:** 2026-10-13 (historical document explicitly marked)
+
+> **Implementation authority:** Current endpoints live under `src/app/api/**/route.ts`. The legacy relative paths and Bearer-token authentication described below were conceptual and must **not** be used as an integration contract. The current application uses same-origin `/api/...` endpoints and HTTP-only session cookies for authenticated requests. Review the relevant route handler and release SHA before integrating.
+
+### Current endpoint examples (verify release before client use)
+
+| Method | Actual implemented route | Access |
+|---|---|---|
+| GET/POST | `/api/resources/:kind` | List access governed by resource visibility; write requires staff |
+| PATCH/DELETE | `/api/resources/:kind/:id` | Patch requires staff; delete requires admin |
+| GET/POST | `/api/reports` | Public reporting POST; staff list GET |
+| GET/POST | `/api/extension` | Staff, with admin-only review/reward actions |
+| POST | `/api/extension/assessments/:id/photo` | Authorized staff; approved non-sensitive evidence |
+| POST | `/api/gis/settlements/import` | Staff, maximum 200 rows/features per request |
+| POST | `/api/remote-sensing/scenes` | Staff |
+| GET/POST | `/api/remote-sensing/analyses` | Staff |
+| POST | `/api/admin/schema-upgrade` | Active admin session and same-origin request |
+
+The examples are **not** an exhaustive OpenAPI specification. They identify the source-backed modern paths, not a promise of external integrations.
+
+---
+
+## Original architecture draft (retained for traceability)
 
 REST-style contract over the entities in [data-model.md](data-model.md). Conventions below apply across all endpoints unless noted.
 
