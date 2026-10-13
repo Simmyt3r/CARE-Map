@@ -1,7 +1,7 @@
 # Technology Stack
 
 **Status:** Accepted
-**Last updated:** 2026-10-05
+**Last updated:** 2026-10-13
 
 ADR-0003 supersedes the backend ambiguity in ADR-0002.
 
@@ -15,6 +15,9 @@ ADR-0003 supersedes the backend ambiguity in ADR-0002.
 | Hosting | Vercel | Fits the Next.js runtime and scheduled cron endpoint |
 | Risk/AI | Rule-based scoring first | Explainable decisions before enough validated historical data exists for ML |
 | Testing | TypeScript, ESLint, Vitest, GitHub Actions | Automated regression and build checks |
+| Photo storage | Cloudinary (server-side uploads) | JPEG/PNG/WebP evidence; public delivery URLs currently require strictly non-sensitive imagery |
+| Satellite processing | Earth Search STAC + Copernicus Sentinel Hub | Discover Sentinel-2 scenes and produce cloud-screened NDVI statistics/previews |
+| Field location | Browser Geolocation API + PostGIS geometry checks | Estimated GPS accuracy and source metadata; final coordinates require ground verification |
 
 ## Database transport
 
@@ -27,3 +30,8 @@ All CARE-Map spatial records use SRID 4326. Points are stored for boreholes, ass
 ## Revisit triggers
 
 Revisit this stack only if field deployment reveals a concrete constraint such as native offline requirements, substantially higher tile traffic, satellite-processing workloads, or integration requirements from ACReSAL existing systems.
+
+
+## Stability policy
+
+The approved October 2026 development direction is to **stabilize existing workflows, not add features**. Validate on-site GPS offsets, verify administrative boundaries and source data, check upload/role/privacy behavior, optimize database/network performance, and complete field acceptance. A successful build is not a certificate of operational accuracy.
