@@ -6,7 +6,7 @@ import {LocalizationProvider} from "@/components/LocalizationProvider";
 
 export const metadata:Metadata={
   title:"CARE-Map | Benue ACReSAL",
-  description:"Smart GIS tracking for Benue ACReSAL interventions",
+  description:"A community-first geospatial workspace for Benue State ACReSAL interventions.",
   manifest:"/manifest.webmanifest"
 };
 
@@ -14,8 +14,9 @@ export default function RootLayout({children}:{children:React.ReactNode}){
   return <html lang="en"><body>
     <LocalizationProvider>
       <ServiceWorkerRegister/>
+      <a className="skip-link" href="#main-content">Skip to main content</a>
       <AppNav/>
-      <main><div className="shell">{children}</div></main>
+      <main id="main-content"><div className="shell">{children}</div></main>
     </LocalizationProvider>
   </body></html>;
 }
