@@ -3,7 +3,7 @@ import {getSession,isStaff} from "@/lib/auth";
 import {error} from "@/lib/http";
 import {query} from "@/lib/db";
 import {
-  changeLevel,fetchNdviStats,remoteSensingConfigured,searchSentinelScenes,
+  assessNdviQuality,changeLevel,fetchNdviStats,remoteSensingConfigured,searchSentinelScenes,
   type RemoteSensingRow
 } from "@/lib/remote-sensing";
 
@@ -40,6 +40,11 @@ export async function POST(_:Request,context:{params:Promise<{id:string}>}){
       fetchNdviStats(row.aoi_geometry,row.comparison_date,Number(row.window_days),threshold,areaHa)
     ]);
 
+    const quality=assessNdviQuality(baseline,comparison,Number(row.minimum_clear_fraction||0.6));
+    if(!baselineScenes.length)quality.issues.push("No baseline Sentinel-2 scenes were discovered in the selected time window.");
+    if(!comparisonScenes.length)quality.issues.push("No comparison Sentinel-2 scenes were discovered in the selected time window.");
+    quality.publishable=quality.issues.length===0;
+
     const baselineHa=baseline.vegetationHa;
     const comparisonHa=comparison.vegetationHa;
     const changeHa=baselineHa!=null&&comparisonHa!=null?comparisonHa-baselineHa:null;
@@ -48,7 +53,7 @@ export async function POST(_:Request,context:{params:Promise<{id:string}>}){
 
     await query(`
       UPDATE remote_sensing_analyses SET
-        status='completed',
+        status=$15,quality_notes=$16,publish_to_map=CASE WHEN $15='completed' THEN publish_to_map ELSE FALSE END,
         baseline_mean_ndvi=$1,comparison_mean_ndvi=$2,
         baseline_clear_fraction=$3,comparison_clear_fraction=$4,
         baseline_vegetation_ha=$5,comparison_vegetation_ha=$6,
@@ -61,7 +66,8 @@ export async function POST(_:Request,context:{params:Promise<{id:string}>}){
       baselineHa,comparisonHa,changeHa,changePct,level,
       baselineScenes[0]?JSON.stringify(baselineScenes[0]):null,
       comparisonScenes[0]?JSON.stringify(comparisonScenes[0]):null,
-      JSON.stringify(baseline.raw),JSON.stringify(comparison.raw),id
+      JSON.stringify(baseline.raw),JSON.stringify(comparison.raw),id,
+      quality.publishable?"completed":"needs_review",quality.issues.join(" ")||null
     ]);
 
     await query("INSERT INTO audit_logs(actor_id,action,entity_type,entity_id,metadata) VALUES($1,'run','remote_sensing_analysis',$2,$3)",[
@@ -69,7 +75,7 @@ export async function POST(_:Request,context:{params:Promise<{id:string}>}){
     ]);
 
     return NextResponse.json({data:{
-      id,status:"completed",baseline,comparison,changeHa,changePct,changeLevel:level,
+      id,status:quality.publishable?"completed":"needs_review",quality,baseline,comparison,changeHa,changePct,changeLevel:level,
       baselineScene:baselineScenes[0]||null,comparisonScene:comparisonScenes[0]||null
     }});
   }catch(e){
