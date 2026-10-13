@@ -8,6 +8,7 @@ export type FieldGpsFix={
   capturedAt:string;
 };
 export const GPS_TARGET_METERS=30;
+export const GPS_MAX_AUTOFILL_METERS=100;
 export const GPS_MAX_SAMPLE_AGE_MS=15_000;
 export const GPS_CAPTURE_TIMEOUT_MS=30_000;
 
@@ -52,6 +53,7 @@ export function useFieldGps(
   const best=useRef<FieldGpsFix|null>(null);
   const started=useRef(0);
   const validSamples=useRef(0);
+  const lastFixTimestamp=useRef<number|null>(null);
   const target=options.targetMeters??GPS_TARGET_METERS;
   const duration=options.timeoutMs??GPS_CAPTURE_TIMEOUT_MS;
 
@@ -70,6 +72,7 @@ export function useFieldGps(
     clear();
     best.current=null;
     validSamples.current=0;
+    lastFixTimestamp.current=null;
     setCapturing(false);
   },[clear]);
   useEffect(()=>()=>{generation.current++;clear();},[clear]);
@@ -94,8 +97,15 @@ export function useFieldGps(
       if(!current())return;
       clear();
       setCapturing(false);
-      if(point)callbackRef.current.onFix(point);
-      callbackRef.current.onMessage(message);
+      const fresh=point&&Date.now()-Date.parse(point.capturedAt)<=GPS_MAX_SAMPLE_AGE_MS;
+      if(point&&fresh&&point.accuracyMeters<=GPS_MAX_AUTOFILL_METERS){
+        callbackRef.current.onFix(point);
+        callbackRef.current.onMessage(message);
+      }else if(point&&!fresh){
+        callbackRef.current.onMessage("The GPS fix became stale during acquisition. Recapture at the site.");
+      }else if(point){
+        callbackRef.current.onMessage("GPS is too imprecise (±"+Math.round(point.accuracyMeters)+" m). Move to an open area and retry; use clearly labelled manual coordinates only if needed.");
+      }else callbackRef.current.onMessage(message);
     }
 
     watchId.current=navigator.geolocation.watchPosition(position=>{
@@ -103,7 +113,11 @@ export function useFieldGps(
       const point=usableGpsSample(position);
       if(!point)return;
       best.current=bestGpsSample(best.current,point);
-      validSamples.current++;
+      const timestamp=Date.parse(point.capturedAt);
+      if(lastFixTimestamp.current!==timestamp){
+        validSamples.current++;
+        lastFixTimestamp.current=timestamp;
+      }
       const candidate=best.current;
       const accuracy=Math.round(candidate.accuracyMeters);
       // Either two timely fixes, or one exceptionally precise result after 8s.
