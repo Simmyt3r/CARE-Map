@@ -21,7 +21,7 @@ export default function RemoteSensingResultDrawer({analysis,onClose,onUpdated}:{
     const j=await r.json().catch(()=>({}));
     setBusy(false);
     if(!r.ok)return setMessage(j.error?.message||"NDVI analysis failed.");
-    setMessage("NDVI comparison completed.");
+    setMessage(j.data?.status==="needs_review"?"Insufficient clear-pixel coverage; analysis held for review.":"NDVI comparison completed and passed cloud-screening checks.");
     setNonce(x=>x+1);await load();onUpdated();
   }
 
@@ -54,9 +54,11 @@ export default function RemoteSensingResultDrawer({analysis,onClose,onUpdated}:{
           </div>
           {d.status!=="running"&&<button className="btn primary" disabled={busy} onClick={run}>{d.status==="completed"?"Re-run analysis":"Run NDVI analysis"}</button>}
           {d.error_message&&<div className="error">{d.error_message}</div>}
+          {d.quality_notes&&<div className="notice"><strong>Imagery quality:</strong> {d.quality_notes} Try a longer date window or another acquisition period.</div>}
+          <div className="muted">Minimum clear-pixel coverage: {fmt(Number(d.minimum_clear_fraction||0.6)*100,0)}% in each period.</div>
         </section>
 
-        {d.status==="completed"&&<>
+        {(d.status==="completed"||d.status==="needs_review")&&<>
           <section className="drawer-section stack">
             <h3>Vegetation change</h3>
             <div className="stats">
@@ -86,8 +88,8 @@ export default function RemoteSensingResultDrawer({analysis,onClose,onUpdated}:{
 
           <section className="drawer-section stack">
             <h3>CARE-Map layer</h3>
-            <div className="notice">Publishing adds the AOI and its vegetation-change severity to the public interactive map. Raw provider statistics remain staff-only.</div>
-            <button className={d.publish_to_map?"btn danger":"btn primary"} disabled={busy} onClick={()=>publish(!d.publish_to_map)}>{d.publish_to_map?"Remove from public map":"Publish vegetation-change layer"}</button>
+            <div className="notice">Publishing adds the AOI and its vegetation-change severity to the public interactive map. Raw provider statistics remain staff-only. Only administrators may publish analyses that pass the clear-pixel quality gate.</div>
+            <button className={d.publish_to_map?"btn danger":"btn primary"} disabled={busy||(d.status!=="completed"&&!d.publish_to_map)} onClick={()=>publish(!d.publish_to_map)}>{d.publish_to_map?"Remove from public map":"Publish vegetation-change layer"}</button>
           </section>
         </>}
 
