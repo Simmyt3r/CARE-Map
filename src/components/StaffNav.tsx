@@ -18,6 +18,7 @@ export default function StaffNav({role,name}:{role:string;name:string}){
     <div className="staff-tabs">
       <Link href="/staff">Dashboard</Link>
       <Link href="/staff/operations">Operations</Link>
+      <Link href="/staff/extension">Extension & Communities</Link>
       <Link href="/staff/data">GIS Data</Link>
       <Link href="/staff/gis">GIS Workbench</Link>
       <Link href="/staff/analysis">Spatial Analysis</Link>
