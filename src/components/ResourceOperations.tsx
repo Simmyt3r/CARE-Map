@@ -19,13 +19,13 @@ export default function ResourceOperations({kind,row,onClose,onUpdated}:{kind:Ki
     stressIndicator:row.stress_indicator||"none",
     verified:Boolean(row.verified)
   });
-  const[inspection,setInspection]=useState({condition:"good",notes:"",latitude:"",longitude:"",gpsAccuracy:""});
+  const[inspection,setInspection]=useState({condition:"good",notes:"",latitude:"",longitude:"",gpsAccuracy:"",capturedAt:"",captureSource:"manual"});
   const gps=useFieldGps(fix=>setInspection(x=>({...x,
     latitude:fix.latitude.toFixed(7),longitude:fix.longitude.toFixed(7),
-    gpsAccuracy:fix.accuracyMeters.toFixed(1)})),setMessage);
+    gpsAccuracy:fix.accuracyMeters.toFixed(1),capturedAt:fix.capturedAt,captureSource:"device_gps"})),setMessage);
   function editInspectionCoordinate(key:"latitude"|"longitude",value:string){
     gps.cancel();
-    setInspection(x=>({...x,[key]:value,gpsAccuracy:""}));
+    setInspection(x=>({...x,[key]:value,gpsAccuracy:"",capturedAt:"",captureSource:"manual"}));
   }
   const[inspections,setInspections]=useState<any[]>([]);
   const[maintenance,setMaintenance]=useState({performedAt:new Date().toISOString().slice(0,10),notes:""});
@@ -63,7 +63,9 @@ export default function ResourceOperations({kind,row,onClose,onUpdated}:{kind:Ki
       notes:inspection.notes||null,
       latitude:inspection.latitude?Number(inspection.latitude):null,
       longitude:inspection.longitude?Number(inspection.longitude):null,
-      gpsAccuracy:inspection.gpsAccuracy?Number(inspection.gpsAccuracy):null
+      gpsAccuracy:inspection.gpsAccuracy?Number(inspection.gpsAccuracy):null,
+      captureSource:inspection.captureSource,
+      capturedAt:inspection.capturedAt||null
     };
     const r=await fetch("/api/resources/"+kind+"/"+row.id+"/inspections",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)});
     const j=await r.json().catch(()=>({}));setBusy(false);
