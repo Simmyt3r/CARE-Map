@@ -223,7 +223,8 @@ export default function FieldAcceptanceCenter(){
         <div className="stat"><strong>{summary?.pilot_lgas_failed??"–"}</strong><span>Latest failed</span></div>
         <div className="stat"><strong>{runs.length}</strong><span>Recent test runs</span></div>
       </div>
-      <div className="notice"><strong>Acceptance rule:</strong> a run passes only when every required check passes. Failed required checks fail the run; blocked/N/A required checks produce a conditional result. Required checks cannot be left “not run” at completion.</div>\n      <div className="notice"><strong>Evidence privacy:</strong> new acceptance images use Cloudinary's public delivery URLs; older Vercel Blob links remain valid. Upload only redacted, non-sensitive screenshots or field photos. Never include passwords, tokens, personal identifiers, private contact details, or confidential records.</div>
+      <div className="notice"><strong>Acceptance rule:</strong> a run passes only when every required check passes. Failed required checks fail the run; blocked/N/A required checks produce a conditional result. Required checks cannot be left “not run” at completion.</div>
+      <div className="notice"><strong>Evidence privacy:</strong> new acceptance images use Cloudinary public delivery URLs; older Vercel Blob links remain valid. Upload only redacted, non-sensitive screenshots or field photos. Never include passwords, tokens, personal identifiers, private contact details, or confidential records.</div>
     </section>
 
     <section className="grid two field-acceptance-start-grid">
