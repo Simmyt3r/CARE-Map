@@ -130,7 +130,6 @@ export default function ExtensionCenter({admin}:{admin:boolean}){
     });
     if(success){setForm({...newProject,lgaCode:form.lgaCode});}
   }
-  const submitted= data.assessments.filter(a=>a.verification_status==="pending");
   const eligible=data.leaderboard.filter(x=>x.eligible&&Number(x.eligible_peers)>=2);
   return <div className="stack">
     <section className="card stack">
