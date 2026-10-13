@@ -89,7 +89,7 @@ export async function GET(){
         LEFT JOIN users u ON u.id=v.officer_id ORDER BY v.visit_date DESC LIMIT 60`),
       query(`SELECT a.id,a.intervention_id,p.project_name,p.community_name,p.project_type,
           a.assessed_on,a.maintenance_score,a.function_score,a.cleanliness_score,
-          a.participation_score,a.evidence_notes,a.verification_status,a.reviewer_notes,
+          a.participation_score,a.evidence_notes,a.evidence_photo_url,a.verification_status,a.reviewer_notes,
           a.evaluator_id,u.name evaluator_name
         FROM community_maintenance_assessments a
         JOIN community_interventions p ON p.id=a.intervention_id
@@ -104,7 +104,7 @@ export async function GET(){
                         a.cleanliness_score*0.15 + a.participation_score*0.20)*20)::numeric,1) score
           FROM community_interventions p
           LEFT JOIN community_maintenance_assessments a ON a.intervention_id=p.id
-            AND a.verification_status='verified'
+            AND a.verification_status='verified' AND a.evidence_photo_url IS NOT NULL
             AND a.assessed_on BETWEEN CURRENT_DATE - INTERVAL '90 days' AND CURRENT_DATE
           GROUP BY p.id
         ), ranked AS (
@@ -193,9 +193,10 @@ export async function POST(request:Request){
     if(input.action==="review_assessment"){
       const r=await query(`UPDATE community_maintenance_assessments
         SET verification_status=$1,reviewer_notes=$2,reviewed_by=$3,reviewed_at=now()
-        WHERE id=$4 AND evaluator_id<>$3 AND verification_status='pending' RETURNING id`,[
+        WHERE id=$4 AND evaluator_id<>$3 AND verification_status='pending'
+          AND ($1='rejected' OR evidence_photo_url IS NOT NULL) RETURNING id`,[
         input.decision,input.reviewerNotes,session.sub,input.assessmentId]);
-      if(!r.rowCount)return error("Assessment not pending or independent reviewer required.",409);
+      if(!r.rowCount)return error("Assessment must be pending, photo-backed and independently reviewed.",409);
       await audit(session.sub,"review_assessment","community_maintenance_assessment",input.assessmentId,{decision:input.decision});
       return NextResponse.json({ok:true,message:"Evaluation review saved."});
     }
@@ -227,7 +228,7 @@ export async function POST(request:Request){
               a.cleanliness_score*.15+a.participation_score*.20)*20) score
           FROM community_interventions p
           LEFT JOIN community_maintenance_assessments a ON a.intervention_id=p.id
-            AND a.verification_status='verified'
+            AND a.verification_status='verified' AND a.evidence_photo_url IS NOT NULL
             AND a.assessed_on BETWEEN $2::date AND $3::date
           GROUP BY p.id
         ), candidates AS (
