@@ -228,7 +228,7 @@ export default function ExtensionCenter({admin}:{admin:boolean}){
     {tab==="competition"&&<>
       <section className="card stack">
         <h2>Community stewardship competition</h2>
-        <p className="muted">Compare communities only within the same project type over the latest 90 days. Maintenance (35%), functionality (30%), site care (15%) and participation (20%) contribute to each 100-point score. At least two independently verified photo-backed assessments, a verified location and two eligible competing projects are required.</p>
+        <p className="muted">Compare communities only within the same project type over the latest 90 days. Maintenance (35%), functionality (30%), site care (15%) and participation (20%) contribute to each 100-point score. At least two independently verified, photo-backed assessments on dates at least 14 days apart, a verified location and two eligible competing projects are required.</p>
         <div className="notice">A high score is not an entitlement to another project. The program team must review equity, technical feasibility, funding and approvals before allocating any reward.</div>
         <div className="table-wrap"><table>
           <thead><tr><th>Project type</th><th>Community / project</th><th>Score</th><th>Verified reviews</th><th>Rank</th><th>Eligibility</th></tr></thead>
@@ -280,7 +280,7 @@ export default function ExtensionCenter({admin}:{admin:boolean}){
       </section>
       {admin&&<form className="card stack" onSubmit={e=>{e.preventDefault();void save({action:"reward_decision",...reward});}}>
         <h2>Administrator reward recommendation / decision</h2>
-        <p className="muted">Only top-ranked eligible communities in a sufficiently populated same-type comparison can be recommended or approved. An approval records the decision; it does not create or fund another project.</p>
+        <p className="muted">Only top-ranked eligible communities in a sufficiently populated same-type comparison can be recommended or approved. Check that disadvantaged communities are not excluded simply because they have fewer resources. An approval records the decision; it does not create or fund another project.</p>
         <div className="grid two">
           <div className="field"><label>Eligible project</label><select required value={reward.interventionId} onChange={e=>setReward(x=>({...x,interventionId:e.target.value}))}><option value="">Choose project</option>{eligible.map(p=><option key={p.id} value={p.id}>{p.community_name} · {p.project_name} ({p.score})</option>)}</select></div>
           <div className="field"><label>Decision</label><select value={reward.decision} onChange={e=>setReward(x=>({...x,decision:e.target.value}))}><option value="recommended">Recommend for consideration</option><option value="approved">Approved by authorized program manager</option><option value="declined">Declined</option></select></div>
