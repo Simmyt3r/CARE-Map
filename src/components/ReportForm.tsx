@@ -3,6 +3,7 @@ import Link from "next/link";
 import {useEffect,useState} from "react";
 import {PRIVACY_NOTICE_VERSION} from "@/lib/privacy";
 import {useI18n} from "@/components/LocalizationProvider";
+import {useFieldGps} from "@/lib/field-gps";
 
 const QUEUE_KEY="caremap_report_queue_v1";
 type ReportPayload={
@@ -26,6 +27,11 @@ export default function ReportForm({relatedEntityType=null,relatedEntityId=null,
   const[optionalContactConsent,setOptionalContactConsent]=useState(false);
   const[busy,setBusy]=useState(false);
   const[queued,setQueued]=useState(0);
+
+  const gps=useFieldGps(fix=>setForm(x=>({
+    ...x,latitude:fix.latitude.toFixed(7),longitude:fix.longitude.toFixed(7),
+    gpsAccuracy:fix.accuracyMeters.toFixed(1),capturedAt:fix.capturedAt,captureSource:"device_gps"
+  })),setMessage);
   const set=(k:string,v:string)=>setForm(x=>({...x,[k]:v}));
 
   useEffect(()=>{
@@ -51,27 +57,8 @@ export default function ReportForm({relatedEntityType=null,relatedEntityId=null,
     return()=>window.removeEventListener("online",flush);
   },[t]);
 
-  function locate(){
-    if(!navigator.geolocation)return setMessage(t("report.gpsUnavailable"));
-    setMessage(t("report.gpsReading"));
-    navigator.geolocation.getCurrentPosition(
-      p=>{
-        setForm(x=>({
-          ...x,
-          latitude:p.coords.latitude.toFixed(6),
-          longitude:p.coords.longitude.toFixed(6),
-          gpsAccuracy:p.coords.accuracy.toFixed(1),
-          capturedAt:new Date(p.timestamp).toISOString(),
-          captureSource:"device_gps"
-        }));
-        setMessage(t("report.gpsCapturedPrefix")+" ±"+Math.round(p.coords.accuracy)+" m.");
-      },
-      ()=>setMessage(t("report.gpsFailed")),
-      {enableHighAccuracy:true,timeout:12000,maximumAge:0}
-    );
-  }
-
   function manualCoordinate(k:"latitude"|"longitude",v:string){
+    gps.cancel();
     setForm(x=>({...x,[k]:v,gpsAccuracy:"",capturedAt:"",captureSource:"manual"}));
   }
 
@@ -104,7 +91,7 @@ export default function ReportForm({relatedEntityType=null,relatedEntityId=null,
   }
 
   async function submit(e:React.FormEvent){
-    e.preventDefault();setBusy(true);setMessage("");
+    e.preventDefault();gps.cancel();setBusy(true);setMessage("");
     if(!privacyAcknowledged){setBusy(false);return setMessage(t("report.privacyRequired"));}
     if((form.reporterName||form.reporterContact)&&!optionalContactConsent){setBusy(false);return setMessage(t("report.contactConsentRequired"));}
     const data=payload();
@@ -138,7 +125,11 @@ export default function ReportForm({relatedEntityType=null,relatedEntityId=null,
       <div className="field"><label>{t("report.gpsAccuracy")}</label><input readOnly value={form.gpsAccuracy?("±"+form.gpsAccuracy+" m"):t("report.manualUnknown")}/></div>
     </div>
     <label className="check-field privacy-check"><input type="checkbox" required checked={privacyAcknowledged} onChange={e=>setPrivacyAcknowledged(e.target.checked)}/><span>{t("report.privacyAck")} <Link href="/privacy" target="_blank">[{t("common.privacyNotice")}]</Link></span></label>
-    <div className="actions"><button type="button" className="btn" onClick={locate}>{t("report.useGps")}</button><button className="btn primary" disabled={busy||!privacyAcknowledged||Boolean((form.reporterName||form.reporterContact)&&!optionalContactConsent)}>{busy?t("report.submitting"):t("report.submit")}</button></div>
-    {message&&<div className={message.startsWith(t("report.submitted"))||message.includes(t("report.reconnectSubmittedSuffix"))?"success":"notice"}>{message}</div>}
+    <div className="actions">
+      <button type="button" className="btn" disabled={gps.capturing||busy} onClick={gps.capture}>{gps.capturing?"Refining GPS (up to 30 s)…":t("report.useGps")}</button>
+      {gps.capturing&&<button type="button" className="btn" onClick={()=>{gps.cancel();setMessage("GPS acquisition cancelled.");}}>Cancel GPS</button>}<button className="btn primary" disabled={busy||gps.capturing||!privacyAcknowledged||Boolean((form.reporterName||form.reporterContact)&&!optionalContactConsent)}>{busy?t("report.submitting"):t("report.submit")}</button></div>
+    <p className="muted">For accurate field reports, let the device refine its GPS fix. Target reported accuracy ≤30 m. A manual location or a weaker fix is acceptable for reporting but must be independently reviewed.</p>
+    {form.captureSource==="device_gps"&&Number(form.gpsAccuracy)>30&&<div className="notice" role="status">Reported GPS precision is low (±{form.gpsAccuracy} m). Consider recapturing outdoors.</div>}
+    {message&&<div role="status" className={message.startsWith(t("report.submitted"))||message.includes(t("report.reconnectSubmittedSuffix"))?"success":"notice"}>{message}</div>}
   </form>;
 }
