@@ -12,14 +12,25 @@ export default function RemoteSensingWorkbench(){
   const[selected,setSelected]=useState<any|null>(null);
   const[message,setMessage]=useState("");
   const[busy,setBusy]=useState(false);
+  const[task,setTask]=useState<"scenes"|"processing"|null>(null);
+  const[loaded,setLoaded]=useState(false);
   const[sceneResults,setSceneResults]=useState<{baseline:any[];comparison:any[]}>({baseline:[],comparison:[]});
   const[form,setForm]=useState({name:"",forestId:"",geometry:"",baselineDate:"",comparisonDate:"",windowDays:"7",threshold:"0.30"});
 
   async function load(){
-    const [a,f]=await Promise.all([fetch("/api/remote-sensing/analyses"),fetch("/api/resources/forest-sites")]);
-    const aj=await a.json().catch(()=>({})),fj=await f.json().catch(()=>({}));
-    if(a.ok){setAnalyses(aj.data||[]);setConfigured(Boolean(aj.configured));}
-    if(f.ok)setForests(fj.data||[]);
+    try{
+      const [a,f]=await Promise.all([
+        fetch("/api/remote-sensing/analyses",{cache:"no-store"}),
+        fetch("/api/resources/forest-sites",{cache:"no-store"})
+      ]);
+      const aj=await a.json().catch(()=>({})),fj=await f.json().catch(()=>({}));
+      if(!a.ok)throw new Error(aj.error?.message||"Could not load existing vegetation analyses.");
+      setAnalyses(aj.data||[]);
+      setConfigured(Boolean(aj.configured));
+      if(f.ok)setForests(fj.data||[]);
+    }catch(e){
+      setMessage(e instanceof Error?e.message:"Unable to reach the satellite workbench.");
+    }finally{setLoaded(true);}
   }
   useEffect(()=>{load();},[]);
 
@@ -35,43 +46,74 @@ export default function RemoteSensingWorkbench(){
 
   async function searchScenes(){
     const geometry=parsedAoi;
-    if(!geometry||!form.baselineDate||!form.comparisonDate)return setMessage("Provide a valid AOI and both dates first.");
-    setBusy(true);setMessage("");
-    const req=(date:string)=>fetch("/api/remote-sensing/scenes",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({geometry,date,windowDays:Number(form.windowDays),maxCloud:60})}).then(async r=>({ok:r.ok,json:await r.json().catch(()=>({}))}));
-    const [b,c]=await Promise.all([req(form.baselineDate),req(form.comparisonDate)]);
-    setBusy(false);
-    if(!b.ok||!c.ok)return setMessage(b.json.error?.message||c.json.error?.message||"Scene discovery failed.");
-    setSceneResults({baseline:b.json.data||[],comparison:c.json.data||[]});
-    setMessage("Scene search completed. Lowest-cloud Sentinel-2 observations are shown below.");
+    if(!geometry||!form.baselineDate||!form.comparisonDate){
+      setMessage("Provide an area of interest and both dates before searching.");
+      return;
+    }
+    setBusy(true);setTask("scenes");setMessage("");
+    try{
+      const req=async(date:string)=>{
+        const response=await fetch("/api/remote-sensing/scenes",{
+          method:"POST",headers:{"content-type":"application/json"},
+          body:JSON.stringify({geometry,date,windowDays:Number(form.windowDays),maxCloud:60})
+        });
+        const body=await response.json().catch(()=>({}));
+        if(!response.ok)throw new Error(body.error?.message||"Satellite scene search failed.");
+        return body.data||[];
+      };
+      const [baseline,comparison]=await Promise.all([req(form.baselineDate),req(form.comparisonDate)]);
+      setSceneResults({baseline,comparison});
+      setMessage(baseline.length&&comparison.length
+        ?"Sentinel-2 candidate scenes found for both periods. Review cloud coverage before processing."
+        :"Some periods have no scenes meeting the cloud-cover filter. Try a wider observation window.");
+    }catch(e){
+      setMessage(e instanceof Error?e.message:"Scene discovery unavailable. Please retry.");
+    }finally{setBusy(false);setTask(null);}
   }
 
   async function createAndRun(){
     const geometry=parsedAoi;
-    if(!geometry)return setMessage("AOI geometry must be valid GeoJSON.");
-    setBusy(true);setMessage("");
-    const r=await fetch("/api/remote-sensing/analyses",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({
-      name:form.name,geometry,baselineDate:form.baselineDate,comparisonDate:form.comparisonDate,windowDays:Number(form.windowDays),threshold:Number(form.threshold)
-    })});
-    const j=await r.json().catch(()=>({}));
-    if(!r.ok){setBusy(false);return setMessage(j.error?.message||"Could not create analysis.");}
-    const id=j.data.id;
-    await load();
-    if(configured){
-      const run=await fetch("/api/remote-sensing/analyses/"+id+"/run",{method:"POST"});
-      const runJson=await run.json().catch(()=>({}));
-      setBusy(false);
+    if(!geometry){setMessage("Draw or enter a valid GeoJSON area of interest.");return;}
+    setBusy(true);setTask("processing");setMessage("");
+    try{
+      const response=await fetch("/api/remote-sensing/analyses",{
+        method:"POST",headers:{"content-type":"application/json"},
+        body:JSON.stringify({
+          name:form.name,geometry,baselineDate:form.baselineDate,
+          comparisonDate:form.comparisonDate,windowDays:Number(form.windowDays),
+          threshold:Number(form.threshold)
+        })
+      });
+      const created=await response.json().catch(()=>({}));
+      if(!response.ok)throw new Error(created.error?.message||"Could not create analysis.");
+      const id=created.data.id;
+      if(configured){
+        const run=await fetch("/api/remote-sensing/analyses/"+id+"/run",{method:"POST"});
+        const result=await run.json().catch(()=>({}));
+        if(!run.ok)throw new Error(result.error?.message||
+          "Analysis was saved, but satellite processing failed. Open it from saved analyses to retry.");
+        const details=await fetch("/api/remote-sensing/analyses/"+id).then(r=>r.json()).catch(()=>({}));
+        if(details.data)setSelected(details.data);
+        setMessage(result.data?.status==="needs_review"
+          ?"Comparison saved for quality review. One or both periods have insufficient clear-pixel coverage."
+          :"NDVI comparison processed. Review the imagery and accuracy before publication.");
+      }else{
+        setMessage("Analysis saved for later. Copernicus processing needs server credentials.");
+      }
       await load();
-      const latest=(await fetch("/api/remote-sensing/analyses/"+id).then(x=>x.json()).catch(()=>({}))).data;
-      if(latest)setSelected(latest);
-      return setMessage(run.ok?(runJson.data?.status==="needs_review"?"NDVI analysis saved for quality review. Insufficient clear coverage; do not publish.":"NDVI comparison completed and passed imagery quality checks."):runJson.error?.message||"Analysis was created but processing failed.");
+    }catch(e){
+      setMessage(e instanceof Error?e.message:"Remote sensing service is unavailable. Please retry.");
+      await load();
+    }finally{
+      setBusy(false);setTask(null);
     }
-    setBusy(false);
-    setMessage("Analysis saved. Copernicus processing is waiting for OAuth configuration in Infrastructure settings.");
   }
 
   const scene=(s:any)=>s?<div className="scene-card"><strong>{s.id}</strong><span>{s.datetime?new Date(s.datetime).toLocaleString():"Unknown acquisition time"}</span><span>Cloud cover: {s.cloudCover==null?"—":Number(s.cloudCover).toFixed(1)+"%"}</span></div>:<div className="muted">No scene found in this window.</div>;
 
   return <div className="stack">
+    <div className="gis-status-strip"><strong>Sentinel workflow</strong><span>1. Select an area</span><span>2. Compare dates</span><span>3. Review quality</span></div>
+    {!loaded&&<div className="notice" role="status">Loading satellite analyses and existing forest sites…</div>}
     <div className="notice">Sentinel-2 observations are screened for cloud and incomplete coverage. At least 60% clear-pixel coverage in BOTH date windows is required before publishing results. Location boundaries are validated as closed WGS84 polygons.</div>
     {!configured&&<div className="notice"><strong>Scene discovery is ready now.</strong> Actual NDVI statistics and image processing will activate after CDSE_CLIENT_ID and CDSE_CLIENT_SECRET are configured.</div>}
 
@@ -95,10 +137,10 @@ export default function RemoteSensingWorkbench(){
       </div>
 
       <div className="actions">
-        <button className="btn" disabled={busy} onClick={searchScenes}>Search Sentinel-2 scenes</button>
-        <button className="btn primary" disabled={busy||!form.name||!form.geometry||!form.baselineDate||!form.comparisonDate} onClick={createAndRun}>{busy?"Working…":configured?"Create & run NDVI comparison":"Save analysis for later processing"}</button>
+        <button className="btn" disabled={busy} onClick={searchScenes}>{task==="scenes"?"Searching scenes…":"Search Sentinel-2 scenes"}</button>
+        <button className="btn primary" disabled={busy||!form.name||!form.geometry||!form.baselineDate||!form.comparisonDate} onClick={createAndRun}>{task==="processing"?"Processing comparison…":configured?"Create & run NDVI comparison":"Save analysis for later processing"}</button>
       </div>
-      {message&&<div className="notice">{message}</div>}
+      {message&&<div className="notice" role="status">{message}</div>}
 
       {(sceneResults.baseline.length>0||sceneResults.comparison.length>0)&&<div className="grid two">
         <div><h3>Baseline candidate</h3>{scene(sceneResults.baseline[0])}</div>
@@ -106,9 +148,12 @@ export default function RemoteSensingWorkbench(){
       </div>}
     </section>
 
-    <section className="card">
+    <section className="card stack">
       <div className="section-head"><div><h2>Saved vegetation analyses</h2><div className="muted">AOIs and completed results remain part of CARE-Map for repeat analysis and publication.</div></div><span className="badge">{analyses.length}</span></div>
-      <div className="table-wrap"><table>
+      {!analyses.length&&<div className="empty-state"><strong>No saved vegetation comparisons</strong>
+        <p>Draw a small area of interest and choose two dates above to create your first comparison.</p>
+      </div>}
+      {!!analyses.length&&<div className="table-wrap"><table>
         <thead><tr><th>Analysis</th><th>Dates</th><th>Area</th><th>Vegetation change</th><th>Clear pixels</th><th>Status</th><th>Map</th><th></th></tr></thead>
         <tbody>{analyses.map(a=><tr key={a.id} className={a.change_level==="critical"?"critical-row":""}>
           <td><strong>{a.name}</strong><div className="muted">{a.change_level} change level</div></td>
@@ -120,7 +165,7 @@ export default function RemoteSensingWorkbench(){
           <td>{a.publish_to_map?"Published":"Internal"}</td>
           <td><button className="btn" onClick={()=>setSelected(a)}>Open</button></td>
         </tr>)}</tbody>
-      </table></div>
+      </table></div>}
     </section>
 
     {selected&&<RemoteSensingResultDrawer analysis={selected} onClose={()=>setSelected(null)} onUpdated={load}/>}
