@@ -54,16 +54,19 @@ export default function ExtensionCenter({admin}:{admin:boolean}){
 
   const load=useCallback(async()=>{
     setLoading(true);
-    const [a,b]=await Promise.all([
-      fetch("/api/extension",{cache:"no-store"}),
-      fetch("/api/lgas",{cache:"no-store"})
-    ]);
-    const aj=await a.json().catch(()=>({})),bj=await b.json().catch(()=>({}));
-    if(a.ok)setData({projects:aj.projects||[],assessments:aj.assessments||[],
-      leaderboard:aj.leaderboard||[],visits:aj.visits||[],rewards:aj.rewards||[]});
-    else setMessage(aj.error?.message||"Could not load extension records. Apply database migration 016.");
-    if(b.ok)setLgas(bj.data||[]);
-    setLoading(false);
+    try{
+      const [a,b]=await Promise.all([
+        fetch("/api/extension",{cache:"no-store"}),
+        fetch("/api/lgas",{cache:"no-store"})
+      ]);
+      const aj=await a.json().catch(()=>({})),bj=await b.json().catch(()=>({}));
+      if(a.ok)setData({projects:aj.projects||[],assessments:aj.assessments||[],
+        leaderboard:aj.leaderboard||[],visits:aj.visits||[],rewards:aj.rewards||[]});
+      else setMessage(aj.error?.message||"Extension data is unavailable. Confirm database migrations 016 and 017.");
+      if(b.ok)setLgas(bj.data||[]);
+    }catch{
+      setMessage("Could not connect to the extension service. Check the network and retry.");
+    }finally{setLoading(false);}
   },[]);
   useEffect(()=>{void load();},[load]);
 
