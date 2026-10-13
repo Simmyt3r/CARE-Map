@@ -567,3 +567,8 @@ main:has(.staff-workspace)>.shell{max-width:1720px}
   .extension-form-divider{padding-top:12px}
   .staff-workspace-main .card .btn{max-width:100%}
 }
+
+/* Server-component loading placeholders preserve layout while data loads. */
+.skeleton{display:block;border-radius:9px;background:linear-gradient(100deg,#e6eee9 15%,#f5f9f6 45%,#e6eee9 75%);background-size:220% 100%;animation:care-map-skeleton 1.5s ease-in-out infinite}
+@keyframes care-map-skeleton{to{background-position-x:-220%}}
+@media(prefers-reduced-motion:reduce){.skeleton{animation:none;background:#e7eee9}}
