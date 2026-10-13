@@ -39,6 +39,11 @@ export default function ExtensionCenter({admin}:{admin:boolean}){
   const[lgas,setLgas]=useState<Lga[]>([]);
   const[tab,setTab]=useState<"projects"|"visits"|"competition">("projects");
   const[form,setForm]=useState({...newProject});
+  const[busy,setBusy]=useState(false);
+  const[loading,setLoading]=useState(false);
+  const[projectSearch,setProjectSearch]=useState("");
+  const[projectTypeFilter,setProjectTypeFilter]=useState("all");
+  const[message,setMessage]=useState("");
   const gps=useFieldGps(fix=>setForm(x=>({
     ...x,latitude:fix.latitude.toFixed(7),longitude:fix.longitude.toFixed(7),
     gpsAccuracy:fix.accuracyMeters.toFixed(1),capturedAt:fix.capturedAt,
@@ -48,11 +53,7 @@ export default function ExtensionCenter({admin}:{admin:boolean}){
     gps.cancel();
     setForm(x=>({...x,[key]:value,gpsAccuracy:"",capturedAt:"",captureSource:"manual"}));
   }
-  const[busy,setBusy]=useState(false);
-  const[loading,setLoading]=useState(false);
-  const[projectSearch,setProjectSearch]=useState("");
-  const[projectTypeFilter,setProjectTypeFilter]=useState("all");
-  const[message,setMessage]=useState("");
+
   const[visit,setVisit]=useState({interventionId:"",visitDate:today,visitType:"training",
     guidance:"",outcome:"",nextVisitDue:""});
   const[assessment,setAssessment]=useState({interventionId:"",assessedOn:today,
