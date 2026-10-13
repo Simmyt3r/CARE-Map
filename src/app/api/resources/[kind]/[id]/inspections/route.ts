@@ -2,6 +2,7 @@ import {NextResponse} from "next/server";
 import {getSession,isStaff} from "@/lib/auth";
 import {error} from "@/lib/http";
 import {query} from "@/lib/db";
+import {validateFieldPoint} from "@/lib/location-quality";
 
 const entityMap:Record<string,string>={boreholes:"borehole",assets:"asset","forest-sites":"forest_site",rivers:"river"};
 const conditions=new Set(["good","fair","poor","critical"]);
@@ -25,14 +26,27 @@ export async function POST(request:Request,context:{params:Promise<{kind:string;
   const{kind,id}=await context.params;
   const entityType=entityMap[kind];
   if(!entityType)return error("Unsupported resource type",400);
-  const body=await request.json().catch(()=>null) as {condition?:string;notes?:string;latitude?:number|null;longitude?:number|null;gpsAccuracy?:number|null;inspectedAt?:string}|null;
+  const body=await request.json().catch(()=>null) as {condition?:string;notes?:string;latitude?:number|null;longitude?:number|null;gpsAccuracy?:number|null;captureSource?:string;capturedAt?:string|null;inspectedAt?:string}|null;
   if(!body?.condition||!conditions.has(body.condition))return error("A valid inspection condition is required.");
-  if(body.latitude!=null&&(body.latitude< -90||body.latitude>90))return error("Invalid latitude.");
-  if(body.longitude!=null&&(body.longitude< -180||body.longitude>180))return error("Invalid longitude.");
+  if((body.latitude==null)!==(body.longitude==null))
+    return error("Both latitude and longitude are required for an inspection location.",400);
+  let coordinates:{latitude:number;longitude:number;gpsAccuracy:number|null;capturedAt:string|null}|null=null;
+  try{
+    if(body.latitude!=null&&body.longitude!=null){
+      coordinates=validateFieldPoint({
+        latitude:body.latitude,longitude:body.longitude,gpsAccuracy:body.gpsAccuracy,
+        captureSource:body.captureSource||"manual",capturedAt:body.capturedAt||null
+      });
+    }else if(body.gpsAccuracy!=null||body.capturedAt){
+      return error("GPS metadata requires valid inspection coordinates.",400);
+    }
+  }catch(e){
+    return error(e instanceof Error?e.message:"Invalid inspection coordinates.",400);
+  }
   const result=await query(
     "INSERT INTO inspections(entity_type,entity_id,inspected_at,condition,notes,latitude,longitude,gps_accuracy_m,inspected_by) VALUES($1,$2,COALESCE($3::timestamptz,now()),$4,$5,$6,$7,$8,$9) RETURNING *",
-    [entityType,id,body.inspectedAt||null,body.condition,body.notes||null,body.latitude??null,body.longitude??null,body.gpsAccuracy??null,session.sub]
+    [entityType,id,body.inspectedAt||null,body.condition,body.notes||null,coordinates?.latitude??null,coordinates?.longitude??null,coordinates?.gpsAccuracy??null,session.sub]
   );
-  await query("INSERT INTO audit_logs(actor_id,action,entity_type,entity_id,metadata) VALUES($1,'inspect',$2,$3,$4)",[session.sub,entityType,id,JSON.stringify({condition:body.condition})]);
+  await query("INSERT INTO audit_logs(actor_id,action,entity_type,entity_id,metadata) VALUES($1,'inspect',$2,$3,$4)",[session.sub,entityType,id,JSON.stringify({condition:body.condition,coordinateSource:body.captureSource||"manual",gpsCaptureTime:coordinates?.capturedAt||null,reportedAccuracyMeters:coordinates?.gpsAccuracy??null})]);
   return NextResponse.json({data:result.rows[0]},{status:201});
 }
