@@ -47,7 +47,10 @@ export async function GET(request:Request){
   }
 
   if((!type||type==="ndvi_change")&&!status){
-    const clauses=["r.status='completed'","r.publish_to_map=TRUE"];
+    const clauses=["r.status='completed'","r.publish_to_map=TRUE",
+      "r.baseline_clear_fraction>=r.minimum_clear_fraction",
+      "r.comparison_clear_fraction>=r.minimum_clear_fraction",
+      "r.baseline_vegetation_ha IS NOT NULL","r.comparison_vegetation_ha IS NOT NULL"];
     const params:unknown[]=[...baseParams];
     if(bbox)clauses.push("ST_Intersects(r.aoi,ST_MakeEnvelope($1,$2,$3,$4,4326))");
 
