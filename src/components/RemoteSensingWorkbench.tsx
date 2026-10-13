@@ -63,7 +63,7 @@ export default function RemoteSensingWorkbench(){
       await load();
       const latest=(await fetch("/api/remote-sensing/analyses/"+id).then(x=>x.json()).catch(()=>({}))).data;
       if(latest)setSelected(latest);
-      return setMessage(run.ok?"NDVI comparison completed.":runJson.error?.message||"Analysis was created but processing failed.");
+      return setMessage(run.ok?(runJson.data?.status==="needs_review"?"NDVI analysis saved for quality review. Insufficient clear coverage; do not publish.":"NDVI comparison completed and passed imagery quality checks."):runJson.error?.message||"Analysis was created but processing failed.");
     }
     setBusy(false);
     setMessage("Analysis saved. Copernicus processing is waiting for OAuth configuration in Infrastructure settings.");
@@ -72,6 +72,7 @@ export default function RemoteSensingWorkbench(){
   const scene=(s:any)=>s?<div className="scene-card"><strong>{s.id}</strong><span>{s.datetime?new Date(s.datetime).toLocaleString():"Unknown acquisition time"}</span><span>Cloud cover: {s.cloudCover==null?"—":Number(s.cloudCover).toFixed(1)+"%"}</span></div>:<div className="muted">No scene found in this window.</div>;
 
   return <div className="stack">
+    <div className="notice">Sentinel-2 observations are screened for cloud and incomplete coverage. At least 60% clear-pixel coverage in BOTH date windows is required before publishing results. Location boundaries are validated as closed WGS84 polygons.</div>
     {!configured&&<div className="notice"><strong>Scene discovery is ready now.</strong> Actual NDVI statistics and image processing will activate after CDSE_CLIENT_ID and CDSE_CLIENT_SECRET are configured.</div>}
 
     <section className="card stack">
