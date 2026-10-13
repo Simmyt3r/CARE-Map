@@ -1,7 +1,7 @@
 # CARE-Map Architecture Overview
 
 **Status:** Implemented application architecture; production deployment and field verification pending  
-**Updated:** 2026-10-09  
+**Updated:** 2026-10-13  
 **Authority:** [ADR-0003](decisions/0003-adopt-aiven-postgis-nextjs.md) supersedes the exploratory stack in ADR-0002.
 
 ## Purpose and boundaries
@@ -28,15 +28,15 @@ flowchart TD
 
 ## Major application modules
 1. **Public:** viewport-bounded map and resource pages; intervention layers, LGA filters, anonymous problem/stream reports, QR scan-to-report, optional community identity, public-safe history, offline report queue, privacy rights and reviewed localization.
-2. **Field operations:** GPS or manual coordinate capture, inspections and accuracy metadata, asset status, maintenance, photographic evidence, work assignment, deadlines and immutable status timeline.
+2. **Field operations:** shared high-accuracy GPS sampling (estimated uncertainty/recency, cancel and provenance controls) or distinctly manual coordinates; inspections, asset status, maintenance, Cloudinary photographic evidence, assignments, deadlines and status history.
 3. **GIS workbench:** audited CSV/GeoJSON import with previews and row errors, quality/duplicate checks, approved administrative boundaries, GeoJSON exports for QGIS/ArcGIS, map composition.
 4. **Spatial analysis:** indexed PostGIS distance and bounding-box operations; intervention coverage; settlement-to-functional-borehole access; verified river corridor, hazard-zone and catchment exposure; LGA aggregates.
 5. **Remote sensing:** Sentinel-2 Level-2A discovery, AOI selection, NDVI baseline/comparison with cloud/clear-pixel gates, recurring monitors, vegetation-loss alerts and linked field verification tasks.
-6. **Operations and governance:** explainable rule-based priority scores, dashboards, audit logs, users/roles, migrations and readiness checks, privacy request/breach registers, translation approval and per-device/LGA acceptance evidence.
+6. **Community extension and operations:** consenting intervention focal-person contacts (staff-only), extension visit records, independently reviewed photo-backed maintenance scoring and discretionary community reward decisions. Governance includes risk scores, dashboards, role/audit/migration/readiness checks, privacy rights and field acceptance.
 
 ## Data and trust boundaries
 - **System of record:** Aiven PostgreSQL/PostGIS; new photos and evidence reside in Cloudinary (historical Blob URLs remain referenced), with metadata/reference records in PostgreSQL.
-- **Geospatial format:** geographic coordinates use WGS84 (EPSG:4326); GeoJSON is longitude then latitude. Spatial indexes support area/distance queries; use geography/metre calculations where appropriate.
+- **Geospatial format:** geographic coordinates use WGS84 (EPSG:4326); GeoJSON is longitude then latitude. Staff field point capture checks source/time/estimated accuracy, and where boundaries exist checks point-in-LGA membership; neither check is a survey-grade position guarantee. Spatial indexes support spatial/distance queries.
 - **Public reporting:** community submissions are unverified until reviewed by authorized staff. Never treat a report as an authoritative asset, verified river, or hazard polygon without approval.
 - **Public API:** exposes only explicitly approved/public-safe data. Database credentials and signed session secrets remain server-only.
 - **Auth:** application-managed JWT in HTTP-only cookies; registered community, staff, admin roles; role/account changes revoke sessions.
@@ -44,7 +44,7 @@ flowchart TD
 - **Risk:** rule-based scoring, **not** a trained or scientifically validated ML model. Satellite-derived vegetation loss needs qualified review and ground truth.
 
 ## Deployment and operations
-Vercel hosts the web app/API, Aiven provides PostgreSQL with PostGIS, Cloudinary holds new images. Migrations 001–015 are run with `npm run db:migrate` and checksummed in `care_map_schema_migrations`. Scheduled operations require configured credentials. Environment: `DATABASE_URL`, `AIVEN_CA_CERT`, `SESSION_SECRET`, `CRON_SECRET`, administrator bootstrap; Cloudinary and optional Copernicus credentials.
+Vercel hosts the web app/API, Aiven provides PostgreSQL with PostGIS, Cloudinary holds new images. Migration files 001–017 are run with `npm run db:migrate` or the signed-in administrator migration manager (`/staff/admin/migrations`) and checksummed in `care_map_schema_migrations`. Scheduled operations require configured credentials. Environment: `DATABASE_URL`, `AIVEN_CA_CERT`, `SESSION_SECRET`, `CRON_SECRET`, administrator bootstrap; Cloudinary and optional Copernicus credentials.
 
 ## Verification and remaining launch gates
 Source implementation exists, **not** proof that the client's production environment is configured. Before handover: provision live Aiven/Vercel services; verify TLS, migrations and PostGIS; import validated pilot-LGA and intervention datasets; complete legal/privacy review; run CI and performance/security checks; run real-device/offline/GPS UAT and get written client sign-off.
@@ -55,4 +55,6 @@ Source implementation exists, **not** proof that the client's production environ
 - [User manual](../client-handover/user-manual.md)
 - [Acceptance and support plan](../client-handover/acceptance-support.md)
 - [Production readiness](../production-readiness.md)
+- [ACReSAL extension and stewardship](../planning/community-extension.md)
+- [GPS field acceptance](../quality/gps-field-acceptance.md)
 - [ADR-0003](decisions/0003-adopt-aiven-postgis-nextjs.md)
