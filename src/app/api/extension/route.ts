@@ -3,6 +3,7 @@ import {z} from "zod";
 import {getSession,isAdmin,isStaff} from "@/lib/auth";
 import {query} from "@/lib/db";
 import {error} from "@/lib/http";
+import {validateFieldPoint,validateLgaPoint} from "@/lib/location-quality";
 
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
@@ -151,13 +152,8 @@ export async function POST(request:Request){
     if(input.action==="create_project"){
       // All projects need a consenting community contact and a valid Benue LGA.
       // Disagreement with imported LGA polygons is explicitly held for review.
-      const lg=await query<{found:boolean;inside:boolean|null}>(`
-        SELECT true found,CASE WHEN boundary IS NULL THEN NULL ELSE
-          ST_Covers(boundary,ST_SetSRID(ST_MakePoint($2,$3),4326)) END inside
-        FROM lgas WHERE code=$1
-      `,[input.lgaCode,input.longitude,input.latitude]);
-      if(!lg.rowCount)return error("Unknown Benue LGA.",400);
-      if(lg.rows[0].inside===false)return error("GPS point is outside the selected LGA boundary. Confirm coordinates and LGA before saving.",400);
+      const point=validateFieldPoint(input);
+      await validateLgaPoint(input.lgaCode,point);
       const r=await query<{id:string}>(`
         INSERT INTO community_interventions(
           project_code,project_name,project_type,community_name,lga_code,location,
@@ -166,8 +162,8 @@ export async function POST(request:Request){
         ) VALUES($1,$2,$3,$4,$5,ST_SetSRID(ST_MakePoint($6,$7),4326),
           $8,$9,$10,$11,$12,$13,TRUE,now(),$14,$15,$16,$16) RETURNING id
       `,[input.projectCode,input.projectName,input.projectType,input.communityName,
-        input.lgaCode,input.longitude,input.latitude,input.gpsAccuracy??null,
-        input.captureSource,input.capturedAt??null,input.contactName,input.contactPhone,
+        input.lgaCode,point.longitude,point.latitude,point.gpsAccuracy,
+        point.captureSource,point.capturedAt,input.contactName,input.contactPhone,
         input.contactRole||null,input.projectStatus,input.description||null,session.sub]);
       await audit(session.sub,"create","community_intervention",r.rows[0].id,{lga:input.lgaCode,projectType:input.projectType});
       return NextResponse.json({ok:true,id:r.rows[0].id,message:"Project saved. Location awaits independent review."},{status:201});
