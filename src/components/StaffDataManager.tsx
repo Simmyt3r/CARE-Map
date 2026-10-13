@@ -65,7 +65,7 @@ export default function StaffDataManager(){
   }
 
   return <div className="stack">
-    <div className="staff-tabs">{(Object.keys(labels)as Kind[]).map(k=><button key={k} className="btn" onClick={()=>setKind(k)}>{labels[k]}</button>)}</div>
+    <div className="staff-tabs">{(Object.keys(labels)as Kind[]).map(k=><button key={k} className="btn" onClick={()=>{gps.cancel();setKind(k);}}>{labels[k]}</button>)}</div>
 
     <form className="card stack" onSubmit={submit}>
       <div className="section-head"><div><h2>Add {labels[kind].toLowerCase().replace(/s$/,"")}</h2><div className="muted">{kind==="boreholes"||kind==="assets"?"Capture GPS accuracy in the field whenever possible.":"Paste valid GeoJSON geometry from QGIS or another GIS source."}</div></div></div>
@@ -90,7 +90,7 @@ export default function StaffDataManager(){
           <div className="field"><label>Capture source</label><input readOnly value={form.captureSource}/></div>
         </div>
         <div className="actions">
-          <button type="button" className="btn" disabled={gps.capturing||busy} onClick={gps.capture}>{gps.capturing?"Refining GPS position…":"Capture current GPS"}</button>
+          <button type="button" className="btn" disabled={gps.capturing||busy} onClick={()=>{setForm(x=>({...x,gpsAccuracy:"",capturedAt:"",captureSource:"manual"}));gps.capture();}}>{gps.capturing?"Refining GPS position…":"Capture current GPS"}</button>
           {gps.capturing&&<button type="button" className="btn" onClick={()=>{gps.cancel();setMessage("GPS capture stopped.");}}>Cancel GPS</button>}
         </div>
         <p className="muted">Keep the device still for up to 30 seconds. Target reported horizontal accuracy ≤30 m. Manual edits discard GPS evidence; all points remain subject to verification.</p>
