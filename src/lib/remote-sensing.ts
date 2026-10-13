@@ -81,15 +81,20 @@ export function assessNdviQuality(baseline:NdviStats,comparison:NdviStats,minCle
   return {publishable:issues.length===0,issues};
 }
 
-export function dateWindow(date:string,days:number){
-  const start=new Date(date+"T00:00:00Z");
-  if(Number.isNaN(start.getTime()))throw new Error("Invalid analysis date.");
+export function dateWindow(date:string|Date,days:number){
+  const dateStr=date instanceof Date?date.toISOString().slice(0,10):date;
+  if(typeof dateStr!=="string"||!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)||
+    !Number.isInteger(days)||days<1||days>30)throw new Error("Invalid date or observation window.");
+  const start=new Date(dateStr+"T00:00:00Z");
+  if(Number.isNaN(start.getTime())||start.toISOString().slice(0,10)!==dateStr){
+    throw new Error("Invalid analysis date.");
+  }
   const end=new Date(start);
   end.setUTCDate(end.getUTCDate()+days);
   return {from:start.toISOString(),to:end.toISOString()};
 }
 
-export async function searchSentinelScenes(aoi:GeoPolygon,date:string,windowDays=7,maxCloud=40):Promise<SceneSummary[]>{
+export async function searchSentinelScenes(aoi:GeoPolygon,date:string|Date,windowDays=7,maxCloud=40):Promise<SceneSummary[]>{
   const range=dateWindow(date,windowDays);
   const response=await fetch(EARTH_SEARCH+"/search",{
     method:"POST",
