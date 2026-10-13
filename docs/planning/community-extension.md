@@ -39,7 +39,7 @@ AOI polygons validate coordinate order, ring closure, non-zero area, finite WGS8
 
 ## 6. Deployment and acceptance
 1. Ensure the Aiven database has a recent verified backup and an approved change window.
-2. Open `/staff/extension` as administrator and click **Apply pending database migrations**. The existing checksum migration ledger guards against silently modifying prior migrations.
+2. Sign in once as a CARE-Map administrator, open `/staff/admin/migrations` (Administration → Database migrations), and click **Apply pending migrations**. The application uses saved Vercel `DATABASE_URL`/`AIVEN_CA_CERT` values; no extra database password, setup token or second sign-in is requested. The administrator session is still checked server-side. The existing checksum migration ledger guards against silently modifying prior migrations.
 3. Check new tables / upgrade response, then register a **test project** with a consenting test contact and actual field GPS.
 4. Record two visits/assessments on different dates **using real historical observations only**, attach approved redacted evidence images and use another administrator to verify.
 5. Check score and eligibility, and verify other project types never compete against one another. Confirm public pages never reveal contact information.
