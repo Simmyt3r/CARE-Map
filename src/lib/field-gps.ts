@@ -45,7 +45,7 @@ export function useFieldGps(
 ){
   const [capturing,setCapturing]=useState(false);
   const callbackRef=useRef({onFix,onMessage});
-  callbackRef.current={onFix,onMessage};
+  useEffect(()=>{callbackRef.current={onFix,onMessage};},[onFix,onMessage]);
   const watchId=useRef<number|null>(null);
   const timeoutId=useRef<ReturnType<typeof setTimeout>|null>(null);
   const generation=useRef(0);
