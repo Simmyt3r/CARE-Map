@@ -1,7 +1,7 @@
 # Requirements
 
 **Status:** Client-review baseline (not signed off)
-**Last updated:** 2026-10-09
+**Last updated:** 2026-10-13
 
 This restates the requirements from the [root README](../../README.md) as discrete, traceable items. Each has a stable ID so it can be referenced from designs, backlog tickets, and test cases as the project moves into design and development.
 
@@ -112,3 +112,19 @@ All three were resolved on 2026-09-01 and are kept here for traceability rather 
 
 ### Change control and sign-off
 The client product owner and technical lead must agree on the final FR/NFR acceptance criteria, deviations, support responsibilities and version. Maintain requirements traceability to test case/evidence and record any scope changes through approved change requests. Related documents: [architecture](../architecture/overview.md), [deployment](../client-handover/deployment-operations.md), [user guide](../client-handover/user-manual.md), [acceptance](../client-handover/acceptance-support.md).
+
+
+## Quality and operational acceptance addendum (2026-10-13)
+
+This appendix records quality criteria for features already implemented. It does **not** add new scope or change the original client-review FR/NFR IDs without approval.
+
+| Existing capability | QA / acceptance evidence required |
+|---|---|
+| Field GPS acquisition (FR-02, FR-24) | Use high-accuracy updates; reject stale/invalid/browser-cached positions; retain reported horizontal uncertainty and capture timestamp; clear metadata after manual edits; compare against known field reference point; never claim survey-grade precision solely from browser accuracy |
+| Community reporting (FR-08/FR-09) | Record coordinate provenance; distinguish manual vs device GPS; preserve original capture time for reports queued offline; verify synchronization on reconnect |
+| Community extension | Confirm staff-only focal-person contacts and documented consent; verify GPS/LGA checks, field-visit record integrity, photo-backed independent assessments and non-automatic award authorization |
+| Satellite NDVI | Validate AOIs, source scenes and seasonal interpretation; require both observation windows to meet clear-pixel quality threshold before public publication; human GIS review remains mandatory |
+| Operations and migrations | Preserve admin-only session-based migrations, verified backup and checksummed ledger; confirm deployed commit matches QA release and database migration state |
+| Photo evidence | Confirm approved Cloudinary upload, permission controls and image-size/type limits; prevent sensitive information from being placed at publicly accessible photo URLs |
+
+**Acceptance link:** [GPS field checklist](../quality/gps-field-acceptance.md) and [UAT/handover matrix](../client-handover/acceptance-support.md). Status remains *implementation for review*, not client sign-off.
