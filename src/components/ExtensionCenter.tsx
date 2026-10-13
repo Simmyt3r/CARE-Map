@@ -145,9 +145,9 @@ export default function ExtensionCenter({admin}:{admin:boolean}){
         <div className="stat"><strong>{eligible.length}</strong><span>Competition eligible</span></div>
       </div>
       <div className="staff-tabs" aria-label="Extension workflow">
-        <button className="btn" aria-pressed={tab==="projects"} type="button" onClick={()=>setTab("projects")}>Projects & contacts</button>
-        <button className="btn" aria-pressed={tab==="visits"} type="button" onClick={()=>setTab("visits")}>Extension visits</button>
-        <button className="btn" aria-pressed={tab==="competition"} type="button" onClick={()=>setTab("competition")}>Community competition</button>
+        <button className="btn" aria-pressed={tab==="projects"} type="button" onClick={()=>{gps.cancel();setTab("projects");}}>Projects & contacts</button>
+        <button className="btn" aria-pressed={tab==="visits"} type="button" onClick={()=>{gps.cancel();setTab("visits");}}>Extension visits</button>
+        <button className="btn" aria-pressed={tab==="competition"} type="button" onClick={()=>{gps.cancel();setTab("competition");}}>Community competition</button>
       </div>
       {admin&&<div className="notice"><strong>First-time rollout:</strong> Apply pending migrations 016 and 017 before creating projects. Your existing admin session is sufficient; no additional credentials are required.
         <div className="actions"><a className="btn" href="/staff/admin/migrations">Open Admin Migrations</a></div>
@@ -172,7 +172,7 @@ export default function ExtensionCenter({admin}:{admin:boolean}){
           <div className="field"><label>Latitude</label><input required inputMode="decimal" value={form.latitude} onChange={e=>manualCoordinate("latitude",e.target.value)}/></div>
           <div className="field"><label>Longitude</label><input required inputMode="decimal" value={form.longitude} onChange={e=>manualCoordinate("longitude",e.target.value)}/></div>
         </div>
-        <div className="actions"><button type="button" className="btn" disabled={gps.capturing||busy} onClick={gps.capture}>{gps.capturing?"Refining GPS…":"Capture device GPS"}</button>
+        <div className="actions"><button type="button" className="btn" disabled={gps.capturing||busy} onClick={()=>{setForm(x=>({...x,gpsAccuracy:"",capturedAt:"",captureSource:"manual"}));gps.capture();}}>{gps.capturing?"Refining GPS…":"Capture device GPS"}</button>
           {gps.capturing&&<button type="button" className="btn" onClick={()=>{gps.cancel();setMessage("GPS acquisition cancelled.");}}>Cancel</button>}
           <span className="muted">{form.gpsAccuracy?"Reported ±"+form.gpsAccuracy+" m · ":""}{form.captureSource.replaceAll("_"," ")}</span>
         </div>
