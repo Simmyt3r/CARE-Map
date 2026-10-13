@@ -1,5 +1,5 @@
 # CARE-Map User Acceptance Testing, Handover and Support
-**Document:** CM-UAT-001 | **Version:** 1.0-draft | **Date:** 2026-10-09  
+**Document:** CM-UAT-001 | **Version:** 1.1-draft | **Updated:** 2026-10-13  
 **Status:** Acceptance template, **NOT** signed or approved. Contractual support terms are to be negotiated.
 
 ## 1. Acceptance parties
@@ -22,13 +22,13 @@
 | ID | Scenario | Evidence / pass criteria | Owner |
 |---|---|---|---|
 | UAT-01 | Anonymous public map | Correct reviewed public features, filters and LGA boundaries; no restricted data | GIS + client |
-| UAT-02 | GPS field asset | Captures resource attributes/coordinate source and quality on target device | Field officer |
+| UAT-02 | GPS field asset | On actual target phone, collect fresh GPS fixes; document reference coordinate, elapsed capture time, browser-reported accuracy **and independently measured offset**; verify cancel/permission-denied/manual-edit behavior against the [GPS checklist](../quality/gps-field-acceptance.md) | Field officer + GIS |
 | UAT-03 | Community report | Submit, review, assign, update and resolve with durable history | Operations |
 | UAT-04 | Offline report | Queue offline and confirm single received submission after reconnect | Field + IT |
 | UAT-05 | QR asset workflow | Label opens exact resource; report references that resource | Field officer |
 | UAT-06 | GIS bulk import | Approved data import with detectable invalid rows and audit | GIS |
 | UAT-07 | Spatial analysis | Validate distances, buffers, areas, LGA coverage and GeoJSON export against QGIS independently | GIS |
-| UAT-08 | Remote sensing | Reproduce AOI, dates, cloud metrics, NDVI and area calculation using accepted reference scenes | GIS/RS |
+| UAT-08 | Remote sensing | Reproduce AOI, dates, cloud metrics, NDVI and area against approved scenes; confirm <60% clear pixels in either period blocks public publication and admin review is required | GIS/RS |
 | UAT-09 | Vegetation alerts | Authorized monitor creates/acknowledges alert and links evidence-based field closure | Operations |
 | UAT-10 | Roles and security | Public cannot edit protected records, staff cannot perform admin-only tasks, revoked sessions fail | IT |
 | UAT-11 | Privacy and retention | Rights workflow/retention safeguards and controller notices reviewed | Privacy lead |
@@ -36,6 +36,11 @@
 | UAT-13 | Dashboard/maps/export | Management figures reconcile with verified DB and export opens in GIS software | M&E |
 | UAT-14 | Readiness/performance | Required readiness gates, agreed response/load targets and operational monitoring pass | IT + client |
 | UAT-15 | Client training | Named staff successfully complete the role-specific exercises | Client sponsor |
+| UAT-16 | Community extension and focal persons | Consented staff-only contact records, validated LGA/GPS and visit follow-ups; no contact details in public response | Field + privacy lead |
+| UAT-17 | Maintenance assessment | Photo-backed evidence and independent review; same-type rankings require adequate time-span/peers; reward decision is not automatic resource allocation | GIS + program governance |
+| UAT-18 | Admin migration safety | Current admin session can inspect pending files, verify checksums and apply approved migrations using server-only Aiven config without second sign-in; non-admin blocked | IT + admin |
+
+Document the **live deployed Git SHA** separately from the GitHub branch SHA before testing. Code may pass CI but remain undeployed due to deployment quotas or pending release approval.
 
 Also complete the built-in Field Acceptance Test Center in **every pilot LGA**, using real representative devices and weak-connectivity conditions. A green software check is **not** field validation.
 
@@ -75,7 +80,7 @@ No SLA, intellectual-property transfer or legal commitment is established by thi
 - [ ] Reviewed release/source repository access and release notes
 - [ ] Deployment/runbook and secrets transferred via secure channel
 - [ ] User manual, training and administrator guide
-- [ ] UAT evidence, GIS data-source register and unresolved defect log
+- [ ] UAT evidence including GPS reference-point offsets and device details, GIS data-source register and unresolved defect log
 - [ ] Privacy/legal approval and data-handling assignment
 - [ ] Backup/restore evidence and scheduled-job operation ownership
 - [ ] Hosting/domain/service access matrix
