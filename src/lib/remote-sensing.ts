@@ -36,7 +36,49 @@ export function normalizeAoi(input:any):GeoPolygon{
   if(!input||!["Polygon","MultiPolygon"].includes(input.type)||!Array.isArray(input.coordinates)){
     throw new Error("AOI must be a GeoJSON Polygon or MultiPolygon.");
   }
+  const polygons=input.type==="Polygon"?[input.coordinates]:input.coordinates;
+  if(!Array.isArray(polygons)||!polygons.length)throw new Error("AOI has no polygons.");
+  let vertices=0,minLon=Infinity,minLat=Infinity,maxLon=-Infinity,maxLat=-Infinity;
+  for(const polygon of polygons){
+    if(!Array.isArray(polygon)||!polygon.length)throw new Error("AOI polygon has no rings.");
+    for(const ring of polygon){
+      if(!Array.isArray(ring)||ring.length<4)throw new Error("AOI ring needs at least four coordinates.");
+      let signedArea=0;
+      for(let i=0;i<ring.length;i++){
+        const point=ring[i];
+        if(!Array.isArray(point)||point.length<2||!Number.isFinite(point[0])||!Number.isFinite(point[1])||
+          point[0]< -180||point[0]>180||point[1]< -90||point[1]>90){
+          throw new Error("AOI coordinates must be valid WGS84 [longitude, latitude] pairs.");
+        }
+        minLon=Math.min(minLon,point[0]);maxLon=Math.max(maxLon,point[0]);
+        minLat=Math.min(minLat,point[1]);maxLat=Math.max(maxLat,point[1]);
+        if(i>0){const prev=ring[i-1];signedArea+=prev[0]*point[1]-point[0]*prev[1];}
+        if(++vertices>10000)throw new Error("AOI contains too many vertices; simplify the polygon.");
+      }
+      if(ring[0][0]!==ring[ring.length-1][0]||ring[0][1]!==ring[ring.length-1][1]){
+        throw new Error("AOI polygon rings must close at their first coordinate.");
+      }
+      if(Math.abs(signedArea)<1e-12)throw new Error("AOI polygon ring has zero area.");
+    }
+  }
+  if(maxLon-minLon>2||maxLat-minLat>2){
+    throw new Error("AOI extent exceeds 2 degrees. Split the landscape into smaller Sentinel analyses.");
+  }
   return {type:input.type,coordinates:input.coordinates} as GeoPolygon;
+}
+
+export function assessNdviQuality(baseline:NdviStats,comparison:NdviStats,minClear=0.6){
+  const issues:string[]=[];
+  for(const [period,stats] of [["Baseline",baseline],["Comparison",comparison]] as const){
+    if(stats.meanNdvi==null||!Number.isFinite(stats.meanNdvi)||
+      stats.vegetationFraction==null||!Number.isFinite(stats.vegetationFraction)){
+      issues.push(period+" observation has no usable NDVI statistics.");
+    }
+    if(stats.clearFraction==null||stats.clearFraction<minClear){
+      issues.push(period+" clear-pixel coverage is below "+Math.round(minClear*100)+"% or unavailable.");
+    }
+  }
+  return {publishable:issues.length===0,issues};
 }
 
 export function dateWindow(date:string,days:number){
@@ -196,7 +238,7 @@ export async function fetchNdviStats(aoi:GeoPolygon,date:string,windowDays:numbe
   const geometryPixels=Number(entry?.geometryPixelCount||json?.geometryPixelCount||sampleCount||0);
   const clearFraction=geometryPixels>0?Math.max(0,Math.min(1,validPixels/geometryPixels)):null;
   const vegetationFraction=vegetationStats&&Number.isFinite(Number(vegetationStats.mean))?Number(vegetationStats.mean):null;
-  const vegetationHa=vegetationFraction==null?null:aoiAreaHa*vegetationFraction;
+  const vegetationHa=vegetationFraction==null||clearFraction===null||clearFraction===0?null:aoiAreaHa*vegetationFraction;
 
   return{
     meanNdvi:ndviStats&&Number.isFinite(Number(ndviStats.mean))?Number(ndviStats.mean):null,
