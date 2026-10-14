@@ -49,3 +49,11 @@ AOI polygons validate coordinate order, ring closure, non-zero area, finite WGS8
 7. Run field acceptance on mobile; verify backup/recovery, location boundaries, independent evaluator approval, privacy/records and community reward governance.
 
 No real project was created, no program reward was approved and no new SQL migrations were applied merely by committing these files.
+
+## 7. Citizen education on the existing public extension page
+
+The public `/extension` page also serves as an introductory, free citizen education and awareness area. Seven curated, source-linked lessons cover ACReSAL's purpose, climate change, soil erosion, water protection, vegetation survival, conservation agriculture and responsible interpretation of Sentinel-2 vegetation maps. Residents can search/filter topics, open practical steps and answer a short knowledge check; answers remain client-side and are not reported to the server.
+
+**Editorial safeguards:** Plain-language lessons are based on public ACReSAL, World Bank and FAO materials, not presented as government-approved training certificates or site-specific engineering/agronomic orders. The content needs Benue ACReSAL field and communication review, periodic factual checks, accessibility and translation approval before official community dissemination. No citizen records or quiz scores are stored.
+
+**Public map interpretation:** The map now presents prominent, clickable published-NDVI result cards and estimated-hectare markers, with gain/loss colors and focus controls. These depict the *whole AOI's estimated area change*; they do not display a per-pixel difference raster. Verification, seasonality and causality limitations remain explicit.
