@@ -25,9 +25,8 @@ export default function AoiSketchMap({geometry,onChange}:{
 }){
   const node=useRef<HTMLDivElement|null>(null);
   const mapRef=useRef<maplibregl.Map|null>(null);
-  const initial=useRef<AoiPoint[]>(verticesFromAoi(geometry));
-  const verticesRef=useRef<AoiPoint[]>(initial.current);
-  const[vertices,setVertices]=useState<AoiPoint[]>(initial.current);
+  const verticesRef=useRef<AoiPoint[]>([]);
+  const[vertices,setVertices]=useState<AoiPoint[]>(()=>verticesFromAoi(geometry));
   const onChangeRef=useRef(onChange);
   const emittedGeometryRef=useRef<string|null>(null);
   const[latitude,setLatitude]=useState("");
