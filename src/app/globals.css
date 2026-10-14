@@ -572,3 +572,14 @@ main:has(.staff-workspace)>.shell{max-width:1720px}
 .skeleton{display:block;border-radius:9px;background:linear-gradient(100deg,#e6eee9 15%,#f5f9f6 45%,#e6eee9 75%);background-size:220% 100%;animation:care-map-skeleton 1.5s ease-in-out infinite}
 @keyframes care-map-skeleton{to{background-position-x:-220%}}
 @media(prefers-reduced-motion:reduce){.skeleton{animation:none;background:#e7eee9}}
+
+
+/* Remote sensing: reliable and accessible AOI coordinate editor */
+.aoi-coordinate-entry{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;align-items:end;gap:10px}
+.aoi-coordinate-entry .btn{min-height:44px;white-space:nowrap}
+.aoi-sketch-map{position:relative;touch-action:pan-x pan-y;cursor:crosshair}
+.aoi-sketch-map .maplibregl-canvas{cursor:crosshair}
+@media(max-width:650px){
+  .aoi-coordinate-entry{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .aoi-coordinate-entry .btn{grid-column:1/-1;width:100%}
+}
