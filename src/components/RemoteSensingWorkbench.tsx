@@ -3,6 +3,7 @@ import {useEffect,useMemo,useState} from "react";
 import AoiSketchMap from "@/components/AoiSketchMap";
 import RemoteSensingResultDrawer from "@/components/RemoteSensingResultDrawer";
 import {parseAoiText} from "@/lib/aoi-editor";
+import {comparisonWindowError} from "@/lib/sentinel-date-quality";
 
 const polygonExample='{"type":"Polygon","coordinates":[[[8.50,7.70],[8.55,7.70],[8.55,7.75],[8.50,7.75],[8.50,7.70]]]}';
 
@@ -61,8 +62,8 @@ export default function RemoteSensingWorkbench(){
     if(requireName&&!form.name.trim())return "Enter a name for this vegetation comparison.";
     if(!parsedAoi)return aoiResult.error||"Select an AOI: click at least three map corners, enter corners by latitude/longitude, or paste a Polygon GeoJSON.";
     if(!form.baselineDate||!form.comparisonDate)return "Choose both baseline and comparison dates.";
-    if(new Date(form.comparisonDate)<=new Date(form.baselineDate))
-      return "The comparison date must be after the baseline date.";
+    const windowIssue=comparisonWindowError(form.baselineDate,form.comparisonDate,Number(form.windowDays));
+    if(windowIssue)return windowIssue;
     return null;
   }
 
@@ -174,6 +175,9 @@ export default function RemoteSensingWorkbench(){
         <div className="field"><label>Vegetation threshold</label><select value={form.threshold} onChange={e=>setForm(x=>({...x,threshold:e.target.value}))}><option value="0.20">NDVI ≥ 0.20</option><option value="0.30">NDVI ≥ 0.30</option><option value="0.40">NDVI ≥ 0.40</option><option value="0.50">NDVI ≥ 0.50</option></select></div>
       </div>
 
+      <div className="geometry-help">Choose completed satellite observation windows, not a date range extending into the future. October in Benue is often cloudy; January–February is a useful initial dry-season test window. The analysis will still require real usable imagery.</div>
+      {form.baselineDate&&form.comparisonDate&&comparisonWindowError(form.baselineDate,form.comparisonDate,Number(form.windowDays))&&
+        <div className="notice" role="alert">{comparisonWindowError(form.baselineDate,form.comparisonDate,Number(form.windowDays))}</div>}
       <div className="geometry-help">Required before processing: a valid area of interest, analysis name, baseline date and later comparison date. Click the button for guidance if anything is missing.</div>
       <div className="actions">
         <button className="btn" disabled={busy} onClick={searchScenes}>{task==="scenes"?"Searching scenes…":"Search Sentinel-2 scenes"}</button>
