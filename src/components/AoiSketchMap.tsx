@@ -1,47 +1,54 @@
 "use client";
-import {useEffect,useRef} from "react";
+import {useCallback,useEffect,useRef,useState} from "react";
 import * as maplibregl from "maplibre-gl";
+import {coordinateVertex,polygonFromVertices,verticesFromAoi,
+  type AoiGeometry,type AoiPoint,type AoiPolygon} from "@/lib/aoi-editor";
 
-type Point=[number,number];
-type Polygon={type:"Polygon";coordinates:Point[][]};
-
-function pointsFromGeometry(value:any):Point[]{
-  let ring:Point[]|null=null;
-  if(value?.type==="Polygon"&&Array.isArray(value.coordinates?.[0]))ring=value.coordinates[0] as Point[];
-  if(value?.type==="MultiPolygon"&&Array.isArray(value.coordinates?.[0]?.[0]))ring=value.coordinates[0][0] as Point[];
-  if(!ring)return [];
-  return ring.length>1&&ring[0][0]===ring[ring.length-1][0]&&ring[0][1]===ring[ring.length-1][1]?ring.slice(0,-1):ring;
+function featureCollection(points:AoiPoint[]){
+  const features:GeoJSON.Feature[]=[];
+  points.forEach((coordinates,i)=>features.push({
+    type:"Feature",properties:{index:i+1},
+    geometry:{type:"Point",coordinates}
+  }));
+  if(points.length>=2)features.push({
+    type:"Feature",properties:{},
+    geometry:{type:"LineString",coordinates:points}
+  });
+  const polygon=polygonFromVertices(points);
+  if(polygon)features.push({type:"Feature",properties:{},geometry:polygon});
+  return {type:"FeatureCollection",features} as GeoJSON.FeatureCollection;
 }
 
-function featureCollection(points:Point[]){
-  const features:any[]=[];
-  if(points.length){
-    features.push(...points.map((coordinates,i)=>({type:"Feature",properties:{index:i+1},geometry:{type:"Point",coordinates}})));
-    if(points.length>=2)features.push({type:"Feature",properties:{},geometry:{type:"LineString",coordinates:points}});
-    if(points.length>=3)features.push({type:"Feature",properties:{},geometry:{type:"Polygon",coordinates:[[...points,points[0]]]}});
-  }
-  return {type:"FeatureCollection",features} as any;
-}
-
-function polygonFromPoints(points:Point[]):Polygon|null{
-  return points.length>=3?{type:"Polygon",coordinates:[[...points,points[0]]]}:null;
-}
-
-export default function AoiSketchMap({geometry,onChange}:{geometry:any;onChange:(geometry:Polygon|null)=>void}){
+export default function AoiSketchMap({geometry,onChange}:{
+  geometry:AoiGeometry|null;
+  onChange:(geometry:AoiPolygon|null)=>void;
+}){
   const node=useRef<HTMLDivElement|null>(null);
   const mapRef=useRef<maplibregl.Map|null>(null);
-  const geometryRef=useRef(geometry);
+  const initial=useRef<AoiPoint[]>(verticesFromAoi(geometry));
+  const verticesRef=useRef<AoiPoint[]>(initial.current);
+  const[vertices,setVertices]=useState<AoiPoint[]>(initial.current);
   const onChangeRef=useRef(onChange);
-  const points=pointsFromGeometry(geometry);
+  const emittedGeometryRef=useRef<string|null>(null);
+  const[latitude,setLatitude]=useState("");
+  const[longitude,setLongitude]=useState("");
+  const[feedback,setFeedback]=useState("");
+  const[mapReady,setMapReady]=useState(false);
 
-  useEffect(()=>{geometryRef.current=geometry;},[geometry]);
   useEffect(()=>{onChangeRef.current=onChange;},[onChange]);
 
-  function apply(next:Point[]){
-    const source=mapRef.current?.getSource("aoi-sketch") as maplibregl.GeoJSONSource|undefined;
+  const update=useCallback((next:AoiPoint[],emit=true)=>{
+    verticesRef.current=next;
+    setVertices(next);
+    const map=mapRef.current;
+    const source=map?.getSource("aoi-sketch") as maplibregl.GeoJSONSource|undefined;
     source?.setData(featureCollection(next));
-    onChangeRef.current(polygonFromPoints(next));
-  }
+    if(emit){
+      const polygon=polygonFromVertices(next);
+      emittedGeometryRef.current=polygon?JSON.stringify(polygon):"null";
+      onChangeRef.current(polygon);
+    }
+  },[]);
 
   useEffect(()=>{
     if(!node.current||mapRef.current)return;
@@ -49,54 +56,124 @@ export default function AoiSketchMap({geometry,onChange}:{geometry:any;onChange:
       container:node.current,
       center:[8.75,7.35],
       zoom:7,
-      style:{version:8,sources:{osm:{type:"raster",tiles:["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],tileSize:256,attribution:"© OpenStreetMap contributors"}},layers:[{id:"osm",type:"raster",source:"osm"}]}
+      interactive:true,
+      style:{
+        version:8,
+        sources:{osm:{type:"raster",tiles:["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],tileSize:256,attribution:"© OpenStreetMap contributors"}},
+        layers:[{id:"osm",type:"raster",source:"osm"}]
+      }
     });
+    mapRef.current=map;
     map.addControl(new maplibregl.NavigationControl(),"top-right");
     map.on("load",()=>{
-      const initial=pointsFromGeometry(geometryRef.current);
-      map.addSource("aoi-sketch",{type:"geojson",data:featureCollection(initial)});
-      map.addLayer({id:"aoi-fill",type:"fill",source:"aoi-sketch",filter:["==",["geometry-type"],"Polygon"],paint:{"fill-color":"#2f855a","fill-opacity":0.22}});
-      map.addLayer({id:"aoi-line",type:"line",source:"aoi-sketch",filter:["in",["geometry-type"],["literal",["LineString","Polygon"]]],paint:{"line-color":"#1f6b3b","line-width":3}});
-      map.addLayer({id:"aoi-points",type:"circle",source:"aoi-sketch",filter:["==",["geometry-type"],"Point"],paint:{"circle-radius":6,"circle-color":"#d97706","circle-stroke-color":"#fff","circle-stroke-width":2}});
-      if(initial.length>=3){
-        const bounds=new maplibregl.LngLatBounds(initial[0],initial[0]);
-        initial.forEach(p=>bounds.extend(p));
+      map.addSource("aoi-sketch",{type:"geojson",data:featureCollection(verticesRef.current)});
+      map.addLayer({id:"aoi-fill",type:"fill",source:"aoi-sketch",
+        filter:["==",["geometry-type"],"Polygon"],
+        paint:{"fill-color":"#2f855a","fill-opacity":0.25}});
+      map.addLayer({id:"aoi-line",type:"line",source:"aoi-sketch",
+        filter:["in",["geometry-type"],["literal",["LineString","Polygon"]]],
+        paint:{"line-color":"#1f6b3b","line-width":3}});
+      map.addLayer({id:"aoi-points",type:"circle",source:"aoi-sketch",
+        filter:["==",["geometry-type"],"Point"],
+        paint:{"circle-radius":7,"circle-color":"#d97706",
+          "circle-stroke-color":"#fff","circle-stroke-width":2}});
+      setMapReady(true);
+      if(verticesRef.current.length>=3){
+        const points=verticesRef.current;
+        const bounds=new maplibregl.LngLatBounds(points[0],points[0]);
+        points.forEach(p=>bounds.extend(p));
         map.fitBounds(bounds,{padding:40,maxZoom:15});
       }
     });
     map.on("click",e=>{
-      const current=pointsFromGeometry(geometryRef.current);
-      const point:Point=[Number(e.lngLat.lng.toFixed(6)),Number(e.lngLat.lat.toFixed(6))];
-      const next=[...current,point];
-      const source=map.getSource("aoi-sketch") as maplibregl.GeoJSONSource|undefined;
-      source?.setData(featureCollection(next));
-      onChangeRef.current(polygonFromPoints(next));
+      const point:AoiPoint=[Number(e.lngLat.lng.toFixed(6)),Number(e.lngLat.lat.toFixed(6))];
+      update([...verticesRef.current,point]);
+      setFeedback("");
     });
-    mapRef.current=map;
-    return()=>{map.remove();mapRef.current=null;};
-  },[]);
+    return ()=>{
+      map.remove();
+      mapRef.current=null;
+    };
+  },[update]);
 
+  // Sync ONLY externally changed AOIs (selected forest / pasted GeoJSON).
+  // Locally drawn 1- and 2-vertex drafts must not be discarded just because
+  // the parent still has no *complete* polygon.
   useEffect(()=>{
+    const key=geometry?JSON.stringify(geometry):"null";
+    if(key===emittedGeometryRef.current)return;
+    const incoming=verticesFromAoi(geometry);
+    update(incoming,false);
     const map=mapRef.current;
-    if(!map?.isStyleLoaded())return;
-    const incoming=pointsFromGeometry(geometry);
-    const source=map.getSource("aoi-sketch") as maplibregl.GeoJSONSource|undefined;
-    source?.setData(featureCollection(incoming));
-    if(incoming.length>=3){
+    if(map?.isStyleLoaded()&&incoming.length>=3){
       const bounds=new maplibregl.LngLatBounds(incoming[0],incoming[0]);
-      incoming.forEach(p=>bounds.extend(p));
+      incoming.forEach(point=>bounds.extend(point));
       map.fitBounds(bounds,{padding:40,maxZoom:15});
     }
-  },[geometry]);
+  },[geometry,update]);
+
+  function addCoordinate(event:React.FormEvent<HTMLFormElement>){
+    event.preventDefault();
+    try{
+      const vertex=coordinateVertex(latitude,longitude);
+      update([...verticesRef.current,vertex]);
+      setFeedback("Corner "+(verticesRef.current.length)+" added. "+
+        (verticesRef.current.length<3?"Add "+(3-verticesRef.current.length)+" more corner(s).":"Area of interest is ready."));
+      setLatitude("");setLongitude("");
+    }catch(e){
+      setFeedback(e instanceof Error?e.message:"Enter valid WGS84 coordinates.");
+    }
+  }
+  function undo(){
+    update(verticesRef.current.slice(0,-1));
+    setFeedback("Last corner removed.");
+  }
+  function clear(){
+    update([]);
+    setFeedback("AOI cleared. Add at least three corners.");
+  }
 
   return <div className="stack">
-    <div className="aoi-sketch-map" ref={node}/>
+    <div className="notice" role="status">
+      <strong>{vertices.length>=3
+        ?"AOI ready: "+vertices.length+" corners"
+        :vertices.length
+          ?vertices.length+" of at least 3 corners captured"
+          :"No area drawn yet"}</strong>
+      <div className="geometry-help">
+        Tap the map to place corners or enter latitude/longitude below.
+        The first two corners are saved as a draft; the third closes the polygon automatically.
+      </div>
+    </div>
+    <div className="aoi-sketch-map" ref={node} role="region"
+      aria-label="Interactive Sentinel-2 area of interest map"/>
+    {!mapReady&&<div className="geometry-help">Loading map… You can also enter corners below.</div>}
+    <form onSubmit={addCoordinate} className="aoi-coordinate-entry">
+      <div className="field">
+        <label htmlFor="aoi-latitude">Latitude</label>
+        <input id="aoi-latitude" type="number" step="any" min="-90" max="90" inputMode="decimal"
+          value={latitude} onChange={e=>setLatitude(e.target.value)}
+          placeholder="e.g. 7.735" required/>
+      </div>
+      <div className="field">
+        <label htmlFor="aoi-longitude">Longitude</label>
+        <input id="aoi-longitude" type="number" step="any" min="-180" max="180" inputMode="decimal"
+          value={longitude} onChange={e=>setLongitude(e.target.value)}
+          placeholder="e.g. 8.535" required/>
+      </div>
+      <button type="submit" className="btn">Add corner</button>
+    </form>
+    {feedback&&<div role="status" className="geometry-help">{feedback}</div>}
     <div className="section-head">
-      <div className="muted">Click the map to add vertices. Three or more points create a closed polygon.</div>
+      <div className="muted">
+        {vertices.length>=3
+          ?"The green polygon is your analysis boundary. Add another corner to extend it, or undo."
+          :"Use three or more non-collinear corners to create the AOI."}
+      </div>
       <div className="actions">
-        <span className="badge">{points.length} vertices</span>
-        <button type="button" className="btn" disabled={!points.length} onClick={()=>apply(points.slice(0,-1))}>Undo</button>
-        <button type="button" className="btn danger" disabled={!points.length} onClick={()=>apply([])}>Clear</button>
+        <span className="badge">{vertices.length} vertices</span>
+        <button type="button" className="btn" disabled={!vertices.length} onClick={undo}>Undo</button>
+        <button type="button" className="btn danger" disabled={!vertices.length} onClick={clear}>Clear</button>
       </div>
     </div>
   </div>;
