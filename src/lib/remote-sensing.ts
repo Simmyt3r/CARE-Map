@@ -13,6 +13,15 @@ export type SceneSummary={
   bbox:number[]|null;
 };
 
+/** An image request succeeded but the period returned no usable scenes/pixels. */
+export class NoSentinelObservationError extends Error{
+  constructor(public readonly windowStart:string,public readonly windowEnd:string){
+    super("No usable Sentinel-2 observation between "+windowStart+" and "+windowEnd+
+      ". Select an earlier completed date range, extend the window, or try a clearer dry-season period.");
+    this.name="NoSentinelObservationError";
+  }
+}
+
 export type NdviStats={
   meanNdvi:number|null;
   vegetationFraction:number|null;
@@ -234,7 +243,7 @@ export async function fetchNdviStats(aoi:GeoPolygon,date:string,windowDays:numbe
   if(!response.ok)throw new Error(json?.error?.message||json?.message||"Sentinel NDVI statistics request failed.");
 
   const entry=Array.isArray(json?.data)?json.data[0]:null;
-  if(!entry)throw new Error("No usable Sentinel-2 observation was returned for this period.");
+  if(!entry)throw new NoSentinelObservationError(range.from.slice(0,10),range.to.slice(0,10));
 
   const ndviStats=firstBandStats(entry,"ndvi");
   const vegetationStats=firstBandStats(entry,"vegetation");
