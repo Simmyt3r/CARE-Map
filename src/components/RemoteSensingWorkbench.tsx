@@ -136,6 +136,31 @@ export default function RemoteSensingWorkbench(){
     }
   }
 
+  function reuseAnalysis(data:any){
+    if(!data.aoi_geometry){
+      setMessage("The selected analysis has no stored AOI geometry. Open the full analysis record and retry.");
+      return;
+    }
+    const parsed=parseAoiText(JSON.stringify(data.aoi_geometry));
+    if(!parsed.geometry){
+      setMessage("Saved AOI cannot be reused: "+(parsed.error||"Invalid polygon."));
+      return;
+    }
+    setForm({
+      name:String(data.name||"Vegetation comparison")+" - revised",
+      forestId:"",
+      geometry:JSON.stringify(parsed.geometry),
+      baselineDate:String(data.baseline_date||"").slice(0,10),
+      comparisonDate:String(data.comparison_date||"").slice(0,10),
+      windowDays:String(data.window_days||7),
+      threshold:String(data.vegetation_threshold??0.3)
+    });
+    setSceneResults({baseline:[],comparison:[]});
+    setSelected(null);
+    setMessage("Saved area copied into a new comparison. Change the observation dates before processing; the previous analysis remains unchanged.");
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+
   const scene=(s:any)=>s?<div className="scene-card"><strong>{s.id}</strong><span>{s.datetime?new Date(s.datetime).toLocaleString():"Unknown acquisition time"}</span><span>Cloud cover: {s.cloudCover==null?"—":Number(s.cloudCover).toFixed(1)+"%"}</span></div>:<div className="muted">No scene found in this window.</div>;
 
   return <div className="stack">
@@ -211,6 +236,6 @@ export default function RemoteSensingWorkbench(){
       </table></div>}
     </section>
 
-    {selected&&<RemoteSensingResultDrawer analysis={selected} onClose={()=>setSelected(null)} onUpdated={load}/>}
+    {selected&&<RemoteSensingResultDrawer analysis={selected} onClose={()=>setSelected(null)} onUpdated={load} onReuse={reuseAnalysis}/>}
   </div>;
 }
