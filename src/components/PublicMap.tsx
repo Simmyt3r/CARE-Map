@@ -38,11 +38,46 @@ export default function PublicMap(){
       const features:PublishedVegetationFeature[]=Array.isArray(data.features)
         ?data.features.filter((f:PublishedVegetationFeature)=>f.properties?.entityType==="ndvi_change"):[];
       setPublishedNdvi(features);
+      setVisibleNdvi(features.length);
+      const map=mapRef.current;
+      const source=map?.getSource("published-vegetation") as GeoJSONSource|undefined;
+      source?.setData({type:"FeatureCollection",features} as GeoJSON.FeatureCollection);
+      if(map)updateVegetationMarkers(map,features);
       return features;
     }catch(e){
       setPublishedError(e instanceof Error?e.message:"Could not retrieve vegetation results.");
+      setVisibleNdvi(null);
       return [];
     }finally{setPublishedLoading(false);}
+  }
+
+  function updateVegetationMarkers(map:maplibregl.Map,features:PublishedVegetationFeature[]){
+    vegetationMarkers.current.forEach(marker=>marker.remove());
+    vegetationMarkers.current=[];
+    for(const feature of features.slice(0,50)){
+      const result=vegetationSummary(feature);
+      if(!result.center)continue;
+      const button=document.createElement("button");
+      button.type="button";
+      button.className="vegetation-map-marker vegetation-map-marker-"+result.direction;
+      button.textContent=result.metric;
+      button.title=result.name+" · "+result.label+" · "+(result.dates||"");
+      button.setAttribute("aria-label",result.name+": "+result.label+" "+result.metric);
+      const content=document.createElement("div");
+      content.className="map-popup";
+      const heading=document.createElement("strong");
+      heading.textContent=result.name;
+      const detail=document.createElement("p");
+      detail.textContent=result.label+" · "+result.metric+
+        (result.percentage?" ("+result.percentage+")":"")+
+        (result.dates?" · "+result.dates:"");
+      const note=document.createElement("small");
+      note.textContent="Satellite estimate for the full analysis boundary. It is not a pixel-by-pixel change map.";
+      content.append(heading,detail,note);
+      const popup=new maplibregl.Popup({maxWidth:"300px"}).setDOMContent(content);
+      vegetationMarkers.current.push(new maplibregl.Marker({element:button,anchor:"center"})
+        .setLngLat(result.center).setPopup(popup).addTo(map));
+    }
   }
 
   function showVegetation(feature:PublishedVegetationFeature){
@@ -79,6 +114,14 @@ export default function PublicMap(){
   async function loadFeatures(map=mapRef.current){
     if(!map)return;
     const b=map.getBounds(),f=filterRef.current;
+    if(f.type==="ndvi_change"){
+      (map.getSource("carepoints") as GeoJSONSource|undefined)
+        ?.setData({type:"FeatureCollection",features:[]} as GeoJSON.FeatureCollection);
+      (map.getSource("careshapes") as GeoJSONSource|undefined)
+        ?.setData({type:"FeatureCollection",features:[]} as GeoJSON.FeatureCollection);
+      setHasError(false);
+      return;
+    }
     const qs=new URLSearchParams({bbox:[b.getWest(),b.getSouth(),b.getEast(),b.getNorth()].join(",")});
     if(f.type)qs.set("type",f.type);
     if(f.lga)qs.set("lga",f.lga);
@@ -88,46 +131,14 @@ export default function PublicMap(){
       if(!r.ok)throw new Error();
       const data=await r.json();
       const features=Array.isArray(data.features)?data.features:[];
-      setVisibleNdvi(features.filter((x:any)=>x.properties?.entityType==="ndvi_change").length);
       const points={type:"FeatureCollection",features:features.filter((x:any)=>x.geometry?.type==="Point")} as any;
-      const shapes={type:"FeatureCollection",features:features.filter((x:any)=>x.geometry?.type!=="Point")} as any;
+      const shapes={type:"FeatureCollection",features:features.filter((x:any)=>
+        x.geometry?.type!=="Point"&&x.properties?.entityType!=="ndvi_change")} as any;
       (map.getSource("carepoints") as GeoJSONSource|undefined)?.setData(points);
       (map.getSource("careshapes") as GeoJSONSource|undefined)?.setData(shapes);
-      vegetationMarkers.current.forEach(marker=>marker.remove());
-      vegetationMarkers.current=[];
-      // HTML markers remain legible even at state-level zoom and do not need
-      // external text glyph tiles.
-      (features as PublishedVegetationFeature[])
-        .filter(x=>x.properties?.entityType==="ndvi_change").slice(0,30)
-        .forEach(feature=>{
-          const result=vegetationSummary(feature);
-          if(!result.center)return;
-          const button=document.createElement("button");
-          button.type="button";
-          button.className="vegetation-map-marker vegetation-map-marker-"+result.direction;
-          button.textContent=result.metric;
-          button.title=result.name+" · "+result.label+" · "+(result.dates||"");
-          button.setAttribute("aria-label",result.name+": "+result.label+" "+result.metric);
-          const content=document.createElement("div");
-          content.className="map-popup";
-          const heading=document.createElement("strong");
-          heading.textContent=result.name;
-          const detail=document.createElement("p");
-          detail.textContent=result.label+" · "+result.metric+
-            (result.percentage?" ("+result.percentage+")":"")+
-            (result.dates?" · "+result.dates:"");
-          const note=document.createElement("small");
-          note.textContent="Estimate for the whole outlined analysis area, not a pixel-level vegetation image.";
-          content.append(heading,detail,note);
-          const popup=new maplibregl.Popup({maxWidth:"300px"}).setDOMContent(content);
-          vegetationMarkers.current.push(new maplibregl.Marker({element:button,anchor:"center"})
-            .setLngLat(result.center).setPopup(popup).addTo(map));
-        });
       setHasError(false);
     }catch{
-      vegetationMarkers.current.forEach(marker=>marker.remove());
-      vegetationMarkers.current=[];
-      setHasError(true);setVisibleNdvi(null);
+      setHasError(true);
     }
   }
 
@@ -146,6 +157,8 @@ export default function PublicMap(){
       map.addSource("lga-boundaries",{type:"geojson",data:{type:"FeatureCollection",features:[]}});
       map.addSource("carepoints",{type:"geojson",data:{type:"FeatureCollection",features:[]},cluster:true,clusterRadius:46,clusterMaxZoom:13});
       map.addSource("careshapes",{type:"geojson",data:{type:"FeatureCollection",features:[]}});
+      map.addSource("published-vegetation",{type:"geojson",
+        data:{type:"FeatureCollection",features:[]}});
 
       map.addLayer({id:"lga-boundary-fill",type:"fill",source:"lga-boundaries",filter:["==",["get","code"],"__NONE__"],paint:{"fill-color":"#244d35","fill-opacity":0.09}});
       map.addLayer({id:"lga-boundary-lines",type:"line",source:"lga-boundaries",paint:{"line-color":"#355f46","line-width":["interpolate",["linear"],["zoom"],6,1,12,2],"line-opacity":0.7}});
@@ -155,17 +168,12 @@ export default function PublicMap(){
         paint:{"fill-color":"#2f855a","fill-opacity":0.26,"fill-outline-color":"#1f6b3b"}});
       // Vegetation changes need their own unmistakable public layer. Showing
       // them as ordinary green project polygons concealed actual results.
-      const ndviPolygonFilter:any=["all",
-        ["in",["geometry-type"],["literal",["Polygon","MultiPolygon"]]],
-        ["==",["get","entityType"],"ndvi_change"]];
       const ndviPaint:any=["match",["get","changeDirection"],
-        "gain","#12914b","loss","#d45b33","stable","#577c88","#577c88"];
-      map.addLayer({id:"ndvi-change-fill",type:"fill",source:"careshapes",
-        filter:ndviPolygonFilter,
-        paint:{"fill-color":ndviPaint,"fill-opacity":0.56}});
-      map.addLayer({id:"ndvi-change-outline",type:"line",source:"careshapes",
-        filter:ndviPolygonFilter,
-        paint:{"line-color":ndviPaint,"line-width":3,"line-opacity":0.95}});
+        "gain","#16a34a","loss","#e36432","stable","#578899","#578899"];
+      map.addLayer({id:"ndvi-change-fill",type:"fill",source:"published-vegetation",
+        paint:{"fill-color":ndviPaint,"fill-opacity":0.48}});
+      map.addLayer({id:"ndvi-change-outline",type:"line",source:"published-vegetation",
+        paint:{"line-color":ndviPaint,"line-width":5,"line-opacity":1}});
       map.addLayer({id:"care-lines",type:"line",source:"careshapes",filter:["in",["geometry-type"],["literal",["LineString","MultiLineString"]]],paint:{"line-color":"#2878a8","line-width":["interpolate",["linear"],["zoom"],6,2,13,5]}});
 
       map.addLayer({id:"clusters",type:"circle",source:"carepoints",filter:["has","point_count"],paint:{
@@ -312,7 +320,11 @@ export default function PublicMap(){
         </button>
       </div>
       {publishedLoading&&<p className="muted" role="status">Loading approved vegetation analyses…</p>}
-      {publishedError&&<p className="error" role="alert">{publishedError}</p>}
+      {publishedError&&<div className="error" role="alert">{publishedError}
+        <button type="button" className="btn" onClick={()=>void fetchPublishedVegetation()}>
+          Retry vegetation layer
+        </button>
+      </div>}
       {!publishedLoading&&!publishedError&&publishedNdvi.length===0&&
         <p className="muted">No approved vegetation comparisons have been published yet.</p>}
       {!!publishedNdvi.length&&<div className="vegetation-result-list">
@@ -350,9 +362,9 @@ export default function PublicMap(){
       </button>
     </div>
     {type==="ndvi_change"&&<div className="muted" role="status">
-      {visibleNdvi===null?"Checking vegetation layer…":visibleNdvi===0
-        ?"No published vegetation-change polygons in the current map view. Use Find published vegetation change to locate approved areas."
-        :visibleNdvi+" approved vegetation-change polygon(s) in the current map view."}
+      {visibleNdvi===null?"Vegetation layer could not be loaded. Retry above.":visibleNdvi===0
+        ?"No published approved vegetation-change polygons currently available."
+        :visibleNdvi+" approved vegetation-change polygon(s) available. Use the result card to locate each area."}
     </div>}
     {ndviNotice&&<div className="notice" role="status">{ndviNotice}</div>}
     {hasError&&<div className="error" role="alert">{t("map.dataError")}. Retry the layer or refresh this page.</div>}
