@@ -2,6 +2,7 @@ import {NextResponse} from "next/server";
 import {getSession,isStaff} from "@/lib/auth";
 import {error} from "@/lib/http";
 import {query} from "@/lib/db";
+import {comparisonWindowError} from "@/lib/sentinel-date-quality";
 import {
   assessNdviQuality,changeLevel,fetchNdviStats,remoteSensingConfigured,searchSentinelScenes,
   type RemoteSensingRow
@@ -22,6 +23,13 @@ export async function POST(_:Request,context:{params:Promise<{id:string}>}){
   `,[id]);
   const row=current.rows[0];
   if(!row)return error("Analysis not found",404);
+
+  const windowIssue=comparisonWindowError(row.baseline_date,row.comparison_date,Number(row.window_days));
+  if(windowIssue){
+    await query("UPDATE remote_sensing_analyses SET status='needs_review',quality_notes=$1,error_message=NULL,publish_to_map=FALSE WHERE id=$2",
+      [windowIssue,id]);
+    return error(windowIssue+" Create a new analysis with completed dates; the original AOI remains saved.",409,"INVALID_OBSERVATION_WINDOW");
+  }
 
   if(!remoteSensingConfigured()){
     await query("UPDATE remote_sensing_analyses SET status='waiting_configuration',error_message=NULL WHERE id=$1",[id]);
