@@ -106,7 +106,8 @@ export async function searchSentinelScenes(aoi:GeoPolygon,date:string|Date,windo
       limit:20,
       query:{"eo:cloud_cover":{"lt":maxCloud}}
     }),
-    cache:"no-store"
+    cache:"no-store",
+    signal:AbortSignal.timeout(12000)
   });
   if(!response.ok)throw new Error("Sentinel-2 catalog search failed.");
   const json=await response.json() as any;
