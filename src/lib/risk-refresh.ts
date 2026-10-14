@@ -19,7 +19,7 @@ export const RISK_REFRESH_SQL = `
  UPDATE reports SET reporter_name=NULL,reporter_contact=NULL,submitted_by=NULL,anonymized_at=now()
  WHERE resolved_at IS NOT NULL AND resolved_at<now()-INTERVAL '2 years' AND anonymized_at IS NULL;
 
- DO $
+ DO $$
  BEGIN
    IF to_regclass('public.privacy_notice_acceptances') IS NOT NULL THEN
      EXECUTE $sql$
@@ -30,5 +30,5 @@ export const RISK_REFRESH_SQL = `
        ) AND p.user_id IS NOT NULL
      $sql$;
    END IF;
- END $;
+ END $$;
  `;
