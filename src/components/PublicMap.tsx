@@ -50,7 +50,7 @@ export default function PublicMap(){
     if(f.lga)qs.set("lga",f.lga);
     if(f.status)qs.set("status",f.status);
     try{
-      const r=await fetch("/api/map/features?"+qs);
+      const r=await fetch("/api/map/features?"+qs,{cache:"no-store"});
       if(!r.ok)throw new Error();
       const data=await r.json();
       const features=Array.isArray(data.features)?data.features:[];
