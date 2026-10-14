@@ -116,5 +116,5 @@ export async function GET(request:Request){
         }:{})
       }
     }))
-  },{headers:{"Cache-Control":"no-store"}});
+  },{headers:{"Cache-Control":"public, max-age=0, s-maxage=20, stale-while-revalidate=40"}});
 }
