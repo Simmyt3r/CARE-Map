@@ -2,7 +2,9 @@
 "use client";
 import {useEffect,useState} from "react";
 
-export default function RemoteSensingResultDrawer({analysis,onClose,onUpdated}:{analysis:any;onClose:()=>void;onUpdated:()=>void}){
+export default function RemoteSensingResultDrawer({analysis,onClose,onUpdated,onReuse}:{
+  analysis:any;onClose:()=>void;onUpdated:()=>void;onReuse:(data:any)=>void
+}){
   const[detail,setDetail]=useState<any>(null);
   const[message,setMessage]=useState("");
   const[busy,setBusy]=useState(false);
@@ -48,11 +50,18 @@ export default function RemoteSensingResultDrawer({analysis,onClose,onUpdated}:{
           <div className="section-head"><h3>Analysis status</h3><span className={"priority-badge priority-"+(d.status==="failed"?"critical":d.status==="completed"?"low":"medium")}>{d.status?.replaceAll("_"," ")}</span></div>
           <div className="resource-facts">
             <div><span>AOI area</span><strong>{fmt(d.aoi_area_ha,1)} ha</strong></div>
-            <div><span>Baseline</span><strong>{String(d.baseline_date)} + {d.window_days} days</strong></div>
-            <div><span>Comparison</span><strong>{String(d.comparison_date)} + {d.window_days} days</strong></div>
+            <div><span>Baseline</span><strong>{String(d.baseline_date).slice(0,10)} + {d.window_days} days</strong></div>
+            <div><span>Comparison</span><strong>{String(d.comparison_date).slice(0,10)} + {d.window_days} days</strong></div>
             <div><span>Vegetation threshold</span><strong>NDVI ≥ {fmt(d.vegetation_threshold,2)}</strong></div>
           </div>
-          {d.status!=="running"&&<button className="btn primary" disabled={busy} onClick={run}>{d.status==="completed"?"Re-run analysis":"Run NDVI analysis"}</button>}
+          {(d.status==="failed"||d.status==="needs_review")&&
+            <div className="stack">
+              <p className="muted">An analysis with different dates must be created as a new record. Your mapped area can be reused without drawing it again.</p>
+              <button type="button" className="btn" disabled={busy||!d.aoi_geometry}
+                onClick={()=>onReuse(d)}>Reuse this AOI with revised dates</button>
+            </div>}
+          {d.status!=="running"&&<button className="btn primary" disabled={busy}
+            onClick={run}>{d.status==="completed"?"Re-run analysis":"Run NDVI analysis"}</button>}
           {d.error_message&&<div className="error">{d.error_message}</div>}
           {d.quality_notes&&<div className="notice"><strong>Imagery quality:</strong> {d.quality_notes} Try a longer date window or another acquisition period.</div>}
           <div className="muted">Minimum clear-pixel coverage: {fmt(Number(d.minimum_clear_fraction||0.6)*100,0)}% in each period.</div>
