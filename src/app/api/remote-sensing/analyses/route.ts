@@ -3,6 +3,7 @@ import {getSession,isStaff} from "@/lib/auth";
 import {error} from "@/lib/http";
 import {query} from "@/lib/db";
 import {normalizeAoi,remoteSensingConfigured,searchSentinelScenes} from "@/lib/remote-sensing";
+import {comparisonWindowError} from "@/lib/sentinel-date-quality";
 
 export const dynamic="force-dynamic";
 
@@ -36,6 +37,9 @@ export async function POST(request:Request){
   if(!Number.isFinite(threshold)||threshold< -1||threshold>1)return error("Vegetation threshold must be between -1 and 1.");
   if(Number.isNaN(Date.parse(body.baselineDate))||Number.isNaN(Date.parse(body.comparisonDate)))return error("Valid comparison dates are required.");
   if(new Date(body.comparisonDate)<=new Date(body.baselineDate))return error("Comparison date must be after baseline date.");
+
+  const windowIssue=comparisonWindowError(body.baselineDate,body.comparisonDate,windowDays);
+  if(windowIssue)return error(windowIssue,400,"INVALID_OBSERVATION_WINDOW");
 
   try{
     const aoi=normalizeAoi(body.geometry);
