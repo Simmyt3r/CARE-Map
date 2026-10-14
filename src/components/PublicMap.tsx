@@ -4,6 +4,7 @@ import * as maplibregl from "maplibre-gl";
 import type {GeoJSONSource} from "maplibre-gl";
 import {geometryExtent} from "@/lib/geojson";
 import {useI18n} from "@/components/LocalizationProvider";
+import {vegetationSummary,type PublishedVegetationFeature} from "@/lib/vegetation-display";
 
 type Lga={code:string;name:string};
 type Filters={type:string;lga:string;status:string};
@@ -13,6 +14,7 @@ export default function PublicMap(){
   const tRef=useRef(t);
   const node=useRef<HTMLDivElement|null>(null);
   const mapRef=useRef<maplibregl.Map|null>(null);
+  const vegetationMarkers=useRef<maplibregl.Marker[]>([]);
   const filterRef=useRef<Filters>({type:"",lga:"",status:""});
   const boundaryByCodeRef=useRef<Record<string,any>>({});
   const[type,setType]=useState(""),[lga,setLga]=useState(""),[status,setStatus]=useState("");
@@ -20,9 +22,41 @@ export default function PublicMap(){
   const[visibleNdvi,setVisibleNdvi]=useState<number|null>(null);
   const[locatingNdvi,setLocatingNdvi]=useState(false);
   const[ndviNotice,setNdviNotice]=useState("");
+  const[publishedNdvi,setPublishedNdvi]=useState<PublishedVegetationFeature[]>([]);
+  const[publishedLoading,setPublishedLoading]=useState(true);
+  const[publishedError,setPublishedError]=useState("");
 
   useEffect(()=>{tRef.current=t;},[t]);
   useEffect(()=>{fetch("/api/lgas").then(r=>r.json()).then(j=>setLgas(j.data||[])).catch(()=>{});},[]);
+
+  async function fetchPublishedVegetation():Promise<PublishedVegetationFeature[]>{
+    setPublishedLoading(true);setPublishedError("");
+    try{
+      const response=await fetch("/api/map/features?type=ndvi_change",{cache:"no-store"});
+      if(!response.ok)throw new Error("The public vegetation results are temporarily unavailable.");
+      const data=await response.json();
+      const features:PublishedVegetationFeature[]=Array.isArray(data.features)
+        ?data.features.filter((f:PublishedVegetationFeature)=>f.properties?.entityType==="ndvi_change"):[];
+      setPublishedNdvi(features);
+      return features;
+    }catch(e){
+      setPublishedError(e instanceof Error?e.message:"Could not retrieve vegetation results.");
+      return [];
+    }finally{setPublishedLoading(false);}
+  }
+
+  function showVegetation(feature:PublishedVegetationFeature){
+    const map=mapRef.current;
+    const result=vegetationSummary(feature);
+    if(!map||!result.extent)return;
+    const [west,south,east,north]=result.extent;
+    setType("ndvi_change");setStatus("");setLga("");
+    filterRef.current={type:"ndvi_change",lga:"",status:""};
+    map.fitBounds([[west,south],[east,north]],{padding:64,maxZoom:13,duration:400});
+    setNdviNotice(result.name+": "+result.label.toLowerCase()+" "+result.metric+
+      ". Tap the outlined area or map label to see the dates and details.");
+    void loadFeatures(map);
+  }
 
   async function loadBoundaries(map=mapRef.current){
     if(!map)return;
@@ -59,8 +93,42 @@ export default function PublicMap(){
       const shapes={type:"FeatureCollection",features:features.filter((x:any)=>x.geometry?.type!=="Point")} as any;
       (map.getSource("carepoints") as GeoJSONSource|undefined)?.setData(points);
       (map.getSource("careshapes") as GeoJSONSource|undefined)?.setData(shapes);
+      vegetationMarkers.current.forEach(marker=>marker.remove());
+      vegetationMarkers.current=[];
+      // HTML markers remain legible even at state-level zoom and do not need
+      // external text glyph tiles.
+      (features as PublishedVegetationFeature[])
+        .filter(x=>x.properties?.entityType==="ndvi_change").slice(0,30)
+        .forEach(feature=>{
+          const result=vegetationSummary(feature);
+          if(!result.center)return;
+          const button=document.createElement("button");
+          button.type="button";
+          button.className="vegetation-map-marker vegetation-map-marker-"+result.direction;
+          button.textContent=result.metric;
+          button.title=result.name+" · "+result.label+" · "+(result.dates||"");
+          button.setAttribute("aria-label",result.name+": "+result.label+" "+result.metric);
+          const content=document.createElement("div");
+          content.className="map-popup";
+          const heading=document.createElement("strong");
+          heading.textContent=result.name;
+          const detail=document.createElement("p");
+          detail.textContent=result.label+" · "+result.metric+
+            (result.percentage?" ("+result.percentage+")":"")+
+            (result.dates?" · "+result.dates:"");
+          const note=document.createElement("small");
+          note.textContent="Estimate for the whole outlined analysis area, not a pixel-level vegetation image.";
+          content.append(heading,detail,note);
+          const popup=new maplibregl.Popup({maxWidth:"300px"}).setDOMContent(content);
+          vegetationMarkers.current.push(new maplibregl.Marker({element:button,anchor:"center"})
+            .setLngLat(result.center).setPopup(popup).addTo(map));
+        });
       setHasError(false);
-    }catch{setHasError(true);setVisibleNdvi(null);}
+    }catch{
+      vegetationMarkers.current.forEach(marker=>marker.remove());
+      vegetationMarkers.current=[];
+      setHasError(true);setVisibleNdvi(null);
+    }
   }
 
   useEffect(()=>{
@@ -201,46 +269,20 @@ export default function PublicMap(){
       });
       void loadBoundaries(map);
       void loadFeatures(map);
+      void fetchPublishedVegetation();
     });
     map.on("moveend",()=>loadFeatures(map));
     mapRef.current=map;
-    return()=>{map.remove();mapRef.current=null;};
+    return()=>{vegetationMarkers.current.forEach(marker=>marker.remove());vegetationMarkers.current=[];map.remove();mapRef.current=null;};
   },[]);
 
   async function locatePublishedVegetation(){
-    const map=mapRef.current;
-    if(!map||locatingNdvi)return;
+    if(!mapRef.current||locatingNdvi)return;
     setLocatingNdvi(true);setNdviNotice("");
-    try{
-      const response=await fetch("/api/map/features?type=ndvi_change",{cache:"no-store"});
-      if(!response.ok)throw new Error("Could not load the published vegetation layer.");
-      const geojson=await response.json();
-      const polygons=(geojson.features||[]).filter((item:any)=>item.properties?.entityType==="ndvi_change");
-      if(!polygons.length){
-        setNdviNotice("There are no published, quality-approved vegetation-change areas yet.");
-        return;
-      }
-      const coordinates:number[][]=[];
-      const collect=(value:unknown)=>{
-        if(!Array.isArray(value))return;
-        if(typeof value[0]==="number"&&typeof value[1]==="number"){
-          coordinates.push(value as number[]);
-        }else value.forEach(collect);
-      };
-      polygons.forEach((feature:any)=>collect(feature.geometry?.coordinates));
-      if(!coordinates.length)throw new Error("The published vegetation layer has no valid geometry.");
-      const bounds=new maplibregl.LngLatBounds(
-        [coordinates[0][0],coordinates[0][1]],[coordinates[0][0],coordinates[0][1]]);
-      coordinates.forEach(c=>bounds.extend([c[0],c[1]]));
-      setType("ndvi_change");
-      setStatus("");setLga("");
-      filterRef.current={type:"ndvi_change",lga:"",status:""};
-      map.fitBounds(bounds,{padding:64,maxZoom:13,duration:450});
-      setNdviNotice(polygons.length+" published vegetation-change area(s) found. Select a colored polygon to inspect its results.");
-      void loadFeatures(map);
-    }catch(e){
-      setNdviNotice(e instanceof Error?e.message:"Could not locate the vegetation layer.");
-    }finally{setLocatingNdvi(false);}
+    const features=await fetchPublishedVegetation();
+    if(features.length)showVegetation(features[0]);
+    else setNdviNotice("No published approved vegetation-change areas were returned. Check the map service and try again.");
+    setLocatingNdvi(false);
   }
 
   useEffect(()=>{
@@ -258,6 +300,38 @@ export default function PublicMap(){
   },[type,lga,status]);
 
   return <div className="card">
+    <section className="vegetation-map-spotlight" aria-label="Published satellite vegetation results">
+      <div className="vegetation-spotlight-header">
+        <div><span className="page-eyebrow">Satellite evidence · Sentinel-2</span>
+          <h3>See where vegetation changed</h3>
+          <p>Choose a published analysis to zoom to its boundary and read the estimated change.</p>
+        </div>
+        <button type="button" className="btn primary" disabled={locatingNdvi}
+          onClick={()=>void locatePublishedVegetation()}>
+          {locatingNdvi?"Locating areas…":"Show vegetation changes on map"}
+        </button>
+      </div>
+      {publishedLoading&&<p className="muted" role="status">Loading approved vegetation analyses…</p>}
+      {publishedError&&<p className="error" role="alert">{publishedError}</p>}
+      {!publishedLoading&&!publishedError&&publishedNdvi.length===0&&
+        <p className="muted">No approved vegetation comparisons have been published yet.</p>}
+      {!!publishedNdvi.length&&<div className="vegetation-result-list">
+        {publishedNdvi.slice(0,4).map(feature=>{
+          const result=vegetationSummary(feature);
+          return <button className={"vegetation-result vegetation-result-"+result.direction}
+            key={feature.properties.id||feature.id} type="button"
+            onClick={()=>showVegetation(feature)}>
+            <span><strong>{result.name}</strong><small>{result.dates||"Published vegetation comparison"}</small></span>
+            <span className="vegetation-result-metric">
+              <strong>{result.metric}</strong><small>{result.label}{result.percentage?" · "+result.percentage:""}</small>
+            </span>
+            <span className="vegetation-result-arrow" aria-hidden="true">↗</span>
+          </button>;
+        })}
+        {publishedNdvi.length>4&&<p className="muted">{publishedNdvi.length-4} more approved areas. Use the map layer to explore.</p>}
+      </div>}
+      <p className="vegetation-estimate-note">Colored boundaries summarize estimated vegetation-area change across each analysis area. They are not per-pixel satellite change images and do not prove an intervention caused the change.</p>
+    </section>
     <div className="filters">
       <div className="field"><label>{t("map.layer")}</label><select value={type} onChange={e=>{const value=e.target.value;setType(value);if(value==="ndvi_change")setStatus("");setNdviNotice("");}}><option value="">{t("map.allInterventions")}</option><option value="borehole">{t("map.boreholes")}</option><option value="asset">{t("map.assets")}</option><option value="forest_site">{t("map.forests")}</option><option value="river">{t("map.rivers")}</option><option value="ndvi_change">{t("map.vegetationChange")}</option></select></div>
       <div className="field"><label>{t("map.lga")}</label><select value={lga} onChange={e=>setLga(e.target.value)}><option value="">{t("map.allLgas")}</option>{lgas.map(x=><option key={x.code} value={x.code}>{x.name}</option>)}</select></div>
