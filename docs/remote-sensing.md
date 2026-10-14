@@ -359,3 +359,12 @@ Satellite alert acknowledged
 ## Field quality and acceptance status (2026-10-13)
 
 The Vercel environment may have Copernicus credentials configured, but their presence does **not** prove successful provider authentication, rate/quota capacity, processing integrity or ground truth. Test representative AOIs and both image periods, record the source scene IDs, clear-pixel fractions, dates, cloud behavior, vegetation threshold, published status and operator's interpretation. Use geographically validated reference boundaries. This is quality hardening, not an expansion into new remote sensing models.
+
+
+### No imagery / incomplete date windows (14 October 2026 reliability fix)
+
+A Sentinel-2 observation window starts on the selected UTC calendar date and runs for the chosen number of days. **Both windows must have fully elapsed** before starting processing. For example, a 30-day window starting **2026-10-14** ends **2026-11-13**, so it cannot be processed on 2026-10-14. The form and API now reject future/incomplete windows and identify the latest allowable start date.
+
+When the satellite provider returns no usable observation for a genuinely completed period, CARE-Map retains the AOI but sets the analysis to **needs_review** instead of implying NDVI was calculated. It does not publish missing or unverified vegetation statistics. The result panel offers **Reuse this AOI with revised dates** so staff can create a new analysis without drawing the polygon again; the original record is preserved for auditability.
+
+**Reproducible first test (illustrative, not guaranteed cloud-free):** Makurdi AOI, baseline **2025-01-15**, comparison **2026-01-15**, **14 days** per window, NDVI threshold **0.30**. If imagery is still unavailable, inspect the scene search, AOI and cloud mask, try another *completed* acquisition window, and check Copernicus authorization and quotas. Avoid claiming vegetation loss from empty satellite imagery.
