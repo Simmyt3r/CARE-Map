@@ -96,6 +96,7 @@ export default function RemoteSensingWorkbench(){
     if(validation){setMessage(validation);return;}
     const geometry=parsedAoi!;
     setBusy(true);setTask("processing");setMessage("");
+    let savedId:string|null=null;
     try{
       const response=await fetch("/api/remote-sensing/analyses",{
         method:"POST",headers:{"content-type":"application/json"},
@@ -107,7 +108,8 @@ export default function RemoteSensingWorkbench(){
       });
       const created=await response.json().catch(()=>({}));
       if(!response.ok)throw new Error(created.error?.message||"Could not create analysis.");
-      const id=created.data.id;
+      const id=created.data.id as string;
+      savedId=id;
       if(configured){
         const run=await fetch("/api/remote-sensing/analyses/"+id+"/run",{method:"POST"});
         const result=await run.json().catch(()=>({}));
@@ -123,7 +125,10 @@ export default function RemoteSensingWorkbench(){
       }
       await load();
     }catch(e){
-      setMessage(e instanceof Error?e.message:"Remote sensing service is unavailable. Please retry.");
+      const reason=e instanceof Error?e.message:"Remote sensing service is unavailable.";
+      setMessage(savedId
+        ?"Your area was saved, but NDVI processing could not finish: "+reason+" Open the saved analysis to retry."
+        :reason);
       await load();
     }finally{
       setBusy(false);setTask(null);
