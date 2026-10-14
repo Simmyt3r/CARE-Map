@@ -583,3 +583,20 @@ main:has(.staff-workspace)>.shell{max-width:1720px}
   .aoi-coordinate-entry{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
   .aoi-coordinate-entry .btn{grid-column:1/-1;width:100%}
 }
+
+
+/* Public Sentinel layer: distinguish assessed vegetation change from project polygons. */
+.map-vegetation-tools{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;margin:12px 0}
+.map-vegetation-legend{display:flex;flex-wrap:wrap;align-items:center;gap:12px;color:#42574d;font-size:12px}
+.map-vegetation-legend strong{color:#183b2b;margin-right:3px;font-size:13px}
+.map-vegetation-legend span{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.map-vegetation-legend i{display:inline-block;width:12px;height:12px;border-radius:3px;border:1px solid #ffffff;box-shadow:0 0 0 1px #a8b9b0}
+.map-vegetation-legend .vegetation-gain{background:#12914b}
+.map-vegetation-legend .vegetation-loss{background:#d45b33}
+.map-vegetation-legend .vegetation-stable{background:#577c88}
+@media(max-width:650px){
+  .map-vegetation-tools{align-items:stretch}
+  .map-vegetation-tools>.btn{width:100%;justify-content:center}
+  .map-vegetation-legend{gap:9px}
+  .map-vegetation-legend strong{flex-basis:100%}
+}
