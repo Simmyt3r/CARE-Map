@@ -600,3 +600,72 @@ main:has(.staff-workspace)>.shell{max-width:1720px}
   .map-vegetation-legend{gap:9px}
   .map-vegetation-legend strong{flex-basis:100%}
 }
+
+
+/* Citizen education: compact, searchable public learning rather than a wall of text. */
+.citizen-academy{scroll-margin-top:95px}
+.citizen-learning-controls{display:grid;gap:13px}
+.citizen-topic-tabs{display:flex;gap:8px;overflow-x:auto;padding:3px 0 7px;scrollbar-width:thin}
+.citizen-topic-tabs .btn{white-space:nowrap;flex-shrink:0;min-height:40px;padding:8px 13px}
+.citizen-topic-tabs .btn[aria-pressed="true"]{background:#186448;color:#fff;border-color:#186448}
+.citizen-lessons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:start}
+.citizen-lesson{display:grid;gap:14px;min-width:0}
+.citizen-lesson-header{display:grid;grid-template-columns:40px minmax(0,1fr);gap:12px}
+.citizen-lesson-header h3{font-size:19px;line-height:1.3;letter-spacing:-.02em;margin:0 0 7px}
+.citizen-lesson-header p{margin:0;color:#53685d;font-size:14px;line-height:1.6}
+.citizen-lesson-number{display:grid;place-items:center;width:37px;height:37px;border-radius:11px;background:#dff0e6;color:#19593c;font-size:14px;font-weight:900}
+.citizen-lesson-details>summary{padding:11px 12px;border-radius:10px;color:#195b3d;font-weight:800;border:1px solid #cadfd0;background:#f1f8f3;cursor:pointer}
+.citizen-lesson-details[open]>summary{margin-bottom:14px}
+.citizen-lesson-details p{margin:6px 0}
+.citizen-lesson-details ol{padding-left:22px;margin:8px 0 0}
+.citizen-lesson-details li{padding:3px 0;line-height:1.6}
+.citizen-remember{padding:12px;border-radius:11px;background:#f2f8f4;border-left:4px solid #228258}
+.citizen-knowledge-check{display:grid;gap:8px;border:1px solid #d7e5db;border-radius:11px;padding:13px;min-width:0}
+.citizen-knowledge-check legend{font-weight:800;line-height:1.5;padding:0 5px}
+.citizen-answer{display:flex;align-items:flex-start;gap:9px;padding:10px 11px;border:1px solid #e0e7e1;border-radius:10px;cursor:pointer}
+.citizen-answer:has(input:checked){border-color:#7bb995;background:#f3faf5}
+.citizen-answer input{margin-top:4px;accent-color:#176e45}
+.citizen-source{font-size:13px}
+.citizen-source a{color:#126044;text-decoration:underline;font-weight:800}
+.citizen-learning-note{font-size:12px}
+/* Public map: visible analytic output, not a generic green layer. */
+.vegetation-map-spotlight{border:1px solid #b8d6c7;border-radius:15px;background:linear-gradient(125deg,#f0f9f4,#fff);padding:17px;display:grid;gap:14px;margin-bottom:18px}
+.vegetation-spotlight-header{display:flex;gap:16px;align-items:center;justify-content:space-between}
+.vegetation-spotlight-header h3{font-size:21px;margin:2px 0 5px;letter-spacing:-.02em}
+.vegetation-spotlight-header p{font-size:13px;color:#4b6356;margin:0;line-height:1.6}
+.vegetation-result-list{display:grid;gap:8px}
+.vegetation-result{display:flex;align-items:center;justify-content:space-between;gap:16px;width:100%;text-align:left;background:#fff;border:1px solid #d7e6db;border-left:5px solid #238b50;padding:12px;border-radius:11px;cursor:pointer}
+.vegetation-result:hover,.vegetation-result:focus-visible{border-color:#75ae8a;box-shadow:0 3px 15px #153e2415}
+.vegetation-result-loss{border-left-color:#d45b33}
+.vegetation-result-stable{border-left-color:#577c88}
+.vegetation-result>span:first-child{flex:1;min-width:0}
+.vegetation-result strong,.vegetation-result small{display:block}
+.vegetation-result strong{font-size:15px;color:#172f24}
+.vegetation-result small{font-size:12px;color:#566c60;margin-top:3px}
+.vegetation-result-metric{text-align:right}
+.vegetation-result-metric strong{font-size:22px;letter-spacing:-.04em;white-space:nowrap}
+.vegetation-result-gain .vegetation-result-metric strong{color:#176d3f}
+.vegetation-result-loss .vegetation-result-metric strong{color:#a94522}
+.vegetation-result-stable .vegetation-result-metric strong{color:#4a6f7d}
+.vegetation-result-arrow{font-weight:900;color:#365947;font-size:22px}
+.vegetation-estimate-note{margin:0;color:#52685a;font-size:12px;line-height:1.65}
+.vegetation-map-marker{border:2px solid #fff;border-left:5px solid #168349;color:#123b29;background:#fff;
+  border-radius:999px;box-shadow:0 2px 0 #163b26,0 4px 14px #0d301d55;padding:8px 13px;white-space:nowrap;
+  font-weight:900;font-size:15px;font-variant-numeric:tabular-nums;cursor:pointer}
+.vegetation-map-marker::before{content:"●";color:#168349;margin-right:6px}
+.vegetation-map-marker-loss{border-left-color:#cf4a26}
+.vegetation-map-marker-loss::before{color:#cf4a26}
+.vegetation-map-marker-stable{border-left-color:#52798a}
+.vegetation-map-marker-stable::before{color:#52798a}
+.vegetation-map-marker:focus-visible{outline:3px solid #f8ce60;outline-offset:3px}
+@media(max-width:760px){
+  .citizen-lessons{grid-template-columns:1fr}
+  .vegetation-spotlight-header{align-items:stretch;flex-direction:column}
+  .vegetation-spotlight-header .btn{width:100%}
+}
+@media(max-width:520px){
+  .vegetation-result{gap:8px}
+  .vegetation-result-metric strong{font-size:18px}
+  .vegetation-result-arrow{display:none}
+  .vegetation-map-marker{font-size:13px;padding:7px 10px}
+}
