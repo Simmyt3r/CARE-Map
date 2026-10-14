@@ -23,7 +23,10 @@ export default function RemoteSensingResultDrawer({analysis,onClose,onUpdated,on
     const j=await r.json().catch(()=>({}));
     setBusy(false);
     if(!r.ok)return setMessage(j.error?.message||"NDVI analysis failed.");
-    setMessage(j.data?.status==="needs_review"?"Insufficient clear-pixel coverage; analysis held for review.":"NDVI comparison completed and passed cloud-screening checks.");
+    setMessage(j.data?.status==="needs_review"
+      ?"Analysis requires review: "+(j.data?.quality?.issues?.join(" ")||
+        "Insufficient clear-pixel coverage.")
+      :"NDVI comparison completed and passed cloud-screening checks.");
     setNonce(x=>x+1);await load();onUpdated();
   }
 
