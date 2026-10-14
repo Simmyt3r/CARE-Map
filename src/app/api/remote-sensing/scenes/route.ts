@@ -2,6 +2,7 @@ import {NextResponse} from "next/server";
 import {getSession,isStaff} from "@/lib/auth";
 import {error} from "@/lib/http";
 import {normalizeAoi,searchSentinelScenes} from "@/lib/remote-sensing";
+import {observationWindowError} from "@/lib/sentinel-date-quality";
 
 export const dynamic="force-dynamic";
 
@@ -14,6 +15,8 @@ export async function POST(request:Request){
     const aoi=normalizeAoi(body.geometry);
     const windowDays=Math.min(30,Math.max(1,Number(body.windowDays||7)));
     const maxCloud=Math.min(100,Math.max(1,Number(body.maxCloud||40)));
+    const windowIssue=observationWindowError(body.date,windowDays);
+    if(windowIssue)return error(windowIssue,400,"INVALID_OBSERVATION_WINDOW");
     const scenes=await searchSentinelScenes(aoi,body.date,windowDays,maxCloud);
     return NextResponse.json({data:scenes,total:scenes.length});
   }catch(e){
