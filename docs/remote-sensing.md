@@ -368,3 +368,12 @@ A Sentinel-2 observation window starts on the selected UTC calendar date and run
 When the satellite provider returns no usable observation for a genuinely completed period, CARE-Map retains the AOI but sets the analysis to **needs_review** instead of implying NDVI was calculated. It does not publish missing or unverified vegetation statistics. The result panel offers **Reuse this AOI with revised dates** so staff can create a new analysis without drawing the polygon again; the original record is preserved for auditability.
 
 **Reproducible first test (illustrative, not guaranteed cloud-free):** Makurdi AOI, baseline **2025-01-15**, comparison **2026-01-15**, **14 days** per window, NDVI threshold **0.30**. If imagery is still unavailable, inspect the scene search, AOI and cloud mask, try another *completed* acquisition window, and check Copernicus authorization and quotas. Avoid claiming vegetation loss from empty satellite imagery.
+
+
+### Public map vegetation-change visibility (14 October 2026)
+
+The public CARE-Map does **not** publish every submitted area of interest. Only analyses marked `completed`, explicitly approved using **Publish vegetation-change layer** by an administrator, with baseline and comparison clear-pixel coverage above the configured minimum and non-null vegetation area estimates, qualify for the public `ndvi_change` API layer. Failed, unpublished and `needs_review` analyses remain staff-only.
+
+On the public map, choose **Vegetation change** under Layer, or use **Find published vegetation change** to zoom to approved AOIs. Approved vegetation gains are green, losses orange/red and negligible/no measured changes blue-grey. Selecting a colored polygon displays its change in hectares and percent, plus the comparison dates. This is **AOI-level summary visualization**, not a per-pixel NDVI raster or a claim of surveyed restoration effectiveness. The status dropdown for boreholes/assets does not apply to the vegetation layer.
+
+If even approved areas fail to load, inspect `/api/map/features` availability and Aiven PostgreSQL connection pressure. The serverless pool was limited to one short-lived connection per instance in the October 2026 hardening to reduce exhausted connection slots; production service capacity, connection-pooling options, and real-load testing still require operations review.
