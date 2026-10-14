@@ -37,7 +37,7 @@ export default function CitizenLearningCenter(){
     </div>
     <p className="muted" role="status">{results.length} lesson{results.length===1?"":"s"} available. Open a lesson to read and check your understanding.</p>
     <div className="citizen-lessons">
-      {results.map((item,i)=><article className="card citizen-lesson" key={item.id}>
+      {results.map((item,i)=><article id={"lesson-"+item.id} className="card citizen-lesson gis-section" key={item.id}>
         <div className="citizen-lesson-header">
           <span className="citizen-lesson-number" aria-hidden="true">{String(i+1).padStart(2,"0")}</span>
           <div>
