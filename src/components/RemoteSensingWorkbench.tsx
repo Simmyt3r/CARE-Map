@@ -2,6 +2,7 @@
 import {useEffect,useMemo,useState} from "react";
 import AoiSketchMap from "@/components/AoiSketchMap";
 import RemoteSensingResultDrawer from "@/components/RemoteSensingResultDrawer";
+import {parseAoiText} from "@/lib/aoi-editor";
 
 const polygonExample='{"type":"Polygon","coordinates":[[[8.50,7.70],[8.55,7.70],[8.55,7.75],[8.50,7.75],[8.50,7.70]]]}';
 
@@ -35,21 +36,40 @@ export default function RemoteSensingWorkbench(){
   useEffect(()=>{load();},[]);
 
   function chooseForest(id:string){
-    setForm(x=>({...x,forestId:id}));
+    if(!id){setForm(x=>({...x,forestId:""}));return;}
     const forest=forests.find(f=>f.id===id);
-    if(forest?.geometry)setForm(x=>({...x,forestId:id,geometry:JSON.stringify(forest.geometry),name:x.name||forest.name+" vegetation change"}));
-  }
-
-  const parsedAoi=useMemo(()=>{
-    try{return form.geometry?JSON.parse(form.geometry):null;}catch{return null;}
-  },[form.geometry]);
-
-  async function searchScenes(){
-    const geometry=parsedAoi;
-    if(!geometry||!form.baselineDate||!form.comparisonDate){
-      setMessage("Provide an area of interest and both dates before searching.");
+    if(!forest?.geometry){
+      setMessage("This forest record has no mapped boundary. Draw a polygon or enter at least three corners.");
+      setForm(x=>({...x,forestId:"",geometry:""}));
       return;
     }
+    const parsed=parseAoiText(JSON.stringify(forest.geometry));
+    if(!parsed.geometry){
+      setMessage("Selected forest has no usable polygon: "+(parsed.error||"Create a mapped area of interest."));
+      setForm(x=>({...x,forestId:"",geometry:""}));
+      return;
+    }
+    setMessage("");
+    setForm(x=>({...x,forestId:id,geometry:JSON.stringify(parsed.geometry),
+      name:x.name||forest.name+" vegetation change"}));
+  }
+
+  const aoiResult=useMemo(()=>parseAoiText(form.geometry),[form.geometry]);
+  const parsedAoi=aoiResult.geometry;
+
+  function validateInputs(requireName:boolean){
+    if(requireName&&!form.name.trim())return "Enter a name for this vegetation comparison.";
+    if(!parsedAoi)return aoiResult.error||"Select an AOI: click at least three map corners, enter corners by latitude/longitude, or paste a Polygon GeoJSON.";
+    if(!form.baselineDate||!form.comparisonDate)return "Choose both baseline and comparison dates.";
+    if(new Date(form.comparisonDate)<=new Date(form.baselineDate))
+      return "The comparison date must be after the baseline date.";
+    return null;
+  }
+
+  async function searchScenes(){
+    const validation=validateInputs(false);
+    if(validation){setMessage(validation);return;}
+    const geometry=parsedAoi!;
     setBusy(true);setTask("scenes");setMessage("");
     try{
       const req=async(date:string)=>{
@@ -72,8 +92,9 @@ export default function RemoteSensingWorkbench(){
   }
 
   async function createAndRun(){
-    const geometry=parsedAoi;
-    if(!geometry){setMessage("Draw or enter a valid GeoJSON area of interest.");return;}
+    const validation=validateInputs(true);
+    if(validation){setMessage(validation);return;}
+    const geometry=parsedAoi!;
     setBusy(true);setTask("processing");setMessage("");
     try{
       const response=await fetch("/api/remote-sensing/analyses",{
@@ -125,9 +146,21 @@ export default function RemoteSensingWorkbench(){
         <div className="field"><label>Use existing forest / afforestation AOI</label><select value={form.forestId} onChange={e=>chooseForest(e.target.value)}><option value="">Paste/draw AOI manually</option>{forests.map(f=><option value={f.id} key={f.id}>{f.name} · {f.lga_code}</option>)}</select></div>
       </div>
 
-      <div className="field"><label>Area of interest</label><div className="geometry-help">Choose an existing forest boundary, click the map to draw a polygon, or paste GeoJSON below.</div></div>
+      <div className="field"><label>Area of interest (AOI)</label>
+        <div className="geometry-help">Click at least three map corners, enter each corner by latitude/longitude under the map, or paste Polygon GeoJSON. You cannot analyze only one location point.</div>
+      </div>
       <AoiSketchMap geometry={parsedAoi} onChange={geometry=>setForm(x=>({...x,geometry:geometry?JSON.stringify(geometry):"",forestId:""}))}/>
-      <details className="geojson-details"><summary>Advanced: edit AOI GeoJSON</summary><div className="field"><textarea className="aoi-input" value={form.geometry} onChange={e=>setForm(x=>({...x,geometry:e.target.value,forestId:""}))} placeholder={polygonExample}/><div className="geometry-help">GeoJSON coordinate order is longitude, latitude.</div></div></details>
+      <details className="geojson-details"><summary>Advanced: paste/edit AOI GeoJSON</summary>
+        <div className="field">
+          <label htmlFor="aoi-geojson">GeoJSON Polygon or MultiPolygon</label>
+          <textarea id="aoi-geojson" className="aoi-input" spellCheck={false}
+            value={form.geometry} onChange={e=>setForm(x=>({...x,geometry:e.target.value,forestId:""}))}
+            placeholder={polygonExample} aria-invalid={Boolean(aoiResult.error)}/>
+          <div className="geometry-help">GeoJSON uses [longitude, latitude] pairs; close each ring by repeating its first coordinate. A single Polygon Feature is also accepted.</div>
+          {aoiResult.error&&<div className="error" role="alert">{aoiResult.error}</div>}
+          {parsedAoi&&<div className="success" role="status">Valid polygon area of interest.</div>}
+        </div>
+      </details>
 
       <div className="grid four">
         <div className="field"><label>Baseline date</label><input type="date" value={form.baselineDate} onChange={e=>setForm(x=>({...x,baselineDate:e.target.value}))}/></div>
@@ -136,9 +169,10 @@ export default function RemoteSensingWorkbench(){
         <div className="field"><label>Vegetation threshold</label><select value={form.threshold} onChange={e=>setForm(x=>({...x,threshold:e.target.value}))}><option value="0.20">NDVI ≥ 0.20</option><option value="0.30">NDVI ≥ 0.30</option><option value="0.40">NDVI ≥ 0.40</option><option value="0.50">NDVI ≥ 0.50</option></select></div>
       </div>
 
+      <div className="geometry-help">Required before processing: a valid area of interest, analysis name, baseline date and later comparison date. Click the button for guidance if anything is missing.</div>
       <div className="actions">
         <button className="btn" disabled={busy} onClick={searchScenes}>{task==="scenes"?"Searching scenes…":"Search Sentinel-2 scenes"}</button>
-        <button className="btn primary" disabled={busy||!form.name||!form.geometry||!form.baselineDate||!form.comparisonDate} onClick={createAndRun}>{task==="processing"?"Processing comparison…":configured?"Create & run NDVI comparison":"Save analysis for later processing"}</button>
+        <button className="btn primary" disabled={busy} onClick={createAndRun}>{task==="processing"?"Processing comparison…":configured?"Create & run NDVI comparison":"Save analysis for later processing"}</button>
       </div>
       {message&&<div className="notice" role="status">{message}</div>}
 
