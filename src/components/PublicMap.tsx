@@ -330,7 +330,7 @@ export default function PublicMap(){
         })}
         {publishedNdvi.length>4&&<p className="muted">{publishedNdvi.length-4} more approved areas. Use the map layer to explore.</p>}
       </div>}
-      <p className="vegetation-estimate-note">Colored boundaries summarize estimated vegetation-area change across each analysis area. They are not per-pixel satellite change images and do not prove an intervention caused the change.</p>
+      <p className="vegetation-estimate-note">Colored boundaries summarize estimated vegetation-area change across each analysis area. They are not per-pixel satellite change images and do not prove an intervention caused the change. <a href="/extension#lesson-ndvi" style={{textDecoration:"underline",fontWeight:750}}>Learn how to read this map</a>.</p>
     </section>
     <div className="filters">
       <div className="field"><label>{t("map.layer")}</label><select value={type} onChange={e=>{const value=e.target.value;setType(value);if(value==="ndvi_change")setStatus("");setNdviNotice("");}}><option value="">{t("map.allInterventions")}</option><option value="borehole">{t("map.boreholes")}</option><option value="asset">{t("map.assets")}</option><option value="forest_site">{t("map.forests")}</option><option value="river">{t("map.rivers")}</option><option value="ndvi_change">{t("map.vegetationChange")}</option></select></div>
