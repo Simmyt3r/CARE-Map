@@ -39,10 +39,18 @@ export async function POST(request:Request){
 
   try{
     const aoi=normalizeAoi(body.geometry);
-    const [baselineScenes,comparisonScenes]=await Promise.all([
+    // An external catalogue outage must not prevent staff from saving a
+    // carefully drawn/manual AOI. Discovery is best effort at creation time.
+    const [baselineLookup,comparisonLookup]=await Promise.allSettled([
       searchSentinelScenes(aoi,body.baselineDate,windowDays,60),
       searchSentinelScenes(aoi,body.comparisonDate,windowDays,60)
     ]);
+    const baselineScenes=baselineLookup.status==="fulfilled"?baselineLookup.value:[];
+    const comparisonScenes=comparisonLookup.status==="fulfilled"?comparisonLookup.value:[];
+    const catalogWarnings=[
+      ...(baselineLookup.status==="rejected"?["Baseline scene lookup unavailable."] : []),
+      ...(comparisonLookup.status==="rejected"?["Comparison scene lookup unavailable."] : [])
+    ];
     const status=remoteSensingConfigured()?"draft":"waiting_configuration";
     const result=await query<{id:string}>(
       `INSERT INTO remote_sensing_analyses(
@@ -67,7 +75,7 @@ export async function POST(request:Request){
     await query("INSERT INTO audit_logs(actor_id,action,entity_type,entity_id,metadata) VALUES($1,'create','remote_sensing_analysis',$2,$3)",[
       session.sub,result.rows[0].id,JSON.stringify({baselineDate:body.baselineDate,comparisonDate:body.comparisonDate,windowDays,threshold})
     ]);
-    return NextResponse.json({data:{id:result.rows[0].id,status,baselineScenes,comparisonScenes}},{status:201});
+    return NextResponse.json({data:{id:result.rows[0].id,status,baselineScenes,comparisonScenes,catalogWarnings}},{status:201});
   }catch(e){
     return error(e instanceof Error?e.message:"Could not create remote-sensing analysis.",400);
   }
