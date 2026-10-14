@@ -29,7 +29,7 @@ export async function GET(){
     })),
     summary:{total:result.rowCount,mapped:mapped.length,missing:missing.length},
     missing
-  });
+  },{headers:{"Cache-Control":"public, max-age=0, s-maxage=60, stale-while-revalidate=120"}});
 }
 
 export async function POST(request:Request){
