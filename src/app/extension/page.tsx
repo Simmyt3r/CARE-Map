@@ -1,20 +1,23 @@
 import Link from "next/link";
+import CitizenLearningCenter from "@/components/CitizenLearningCenter";
 export const metadata={title:"ACReSAL Community Extension | CARE-Map",
- description:"Community aftercare and extension guidance for projects mapped in CARE-Map."};
+ description:"Citizen education about climate change, soil care, water, green landscapes and ACReSAL community aftercare."};
 
 export default function ExtensionPage(){
   return <div className="stack">
     <section className="card stack">
-      <div className="muted">CARE-Map · Community extension</div>
-      <h1>Protecting projects together</h1>
-      <p>Local communities play a vital role in the long-term care of boreholes, restored landscapes, erosion-control works and other interventions. This page explains the CARE-Map extension workflow and how community members can report an issue for field follow-up.</p>
+      <span className="page-eyebrow">CARE-Map · Citizen education & community extension</span>
+      <h1>Learn. Protect our environment. Care for community projects.</h1>
+      <p>Understand climate change, protect soil and water, and learn practical steps to care for boreholes, trees and other ACReSAL-related interventions. Free lessons are available below, with simple knowledge checks and source links.</p>
       <div className="actions">
         <Link className="btn primary" href="/report">Report a project problem</Link>
-        <Link className="btn" href="/">See the public project map</Link>
+        <a className="btn" href="#community-lessons">Start learning</a>
+        <Link className="btn" href="/#public-map">Explore the vegetation map</Link>
       </div>
     </section>
+    <div id="community-lessons" className="gis-section"><CitizenLearningCenter/></div>
     <section className="grid three">
-      <div className="card stack"><h2>Community focal persons</h2><p>Each intervention has a consenting community representative who can coordinate maintenance visits and raise concerns. Personal telephone numbers are never published on this page.</p></div>
+      <div className="card stack"><h2>Community focal persons</h2><p>Each intervention has a consenting community representative who can coordinate maintenance visits and raise concerns. Private contact numbers are not published here.</p></div>
       <div className="card stack"><h2>Extension support</h2><p>Field teams document inspections, practical guidance, local training and follow-up actions so maintenance issues are not lost between visits.</p></div>
       <div className="card stack"><h2>Care & stewardship</h2><p>Communities managing similar project types can be assessed against the same published criteria. Assessments require evidence and independent review.</p></div>
     </section>
