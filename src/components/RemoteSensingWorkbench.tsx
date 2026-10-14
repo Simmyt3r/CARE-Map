@@ -119,7 +119,8 @@ export default function RemoteSensingWorkbench(){
         const details=await fetch("/api/remote-sensing/analyses/"+id).then(r=>r.json()).catch(()=>({}));
         if(details.data)setSelected(details.data);
         setMessage(result.data?.status==="needs_review"
-          ?"Comparison saved for quality review. One or both periods have insufficient clear-pixel coverage."
+          ?"Comparison saved for review: "+(result.data?.quality?.issues?.join(" ")||
+            "One or both observation periods contain insufficient clear imagery.")
           :"NDVI comparison processed. Review the imagery and accuracy before publication.");
       }else{
         setMessage("Analysis saved for later. Copernicus processing needs server credentials.");
