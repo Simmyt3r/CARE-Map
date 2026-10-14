@@ -13,6 +13,11 @@ type FeatureRow={
   status:string|null;
   geometry:unknown;
   risk_level:string|null;
+  change_ha?:number|string|null;
+  change_pct?:number|string|null;
+  change_direction?:"gain"|"loss"|"stable"|null;
+  baseline_date?:string|null;
+  comparison_date?:string|null;
 };
 
 export async function GET(request:Request){
@@ -74,7 +79,13 @@ export async function GET(request:Request){
           '%'
         ) status,
         ST_AsGeoJSON(r.aoi)::json geometry,
-        r.change_level risk_level
+        r.change_level risk_level,
+        r.vegetation_change_ha change_ha,
+        r.vegetation_change_pct change_pct,
+        CASE WHEN r.vegetation_change_ha>0 THEN 'gain'
+             WHEN r.vegetation_change_ha<0 THEN 'loss'
+             ELSE 'stable' END change_direction,
+        r.baseline_date baseline_date,r.comparison_date comparison_date
       FROM remote_sensing_analyses r
       WHERE ${clauses.join(" AND ")}
       ORDER BY r.completed_at DESC
@@ -95,7 +106,14 @@ export async function GET(request:Request){
         name:r.name,
         lga:r.lga_code,
         status:r.status,
-        riskLevel:r.risk_level
+        riskLevel:r.risk_level,
+        ...(r.entity_type==="ndvi_change"?{
+          changeHa:r.change_ha==null?null:Number(r.change_ha),
+          changePct:r.change_pct==null?null:Number(r.change_pct),
+          changeDirection:r.change_direction,
+          baselineDate:r.baseline_date?String(r.baseline_date).slice(0,10):null,
+          comparisonDate:r.comparison_date?String(r.comparison_date).slice(0,10):null
+        }:{})
       }
     }))
   });
