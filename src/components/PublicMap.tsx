@@ -32,7 +32,7 @@ export default function PublicMap(){
   async function fetchPublishedVegetation():Promise<PublishedVegetationFeature[]>{
     setPublishedLoading(true);setPublishedError("");
     try{
-      const response=await fetch("/api/map/features?type=ndvi_change",{cache:"no-store"});
+      const response=await fetch("/api/map/features?type=ndvi_change");
       if(!response.ok)throw new Error("The public vegetation results are temporarily unavailable.");
       const data=await response.json();
       const features:PublishedVegetationFeature[]=Array.isArray(data.features)
