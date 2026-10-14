@@ -4,7 +4,7 @@ import {error} from "@/lib/http";
 import {query} from "@/lib/db";
 import {comparisonWindowError} from "@/lib/sentinel-date-quality";
 import {
-  assessNdviQuality,changeLevel,fetchNdviStats,remoteSensingConfigured,searchSentinelScenes,
+  assessNdviQuality,changeLevel,fetchNdviStats,NoSentinelObservationError,remoteSensingConfigured,searchSentinelScenes,
   type RemoteSensingRow
 } from "@/lib/remote-sensing";
 
@@ -88,7 +88,21 @@ export async function POST(_:Request,context:{params:Promise<{id:string}>}){
     }});
   }catch(e){
     const message=e instanceof Error?e.message:"Remote-sensing analysis failed.";
-    await query("UPDATE remote_sensing_analyses SET status='failed',error_message=$1 WHERE id=$2",[message.slice(0,2000),id]);
-    return error(message,400,"REMOTE_SENSING_FAILED");
+    if(e instanceof NoSentinelObservationError){
+      await query(`UPDATE remote_sensing_analyses SET status='needs_review',
+        quality_notes=$1,error_message=NULL,publish_to_map=FALSE,
+        baseline_mean_ndvi=NULL,comparison_mean_ndvi=NULL,
+        baseline_clear_fraction=NULL,comparison_clear_fraction=NULL,
+        baseline_vegetation_ha=NULL,comparison_vegetation_ha=NULL,
+        vegetation_change_ha=NULL,vegetation_change_pct=NULL,
+        completed_at=now()
+        WHERE id=$2`,[message.slice(0,2000),id]);
+      return NextResponse.json({data:{
+        id,status:"needs_review",quality:{publishable:false,issues:[message]}
+      }});
+    }
+    await query("UPDATE remote_sensing_analyses SET status='failed',error_message=$1,publish_to_map=FALSE WHERE id=$2",
+      [message.slice(0,2000),id]);
+    return error(message,502,"REMOTE_SENSING_FAILED");
   }
 }
