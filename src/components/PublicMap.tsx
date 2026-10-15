@@ -102,7 +102,6 @@ export default function PublicMap(){
       const r=await fetch("/api/gis/lga-boundaries");
       if(!r.ok)return;
       const data=await r.json();
-      if(controller.signal.aborted)return;
       const features=Array.isArray(data.features)?data.features:[];
       boundaryByCodeRef.current=Object.fromEntries(features.map((feature:any)=>[feature.properties?.code,feature]));
       (map.getSource("lga-boundaries") as GeoJSONSource|undefined)?.setData({type:"FeatureCollection",features} as any);
