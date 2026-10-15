@@ -1,3 +1,4 @@
+import {deploymentProfile} from "@/lib/deployment-profile";
 export const DEFAULT_LOCALE="en";
 
 export const targetLanguages=[
@@ -17,9 +18,9 @@ export const englishCatalog={
   "nav.staffLogin":"Staff Login",
   "nav.language":"Language",
 
-  "home.badge":"Benue ACReSAL GIS",
+  "home.badge":deploymentProfile.stateName+" ACReSAL GIS",
   "home.title":"See interventions. Report problems. Act earlier.",
-  "home.intro":"CARE-Map tracks boreholes, project assets, forests, afforestation sites and rivers across Benue State using field coordinates and GIS analysis.",
+  "home.intro":"CARE-Map tracks boreholes, project assets, forests, afforestation sites and rivers across "+deploymentProfile.stateName+" State using field coordinates and GIS analysis.",
   "home.reportButton":"Report a problem",
   "home.staffButton":"Staff workspace",
   "home.howTitle":"How it works",
