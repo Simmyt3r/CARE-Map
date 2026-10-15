@@ -182,3 +182,19 @@ Report the following per release:
 ### Immediate next technical move
 
 Fix the **confirmed risk-refresh SQL cron** and test its impact on both risk scoring and anonymization. In parallel, investigate the very small Aiven connection budget because it affects multiple public pages and tools. These are higher priority than cosmetic changes or additional GIS modules.
+
+## 8. Hardening progress — 15 October 2026
+
+This dated update supersedes the **source-only** implementation statuses above; remaining concerns are not assumed fixed.
+
+| Finding | Implementation progress | Acceptance still required |
+|---|---|---|
+| Risk-refresh cron syntax `42601` | **Fixed**, PostgreSQL/PostGIS fixture integration test added and passing | Verify subsequent real scheduled run updates records and retention as expected |
+| PostgreSQL TLS fallback | **Removed** from `db.ts` and `infrastructure.ts`; remote/production connections now require an explicit verified PEM CA | Run production health and administrator migration checks with real Aiven certificates |
+| Anonymous resource field exposure | **Reduced** in generic resource-list endpoint through explicit field allowlists; staff views keep internal detail | Audit resource-detail and photo endpoints, inspect actual public JSON responses |
+| Public health endpoint error leakage | **Fixed**: generic 503 response, driver codes only in server log | Verify public response never displays hostnames/certificate details |
+| Map request pressure | Brief edge/cache lifetimes exist for public resources; map client now debounces panning, cancels superseded fetch requests | Load tests and production errors on 20-connection Aiven free plan; supported PgBouncer requires a higher plan |
+| Multi-state deployment portability | Per-deployment state title/initial map center plus safety/acceptance gate; default Benue unchanged | Rework new-state LGA bootstrap, separate deployments/DBs and reviewed data before launching another state |
+| Rate limiting across Vercel instances | **OPEN**: process-local counters are not a shared defense | Choose verified shared controls within hosting/database capacity and test bypass attempts |
+
+**Do not claim full production hardening or supported multi-tenancy.** The user requested no added features: the work above is reliability, security and jurisdiction configuration. Each subsequent stage requires CI, checked production release SHA, runtime probes, and real GIS/UAT evidence. The [multi-state guide](../architecture/multi-state-deployment.md) contains deployment boundary constraints.
