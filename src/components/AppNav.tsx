@@ -4,6 +4,7 @@ import {usePathname} from "next/navigation";
 import {useEffect,useId,useState} from "react";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import {useI18n} from "@/components/LocalizationProvider";
+import {deploymentProfile} from "@/lib/deployment-profile";
 
 export default function AppNav(){
   const {t}=useI18n();
@@ -28,7 +29,7 @@ export default function AppNav(){
     <div className="shell topbar-inner">
       <Link className="brand brand-mark" href="/" aria-label="CARE-Map public homepage">
         <span className="brand-emblem" aria-hidden="true">CM</span>
-        <span><strong>CARE-Map</strong><small>Benue ACReSAL</small></span>
+        <span><strong>CARE-Map</strong><small>{deploymentProfile.stateName} ACReSAL</small></span>
       </Link>
       <button type="button" className="public-menu-toggle" aria-controls={navId}
         aria-expanded={open} onClick={()=>setOpen(v=>!v)}>
