@@ -3,10 +3,11 @@ import "./globals.css";
 import AppNav from "@/components/AppNav";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 import {LocalizationProvider} from "@/components/LocalizationProvider";
+import {deploymentProfile} from "@/lib/deployment-profile";
 
 export const metadata:Metadata={
-  title:"CARE-Map | Benue ACReSAL",
-  description:"A community-first geospatial workspace for Benue State ACReSAL interventions.",
+  title:"CARE-Map | "+deploymentProfile.stateName+" ACReSAL",
+  description:"A community-first geospatial workspace for "+deploymentProfile.stateName+" State ACReSAL interventions.",
   manifest:"/manifest.webmanifest"
 };
 
