@@ -5,6 +5,7 @@ import type {GeoJSONSource} from "maplibre-gl";
 import {geometryExtent} from "@/lib/geojson";
 import {useI18n} from "@/components/LocalizationProvider";
 import {vegetationSummary,type PublishedVegetationFeature} from "@/lib/vegetation-display";
+import {deploymentProfile} from "@/lib/deployment-profile";
 
 type Lga={code:string;name:string};
 type Filters={type:string;lga:string;status:string};
@@ -146,8 +147,8 @@ export default function PublicMap(){
     if(!node.current||mapRef.current)return;
     const map=new maplibregl.Map({
       container:node.current,
-      center:[8.7,7.35],
-      zoom:6.5,
+      center:deploymentProfile.mapCenter,
+      zoom:deploymentProfile.mapZoom,
       style:{version:8,sources:{osm:{type:"raster",tiles:["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],tileSize:256,attribution:"© OpenStreetMap contributors"}},layers:[{id:"osm",type:"raster",source:"osm"}]}
     });
     map.addControl(new maplibregl.NavigationControl(),"top-right");
