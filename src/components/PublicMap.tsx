@@ -16,6 +16,8 @@ export default function PublicMap(){
   const node=useRef<HTMLDivElement|null>(null);
   const mapRef=useRef<maplibregl.Map|null>(null);
   const vegetationMarkers=useRef<maplibregl.Marker[]>([]);
+  const featureAbort=useRef<AbortController|null>(null);
+  const featureTimer=useRef<ReturnType<typeof setTimeout>|null>(null);
   const filterRef=useRef<Filters>({type:"",lga:"",status:""});
   const boundaryByCodeRef=useRef<Record<string,any>>({});
   const[type,setType]=useState(""),[lga,setLga]=useState(""),[status,setStatus]=useState("");
@@ -100,6 +102,7 @@ export default function PublicMap(){
       const r=await fetch("/api/gis/lga-boundaries");
       if(!r.ok)return;
       const data=await r.json();
+      if(controller.signal.aborted)return;
       const features=Array.isArray(data.features)?data.features:[];
       boundaryByCodeRef.current=Object.fromEntries(features.map((feature:any)=>[feature.properties?.code,feature]));
       (map.getSource("lga-boundaries") as GeoJSONSource|undefined)?.setData({type:"FeatureCollection",features} as any);
@@ -112,8 +115,15 @@ export default function PublicMap(){
     }catch{}
   }
 
+  function scheduleFeatures(map=mapRef.current){
+    if(featureTimer.current!==null)clearTimeout(featureTimer.current);
+    featureTimer.current=setTimeout(()=>{featureTimer.current=null;void loadFeatures(map);},350);
+  }
+
   async function loadFeatures(map=mapRef.current){
     if(!map)return;
+    featureAbort.current?.abort();
+    featureAbort.current=null;
     const b=map.getBounds(),f=filterRef.current;
     if(f.type==="ndvi_change"){
       (map.getSource("carepoints") as GeoJSONSource|undefined)
@@ -127,8 +137,10 @@ export default function PublicMap(){
     if(f.type)qs.set("type",f.type);
     if(f.lga)qs.set("lga",f.lga);
     if(f.status)qs.set("status",f.status);
+    const controller=new AbortController();
+    featureAbort.current=controller;
     try{
-      const r=await fetch("/api/map/features?"+qs);
+      const r=await fetch("/api/map/features?"+qs,{signal:controller.signal});
       if(!r.ok)throw new Error();
       const data=await r.json();
       const features=Array.isArray(data.features)?data.features:[];
@@ -138,8 +150,10 @@ export default function PublicMap(){
       (map.getSource("carepoints") as GeoJSONSource|undefined)?.setData(points);
       (map.getSource("careshapes") as GeoJSONSource|undefined)?.setData(shapes);
       setHasError(false);
-    }catch{
-      setHasError(true);
+    }catch(e){
+      if(!controller.signal.aborted)setHasError(true);
+    }finally{
+      if(featureAbort.current===controller)featureAbort.current=null;
     }
   }
 
@@ -277,12 +291,17 @@ export default function PublicMap(){
         map.on("mouseleave",layer,()=>{map.getCanvas().style.cursor="";});
       });
       void loadBoundaries(map);
-      void loadFeatures(map);
+      scheduleFeatures(map);
       void fetchPublishedVegetation();
     });
-    map.on("moveend",()=>loadFeatures(map));
+    map.on("moveend",()=>scheduleFeatures(map));
     mapRef.current=map;
-    return()=>{vegetationMarkers.current.forEach(marker=>marker.remove());vegetationMarkers.current=[];map.remove();mapRef.current=null;};
+    return()=>{
+      if(featureTimer.current!==null)clearTimeout(featureTimer.current);
+      featureAbort.current?.abort();
+      vegetationMarkers.current.forEach(marker=>marker.remove());
+      vegetationMarkers.current=[];map.remove();mapRef.current=null;
+    };
   },[]);
 
   async function locatePublishedVegetation(){
@@ -305,7 +324,7 @@ export default function PublicMap(){
       const extent=geometryExtent(feature?.geometry);
       if(extent)map.fitBounds([[extent[0],extent[1]],[extent[2],extent[3]]],{padding:42,maxZoom:12});
     }
-    void loadFeatures();
+    scheduleFeatures();
   },[type,lga,status]);
 
   return <div className="card">
