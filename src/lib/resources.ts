@@ -2,12 +2,25 @@ import {query} from "@/lib/db";
 export const resourceKinds=["boreholes","assets","forest-sites","rivers"] as const;
 export type ResourceKind=typeof resourceKinds[number];
 export function isResourceKind(v:string):v is ResourceKind{return resourceKinds.includes(v as ResourceKind);}
+/**
+ * Anonymous list responses are intentionally smaller than staff records.
+ * In particular, actor IDs, exact GPS acquisition metadata and internal
+ * notes are never exposed by the generic public resources endpoint.
+ */
+export const publicResourceColumns:Record<ResourceKind,readonly string[]>={
+ boreholes:["id","name","lga_code","status","borehole_code","risk_level","created_at"],
+ assets:["id","name","lga_code","status","asset_type","asset_code","risk_level","created_at"],
+ "forest-sites":["id","name","lga_code","status","site_type","risk_level","created_at"],
+ rivers:["id","name","local_name","lga_code","source","verified","stress_indicator","risk_level","created_at"]
+};
+
 export async function listResources(kind:ResourceKind,filters:{lga?:string|null;status?:string|null;includeUnverified?:boolean}={}){
  const where:string[]=[];const params:unknown[]=[];
  const add=(sql:string,value:unknown)=>{params.push(value);where.push(sql.replace("?","$"+params.length));};
  if(filters.lga)add("lga_code = ?",filters.lga);if(filters.status&&kind!=="rivers")add("status = ?",filters.status);if(kind==="rivers"&&!filters.includeUnverified)where.push("verified = TRUE");
  const table=kind==="forest-sites"?"forest_sites":kind;const geom=kind==="boreholes"||kind==="assets"?"location":kind==="forest-sites"?"boundary":"course";
- const r=await query(`SELECT *,ST_AsGeoJSON(${geom})::json AS geometry FROM ${table} ${where.length?"WHERE "+where.join(" AND "):""} ORDER BY created_at DESC LIMIT 500`,params);return r.rows;
+ const columns=filters.includeUnverified?"*":publicResourceColumns[kind].join(",");
+ const r=await query(`SELECT ${columns},ST_AsGeoJSON(${geom})::json AS geometry FROM ${table} ${where.length?"WHERE "+where.join(" AND "):""} ORDER BY created_at DESC LIMIT 500`,params);return r.rows;
 }
 export async function createResource(kind:ResourceKind,body:Record<string,unknown>,actorId:string){
  if(kind==="boreholes"){const{name,lgaCode,latitude,longitude,status,installationDate,lastMaintenanceDate,description,boreholeCode,gpsAccuracy,capturedAt,captureSource}=body;return(await query("INSERT INTO boreholes(name,lga_code,location,status,installation_date,last_maintenance_date,description,borehole_code,gps_accuracy_m,captured_at,capture_source,created_by,updated_by) VALUES($1,$2,ST_SetSRID(ST_MakePoint($3,$4),4326),$5,$6,$7,$8,$9,$10,$11,$12,$13,$13) RETURNING id",[name,lgaCode,longitude,latitude,status,installationDate||null,lastMaintenanceDate||null,description||null,boreholeCode||null,gpsAccuracy||null,capturedAt||null,captureSource||"manual",actorId])).rows[0];}
