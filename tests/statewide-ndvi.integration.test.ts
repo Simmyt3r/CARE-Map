@@ -3,7 +3,7 @@ import {Client} from "pg";
 import fs from "node:fs";
 import path from "node:path";
 import {pool,query} from "../src/lib/db";
-import {planStatewideJob,stateBoundaryReadiness,statewideLgaSummary,statewideOverview,requeueProviderLimitedTiles} from "../src/lib/statewide-ndvi";
+import {planStatewideJob,stateBoundaryReadiness,statewideLgaSummary,statewideOverview,requeueProviderLimitedTiles,claimStatewideProcessingSlot} from "../src/lib/statewide-ndvi";
 
 const db=process.env.CAREMAP_PG_INTEGRATION_URL;
 describe.skipIf(!db)("State-wide Sentinel spatial tiling with real PostGIS",()=>{
@@ -112,6 +112,20 @@ describe.skipIf(!db)("State-wide Sentinel spatial tiling with real PostGIS",()=>
   expect(overview.quota_blocked_tiles).toBe(0);
   expect(overview.resultsComplete).toBe(false);
   await expect(requeueProviderLimitedTiles(job.id)).rejects.toThrow(/No provider-limited/);
+ },30000);
+ it("enforces an atomic database-wide rate gate without launching imagery",async()=>{
+  const job=(await statewideOverview())[0];
+  const first=await claimStatewideProcessingSlot(job.id);
+  expect(first).toMatchObject({allowed:true,stopped:false});
+  const repeated=await claimStatewideProcessingSlot(job.id);
+  expect(repeated).toMatchObject({allowed:false,stopped:false,retryAfterSeconds:30});
+  // Test the clock transition directly without waiting 30 real seconds.
+  await query("UPDATE statewide_ndvi_jobs SET updated_at=now()-interval '35 seconds' WHERE id=$1",[job.id]);
+  const next=await claimStatewideProcessingSlot(job.id);
+  expect(next.allowed).toBe(true);
+  await query("UPDATE statewide_ndvi_jobs SET status='needs_review' WHERE id=$1",[job.id]);
+  const stopped=await claimStatewideProcessingSlot(job.id);
+  expect(stopped).toMatchObject({allowed:false,stopped:true});
  },30000);
 
 });
