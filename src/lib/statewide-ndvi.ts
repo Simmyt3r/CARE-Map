@@ -183,8 +183,47 @@ type TileClaim={
   area_ha:number|string;baseline_date:string;comparison_date:string;
   window_days:number;vegetation_threshold:number|string;minimum_clear_fraction:number|string
 };
+/**
+ * Durable, database-enforced pacing. The one-row UPDATE is atomic across
+ * Vercel instances and browsers. Do not confuse browser sleeps with a
+ * reliable provider quota control. 30 seconds is a safety floor, not a
+ * guarantee that a monthly Copernicus quota is sufficient.
+ *
+ * A recent running tile blocks overlapping provider calls. Stale claims
+ * remain eligible for the existing five-minute crash-recovery path.
+ */
+export async function claimStatewideProcessingSlot(jobId:string){
+  const granted=await query<{id:string}>(`
+    UPDATE statewide_ndvi_jobs j
+       SET status='running',updated_at=now()
+     WHERE j.id=$1 AND j.status IN ('queued','running')
+       AND (j.status='queued' OR j.updated_at <= now()-interval '30 seconds')
+       AND NOT EXISTS(
+         SELECT 1 FROM statewide_ndvi_tiles t
+         WHERE t.job_id=j.id AND t.status='running'
+           AND t.claimed_at>now()-interval '5 minutes'
+       )
+     RETURNING j.id::text`,[jobId]);
+  if(granted.rows.length)return {allowed:true,stopped:false,retryAfterSeconds:0};
+  const state=await query<{status:string}>(`
+    SELECT status FROM statewide_ndvi_jobs WHERE id=$1`,[jobId]);
+  return{
+    allowed:false,
+    stopped:!state.rows.length||!['queued','running'].includes(state.rows[0].status),
+    retryAfterSeconds:30
+  };
+}
+
 export async function runNextStatewideTile(jobId:string){
   if(!remoteSensingConfigured())throw new Error("Copernicus credentials are not configured.");
+  const slot=await claimStatewideProcessingSlot(jobId);
+  if(!slot.allowed){
+    return {
+      processed:false,providerBlocked:false,
+      throttled:!slot.stopped,jobStopped:slot.stopped,
+      retryAfterSeconds:slot.retryAfterSeconds
+    };
+  }
   const result=await query<TileClaim>(`
     WITH claim AS (
       SELECT t.id FROM statewide_ndvi_tiles t
@@ -211,7 +250,7 @@ export async function runNextStatewideTile(jobId:string){
     await finishStatewideJob(jobId);
     return {processed:false};
   }
-  await query("UPDATE statewide_ndvi_jobs SET status='running',updated_at=now() WHERE id=$1",[jobId]);
+  // The processing slot already transitioned the job to running.
   let status="completed",notes="",providerBlocked=false;
   let baseline:null|Awaited<ReturnType<typeof fetchNdviStats>>=null;
   let comparison:null|Awaited<ReturnType<typeof fetchNdviStats>>=null;
