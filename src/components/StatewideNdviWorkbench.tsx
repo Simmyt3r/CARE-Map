@@ -155,6 +155,8 @@ export default function StatewideNdviWorkbench(){
       </tr>)}</tbody></table></div>}
   </div>}
   {message&&<div className="notice" role="status">{message}</div>}
+  {message.toLowerCase().includes("migration")&&
+    <p className="muted">An administrator can apply pending database migrations using the existing <a href="/staff/extension">Staff Extension database setup</a> panel after confirming backup and change approval. No separate login is required if the administrator is already signed in.</p>}
   <p className="muted">Processing is resumable, but browser-driven processing runs only while this page remains open. Each tile consumes real Copernicus requests. No state-wide or LGA result is automatically published to the public map. A programme reviewer must approve results and geographic sources before external reporting.</p>
  </section>;
 }
