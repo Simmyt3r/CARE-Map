@@ -115,7 +115,12 @@ export async function planStatewideJob(x:StatewideOptions,actorId:string){
 }
 
 export async function statewideOverview(){
-  const rows=await query(`
+  const rows=await query<{
+    id:string;status:string;quota_blocked_tiles:number;
+    total_tiles:number;completed_tiles:number;
+    total_area_ha:number|string;completed_area_ha:number|string;
+    baseline_ha:number|string;comparison_ha:number|string;
+  }>(`
     SELECT j.id,j.state_name,j.status,j.baseline_date,j.comparison_date,
       j.window_days,j.vegetation_threshold,j.total_tiles,j.expected_lgas,
       j.created_at,j.finished_at,
