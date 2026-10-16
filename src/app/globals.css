@@ -669,3 +669,9 @@ main:has(.staff-workspace)>.shell{max-width:1720px}
   .vegetation-result-arrow{display:none}
   .vegetation-map-marker{font-size:13px;padding:7px 10px}
 }
+
+/* State-wide Sentinel progress and LGA result mapping */
+.statewide-progress{height:13px;width:100%;background:#e4e8e6;border-radius:999px;overflow:hidden;border:1px solid #cad7cf}
+.statewide-progress>div{height:100%;background:#21865a;transition:width .25s ease}
+.statewide-ndvi-map{position:relative;min-height:350px;height:min(540px,62vh);border-radius:13px;overflow:hidden;border:1px solid #c7dbcd}
+@media(max-width:650px){.statewide-ndvi-map{min-height:300px;height:350px}}
