@@ -41,6 +41,10 @@ jobs:
         run: npx vitest run tests/spatial-context.integration.test.ts
         env:
           CAREMAP_PG_INTEGRATION_URL: postgresql://ci:ci@localhost:5432/ci
+      - name: Verify statewide Sentinel tiling and quality-gated rollups
+        run: npx vitest run tests/statewide-ndvi.integration.test.ts
+        env:
+          CAREMAP_PG_INTEGRATION_URL: postgresql://ci:ci@localhost:5432/ci
       - run: npm run build
         env:
           SESSION_SECRET: ci-session-secret-that-is-longer-than-32-characters
