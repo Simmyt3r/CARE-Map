@@ -1,6 +1,7 @@
 "use client";
 import {useEffect,useMemo,useState} from "react";
 import AoiSketchMap from "@/components/AoiSketchMap";
+import SpatialContextPanel from "@/components/SpatialContextPanel";
 import RemoteSensingResultDrawer from "@/components/RemoteSensingResultDrawer";
 import {parseAoiText} from "@/lib/aoi-editor";
 import {comparisonWindowError} from "@/lib/sentinel-date-quality";
@@ -182,6 +183,7 @@ export default function RemoteSensingWorkbench(){
         <div className="geometry-help">Click at least three map corners, enter each corner by latitude/longitude under the map, or paste Polygon GeoJSON. You cannot analyze only one location point.</div>
       </div>
       <AoiSketchMap geometry={parsedAoi} onChange={geometry=>setForm(x=>({...x,geometry:geometry?JSON.stringify(geometry):"",forestId:""}))}/>
+      <SpatialContextPanel geometry={parsedAoi}/>
       <details className="geojson-details"><summary>Advanced: paste/edit AOI GeoJSON</summary>
         <div className="field">
           <label htmlFor="aoi-geojson">GeoJSON Polygon or MultiPolygon</label>
