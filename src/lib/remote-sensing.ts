@@ -22,6 +22,19 @@ export class NoSentinelObservationError extends Error{
   }
 }
 
+/** Provider has refused further Sentinel requests due to request/processing quota. */
+export class SentinelProviderLimitError extends Error {
+  constructor(public readonly retryAfterSeconds:number|null=null){
+    super("Copernicus Sentinel request or processing quota reached. Stop state-wide processing and check account usage before retrying.");
+    this.name="SentinelProviderLimitError";
+  }
+}
+const PROVIDER_LIMIT_PATTERN=/rate[ -]?limit|too many requests|quota|processing units|insufficient credits|request limit|exceeded your rate limit/i;
+export function isSentinelProviderLimit(error:unknown){
+  return error instanceof SentinelProviderLimitError ||
+    error instanceof Error&&PROVIDER_LIMIT_PATTERN.test(error.message);
+}
+
 export type NdviStats={
   meanNdvi:number|null;
   vegetationFraction:number|null;
@@ -240,7 +253,14 @@ export async function fetchNdviStats(aoi:GeoPolygon,date:string,windowDays:numbe
     cache:"no-store"
   });
   const json=await response.json().catch(()=>null) as any;
-  if(!response.ok)throw new Error(json?.error?.message||json?.message||"Sentinel NDVI statistics request failed.");
+  if(!response.ok){
+    const message=String(json?.error?.message||json?.message||"");
+    if(response.status===429||PROVIDER_LIMIT_PATTERN.test(message)){
+      const retry=Number(response.headers.get("retry-after"));
+      throw new SentinelProviderLimitError(Number.isFinite(retry)&&retry>0?retry:null);
+    }
+    throw new Error(message.slice(0,300)||"Sentinel NDVI statistics request failed.");
+  }
 
   const entry=Array.isArray(json?.data)?json.data[0]:null;
   if(!entry)throw new NoSentinelObservationError(range.from.slice(0,10),range.to.slice(0,10));
