@@ -250,7 +250,10 @@ export async function fetchNdviStats(aoi:GeoPolygon,date:string,windowDays:numbe
         evalscript:statsEvalscript(threshold)
       }
     }),
-    cache:"no-store"
+    cache:"no-store",
+    // Two sequential statistics calls must stay within the serverless request
+    // budget. A timeout is retryable, but never treated as missing vegetation.
+    signal:AbortSignal.timeout(16000)
   });
   const json=await response.json().catch(()=>null) as any;
   if(!response.ok){
