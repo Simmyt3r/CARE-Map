@@ -3,7 +3,7 @@ import {deploymentProfile} from "@/lib/deployment-profile";
 import {comparisonWindowError,observationDate} from "@/lib/sentinel-date-quality";
 import {
   assessNdviQuality,fetchNdviStats,NoSentinelObservationError,remoteSensingConfigured,
-  searchSentinelScenes,type GeoPolygon
+  searchSentinelScenes,isSentinelProviderLimit,type GeoPolygon
 } from "@/lib/remote-sensing";
 
 export const TILE_DEGREES=0.10;
@@ -123,6 +123,9 @@ export async function statewideOverview(){
       count(t.id) FILTER (WHERE t.status='completed')::int AS completed_tiles,
       count(t.id) FILTER (WHERE t.status='needs_review')::int AS needs_review_tiles,
       count(t.id) FILTER (WHERE t.status='failed')::int AS failed_tiles,
+      count(t.id) FILTER (WHERE t.status='failed'
+        AND t.quality_notes ~* 'rate.?limit|quota|too many requests|processing units')::int
+        AS quota_blocked_tiles,
       count(t.id) FILTER (WHERE t.status IN ('queued','running'))::int AS pending_tiles,
       COALESCE(sum(t.area_ha),0) AS total_area_ha,
       COALESCE(sum(t.area_ha) FILTER (WHERE t.status='completed'),0) AS completed_area_ha,
@@ -204,27 +207,44 @@ export async function runNextStatewideTile(jobId:string){
     return {processed:false};
   }
   await query("UPDATE statewide_ndvi_jobs SET status='running',updated_at=now() WHERE id=$1",[jobId]);
-  let status="completed",notes="";
+  let status="completed",notes="",providerBlocked=false;
   let baseline:null|Awaited<ReturnType<typeof fetchNdviStats>>=null;
   let comparison:null|Awaited<ReturnType<typeof fetchNdviStats>>=null;
   try{
     const baselineDate=observationDate(tile.baseline_date);
     const comparisonDate=observationDate(tile.comparison_date);
     const opts=Number(tile.window_days),areaHa=Number(tile.area_ha),threshold=Number(tile.vegetation_threshold);
-    const [bscenes,cscenes,b,c]=await Promise.all([
-      searchSentinelScenes(tile.aoi_geometry,baselineDate,opts,70),
-      searchSentinelScenes(tile.aoi_geometry,comparisonDate,opts,70),
-      fetchNdviStats(tile.aoi_geometry,baselineDate,opts,threshold,areaHa),
-      fetchNdviStats(tile.aoi_geometry,comparisonDate,opts,threshold,areaHa)
-    ]);
-    baseline=b;comparison=c;
+    // Run statistics sequentially. If the first provider call hits a quota,
+    // do not spend three further requests on the same tile.
+    const b=await fetchNdviStats(tile.aoi_geometry,baselineDate,opts,threshold,areaHa);
+    baseline=b;
+    const c=await fetchNdviStats(tile.aoi_geometry,comparisonDate,opts,threshold,areaHa);
+    comparison=c;
     const quality=assessNdviQuality(b,c,Number(tile.minimum_clear_fraction));
-    if(!bscenes.length)quality.issues.push("No baseline catalogue scenes.");
-    if(!cscenes.length)quality.issues.push("No comparison catalogue scenes.");
+    // STAC is a discovery cross-check. An outage must not discard valid
+    // Copernicus statistics or trigger a broad retry storm.
+    const scenes=await Promise.allSettled([
+      searchSentinelScenes(tile.aoi_geometry,baselineDate,opts,70),
+      searchSentinelScenes(tile.aoi_geometry,comparisonDate,opts,70)
+    ]);
+    if(scenes[0].status==="fulfilled"&&!scenes[0].value.length)
+      quality.issues.push("No baseline catalogue scenes.");
+    if(scenes[1].status==="fulfilled"&&!scenes[1].value.length)
+      quality.issues.push("No comparison catalogue scenes.");
+    if(scenes.some(x=>x.status==="rejected"))
+      quality.issues.push("Sentinel scene catalogue unavailable; verify scene provenance before accepting this tile.");
     if(quality.issues.length){status="needs_review";notes=quality.issues.join(" ");}
   }catch(e){
-    if(e instanceof NoSentinelObservationError){status="needs_review";notes=e.message;}
-    else{status="failed";notes=e instanceof Error?e.message:"Sentinel request failed.";}
+    if(isSentinelProviderLimit(e)){
+      // A hard provider cap is a job-wide problem, not 490 individual bad scenes.
+      providerBlocked=true;
+      status="failed";
+      notes="Copernicus provider rate limit reached. Processing halted. Confirm account quota before an administrator requeues provider-limited tiles.";
+    }else if(e instanceof NoSentinelObservationError){
+      status="needs_review";notes=e.message;
+    }else{
+      status="failed";notes=e instanceof Error?e.message:"Sentinel request failed.";
+    }
   }
   await query(`
     UPDATE statewide_ndvi_tiles SET status=$2,quality_notes=$3,
@@ -237,8 +257,52 @@ export async function runNextStatewideTile(jobId:string){
       baseline?.meanNdvi??null,comparison?.meanNdvi??null,
       baseline?.vegetationHa??null,comparison?.vegetationHa??null
     ]);
+  if(providerBlocked){
+    await query(`
+      UPDATE statewide_ndvi_jobs
+      SET status='needs_review',finished_at=now(),updated_at=now()
+      WHERE id=$1 AND status IN ('queued','running')`,[jobId]);
+    return {processed:true,tileId:tile.id,lgaCode:tile.lga_code,status,
+      providerBlocked:true,qualityNotes:notes};
+  }
   await finishStatewideJob(jobId);
-  return {processed:true,tileId:tile.id,lgaCode:tile.lga_code,status,qualityNotes:notes||null};
+  return {processed:true,tileId:tile.id,lgaCode:tile.lga_code,status,
+    providerBlocked:false,qualityNotes:notes||null};
+}
+
+/** Admin-controlled recovery of ONLY provider-limited failures.
+ * No approved NDVI observations or cloud-quality review cases are reset.
+ * One SQL statement ensures job reactivation and selective requeue are atomic.
+ */
+export async function requeueProviderLimitedTiles(jobId:string){
+  const result=await query<{id:string;requeued:number}>(`
+    WITH activate AS (
+      UPDATE statewide_ndvi_jobs j
+      SET status='queued',finished_at=NULL,updated_at=now()
+      WHERE j.id=$1 AND j.status='needs_review'
+        AND NOT EXISTS(
+          SELECT 1 FROM statewide_ndvi_jobs other
+          WHERE other.id<>j.id AND other.status IN ('queued','running')
+        )
+        AND EXISTS (
+          SELECT 1 FROM statewide_ndvi_tiles t
+          WHERE t.job_id=j.id AND t.status='failed'
+            AND t.quality_notes ~* 'rate.?limit|quota|too many requests|processing units'
+        )
+      RETURNING id
+    ), retries AS (
+      UPDATE statewide_ndvi_tiles t
+      SET status='queued',attempts=0,claimed_at=NULL,completed_at=NULL,
+        quality_notes='Administrator requeued after provider quota review'
+      WHERE t.job_id IN (SELECT id FROM activate) AND t.status='failed'
+        AND t.quality_notes ~* 'rate.?limit|quota|too many requests|processing units'
+      RETURNING id
+    )
+    SELECT a.id::text,COUNT(r.id)::int requeued
+    FROM activate a LEFT JOIN retries r ON true GROUP BY a.id`,[jobId]);
+  if(!result.rows.length)throw new Error(
+    "No provider-limited tiles are eligible for recovery, or another state-wide job is active.");
+  return {jobId:result.rows[0].id,requeued:Number(result.rows[0].requeued)};
 }
 
 export async function finishStatewideJob(jobId:string){
