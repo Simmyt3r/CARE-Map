@@ -1,6 +1,7 @@
 "use client";
 import {useEffect,useMemo,useState} from "react";
 import AoiSketchMap from "@/components/AoiSketchMap";
+import StatewideNdviWorkbench from "@/components/StatewideNdviWorkbench";
 import SpatialContextPanel from "@/components/SpatialContextPanel";
 import RemoteSensingResultDrawer from "@/components/RemoteSensingResultDrawer";
 import {parseAoiText} from "@/lib/aoi-editor";
@@ -166,6 +167,7 @@ export default function RemoteSensingWorkbench(){
   const scene=(s:any)=>s?<div className="scene-card"><strong>{s.id}</strong><span>{s.datetime?new Date(s.datetime).toLocaleString():"Unknown acquisition time"}</span><span>Cloud cover: {s.cloudCover==null?"—":Number(s.cloudCover).toFixed(1)+"%"}</span></div>:<div className="muted">No scene found in this window.</div>;
 
   return <div className="stack">
+    <StatewideNdviWorkbench/>
     <div className="gis-status-strip"><strong>Sentinel workflow</strong><span>1. Select an area</span><span>2. Compare dates</span><span>3. Review quality</span></div>
     {!loaded&&<div className="notice" role="status">Loading satellite analyses and existing forest sites…</div>}
     <div className="notice">Sentinel-2 observations are screened for cloud and incomplete coverage. At least 60% clear-pixel coverage in BOTH date windows is required before publishing results. Location boundaries are validated as closed WGS84 polygons.</div>
