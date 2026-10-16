@@ -1,6 +1,7 @@
 import {NextResponse} from "next/server";
 import {parseBbox} from "@/lib/http";
 import {query} from "@/lib/db";
+import {deploymentProfile} from "@/lib/deployment-profile";
 
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
@@ -18,6 +19,7 @@ type FeatureRow={
   change_direction?:"gain"|"loss"|"stable"|null;
   baseline_date?:string|null;
   comparison_date?:string|null;
+  lga_names?:string[]|null;
 };
 
 export async function GET(request:Request){
@@ -85,7 +87,13 @@ export async function GET(request:Request){
         CASE WHEN r.vegetation_change_ha>0 THEN 'gain'
              WHEN r.vegetation_change_ha<0 THEN 'loss'
              ELSE 'stable' END change_direction,
-        r.baseline_date baseline_date,r.comparison_date comparison_date
+        r.baseline_date baseline_date,r.comparison_date comparison_date,
+        ARRAY(
+          SELECT lg.name FROM lgas lg
+          WHERE lg.boundary IS NOT NULL AND lg.boundary && r.aoi
+            AND ST_Intersects(lg.boundary,r.aoi) AND NOT ST_Touches(lg.boundary,r.aoi)
+          ORDER BY lg.name LIMIT 25
+        ) AS lga_names
       FROM remote_sensing_analyses r
       WHERE ${clauses.join(" AND ")}
       ORDER BY r.completed_at DESC
@@ -112,7 +120,9 @@ export async function GET(request:Request){
           changePct:r.change_pct==null?null:Number(r.change_pct),
           changeDirection:r.change_direction,
           baselineDate:r.baseline_date?String(r.baseline_date).slice(0,10):null,
-          comparisonDate:r.comparison_date?String(r.comparison_date).slice(0,10):null
+          comparisonDate:r.comparison_date?String(r.comparison_date).slice(0,10):null,
+          lgaNames:r.lga_names||[],
+          stateName:r.lga_names?.length?deploymentProfile.stateName:null
         }:{})
       }
     }))
