@@ -97,16 +97,23 @@ export default function StatewideNdviWorkbench(){
       setMessage("STOPPED: Copernicus has reached its request or processing limit. No more tiles will be submitted. Review the Copernicus account quota before using the recovery action.");
       break;
     }
+    if(j.data?.throttled){
+      setMessage("Processing is paced by the database. Wait about "+j.data.retryAfterSeconds+
+        " seconds before starting the next batch. Existing results are saved.");
+      break;
+    }
     if(!j.data?.processed){
-      setMessage("No eligible queued tiles remain. Check the LGA quality summary; cloud-obscured tiles require a separate scientific review.");
+      setMessage(j.data?.jobStopped
+        ?"The selected job is closed or awaiting review. Inspect provider quotas and its saved results before proceeding."
+        :"No eligible queued tiles remain. Cloud-obscured results require separate scientific review.");
       break;
     }
     processed++;
     if(n%2===0)await refresh(selected);
     if(n<maxPerSession&&keepRunning.current){
-      // Gentle pacing is only a courtesy. It does not bypass a provider
-      // subscription's hard monthly/daily processing-unit limit.
-      await new Promise(resolve=>setTimeout(resolve,12000));
+      // Browser pacing mirrors the 30-second database-enforced minimum.
+      // It does not bypass a daily/monthly provider processing-unit cap.
+      await new Promise(resolve=>setTimeout(resolve,31500));
     }
    }
    if(processed>=maxPerSession&&keepRunning.current)
@@ -202,6 +209,6 @@ export default function StatewideNdviWorkbench(){
   {message&&<div className="notice" role="status">{message}</div>}
   {message.toLowerCase().includes("migration")&&
     <p className="muted">An administrator can apply pending database migrations using the existing <a href="/staff/extension">Staff Extension database setup</a> panel after confirming backup and change approval. No separate login is required if the administrator is already signed in.</p>}
-  <p className="muted">Processing is resumable in paced batches of at most eight tiles. Keep this page open during a batch. Each tile consumes real Copernicus requests; check daily/monthly processing-unit and request quotas. No state-wide or LGA result is automatically published to the public map. A programme reviewer must approve results and geographic sources before external reporting.</p>
+  <p className="muted">Processing is rate-controlled by PostgreSQL (minimum 30 seconds between tiles), with batches of at most eight tiles. Keep this page open during a batch. Each tile consumes real Copernicus requests; check daily/monthly processing-unit and request quotas. No state-wide or LGA result is automatically published to the public map. A programme reviewer must approve results and geographic sources before external reporting.</p>
  </section>;
 }
