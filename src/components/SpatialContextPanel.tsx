@@ -74,7 +74,7 @@ export default function SpatialContextPanel({geometry,latitude,longitude,refresh
       </div>}
       {!!context.communities.length&&<div className="stack">
         <strong>Mapped communities / settlements</strong>
-        <p className="muted">Settlements are stored as points. A point inside the polygon does not establish the community's full geographic boundary or its own NDVI change.</p>
+        <p className="muted">Settlements are stored as points. A point inside the polygon does not establish the community&apos;s full geographic boundary or its own NDVI change.</p>
         <div className="table-wrap"><table><thead><tr><th>Settlement</th><th>Relation</th><th>Data quality</th></tr></thead>
           <tbody>{context.communities.map(c=><tr key={c.id}><td>{c.name}</td>
             <td>{c.inside?"Mapped point inside analysis":distance(c.distanceM)+" from analysis"}</td>
