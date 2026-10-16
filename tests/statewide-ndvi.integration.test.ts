@@ -3,7 +3,7 @@ import {Client} from "pg";
 import fs from "node:fs";
 import path from "node:path";
 import {pool,query} from "../src/lib/db";
-import {planStatewideJob,stateBoundaryReadiness,statewideLgaSummary,statewideOverview} from "../src/lib/statewide-ndvi";
+import {planStatewideJob,stateBoundaryReadiness,statewideLgaSummary,statewideOverview,requeueProviderLimitedTiles} from "../src/lib/statewide-ndvi";
 
 const db=process.env.CAREMAP_PG_INTEGRATION_URL;
 describe.skipIf(!db)("State-wide Sentinel spatial tiling with real PostGIS",()=>{
@@ -80,4 +80,38 @@ describe.skipIf(!db)("State-wide Sentinel spatial tiling with real PostGIS",()=>
   const lgas=await statewideLgaSummary(p.id);
   expect(lgas.every(x=>x.complete)).toBe(true);
  },30000);
+ it("requeues only provider-limited failures and preserves completed/low-clear tiles",async()=>{
+  const job=(await statewideOverview())[0];
+  const ids=await query<{id:number}>(
+    "SELECT id FROM statewide_ndvi_tiles WHERE job_id=$1 ORDER BY id LIMIT 4",[job.id]);
+  const [a,b,c,d]=ids.rows.map(r=>r.id);
+  await query(`
+    UPDATE statewide_ndvi_tiles SET
+      status=CASE
+        WHEN id=$2 OR id=$3 THEN 'failed'
+        WHEN id=$4 THEN 'needs_review'
+        ELSE status END,
+      attempts=CASE WHEN id IN ($2,$3) THEN 2 ELSE attempts END,
+      quality_notes=CASE WHEN id=$2 THEN 'You have exceeded your rate limit'
+        WHEN id=$3 THEN 'Copernicus provider rate limit reached'
+        WHEN id=$4 THEN 'Comparison clear-pixel coverage is below 60%'
+        ELSE quality_notes END
+    WHERE job_id=$1 AND id IN ($2,$3,$4)`,[job.id,a,b,c]);
+  await query("UPDATE statewide_ndvi_jobs SET status='needs_review' WHERE id=$1",[job.id]);
+  const recovered=await requeueProviderLimitedTiles(job.id);
+  expect(recovered.requeued).toBe(2);
+  const data=await query<{id:number;status:string;attempts:number;quality_notes:string|null}>(`
+    SELECT id,status,attempts,quality_notes FROM statewide_ndvi_tiles
+    WHERE job_id=$1 AND id IN ($2,$3,$4,$5) ORDER BY id`,[job.id,a,b,c,d]);
+  expect(data.rows.find(x=>x.id===a)).toMatchObject({status:"queued",attempts:0});
+  expect(data.rows.find(x=>x.id===b)).toMatchObject({status:"queued",attempts:0});
+  expect(data.rows.find(x=>x.id===c)?.status).toBe("needs_review");
+  expect(data.rows.find(x=>x.id===d)?.status).toBe("completed");
+  const overview=(await statewideOverview())[0];
+  expect(overview.status).toBe("queued");
+  expect(overview.quota_blocked_tiles).toBe(0);
+  expect(overview.resultsComplete).toBe(false);
+  await expect(requeueProviderLimitedTiles(job.id)).rejects.toThrow(/No provider-limited/);
+ },30000);
+
 });
