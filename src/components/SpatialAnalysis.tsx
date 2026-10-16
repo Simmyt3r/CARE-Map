@@ -1,6 +1,7 @@
 "use client";
 import {useEffect,useMemo,useState} from "react";
 import SpatialAnalysisMap from "@/components/SpatialAnalysisMap";
+import SpatialContextPanel from "@/components/SpatialContextPanel";
 import CoverageAnalysis from "@/components/CoverageAnalysis";
 import SettlementAccessAnalysis from "@/components/SettlementAccessAnalysis";
 import RiverCorridorAnalysis from "@/components/RiverCorridorAnalysis";
@@ -17,6 +18,7 @@ export default function SpatialAnalysis(){
   const[totals,setTotals]=useState<any|null>(null);
   const[message,setMessage]=useState("");
   const[busy,setBusy]=useState(false);
+  const[locationSearch,setLocationSearch]=useState(0);
 
   async function loadLgas(){
     const r=await fetch("/api/gis/analysis/lgas");
@@ -46,6 +48,7 @@ export default function SpatialAnalysis(){
     setBusy(false);
     if(!response.ok)return setMessage(j.error?.message||"Spatial analysis failed.");
     setResults(j.data||[]);
+    setLocationSearch(k=>k+1);
     setMessage((j.total||0)+" nearby feature"+((j.total||0)===1?"":"s")+" found within "+Number(j.query?.radiusM||r).toLocaleString()+" m.");
   }
 
@@ -67,6 +70,7 @@ export default function SpatialAnalysis(){
       </div>
       {message&&<div className="notice">{message}</div>}
       <SpatialAnalysisMap latitude={latNum} longitude={lngNum} results={results}/>
+      <SpatialContextPanel latitude={latitude} longitude={longitude} refreshKey={locationSearch}/>
       {!!nearest.length&&<div className="table-wrap"><table><thead><tr><th>Distance</th><th>Type</th><th>Name / description</th><th>LGA</th><th>Status / risk</th></tr></thead><tbody>{nearest.map(r=><tr key={r.entity_type+r.id}><td><strong>{Number(r.distance_m)<1000?Number(r.distance_m).toFixed(0)+" m":(Number(r.distance_m)/1000).toFixed(2)+" km"}</strong></td><td>{r.entity_type.replaceAll("_"," ")}</td><td>{r.name}</td><td>{r.lga_code||"—"}</td><td>{r.status||"—"}{r.risk_level?" · "+r.risk_level:""}</td></tr>)}</tbody></table></div>}
     </section>
 
