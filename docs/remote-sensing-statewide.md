@@ -89,3 +89,13 @@ The first Benue-wide comparison (`2025-01-15` versus `2026-01-15`, 14-day window
 **Scientific follow-up:** After provider capacity is restored, inspect the four comparison clear-coverage review cases independently. Changing dates or cloud thresholds must not quietly overwrite the original selected comparison period.
 
 **Reporting to stakeholders:** This run demonstrates that tiling, persistence and a portion of the Sentinel flow work. It **does not demonstrate a completed Benue-wide vegetation-change product**. Quote passed area/quality and source limitations rather than extrapolating the 21 tiles to all 23 LGAs.
+
+### Server-enforced pacing and quota controls (16 October 2026, follow-up)
+
+The state-wide administrator's tile batches are now backed by an **atomic PostgreSQL processing gate**, not just a browser delay. CARE-Map admits a new tile only when at least 30 seconds have passed since the preceding admission and no recently claimed tile remains running. Concurrent tabs/Vercel instances therefore cannot use parallel requests to bypass this minimum. The browser mirrors this with about 31.5 seconds between tiles and displays a throttling message if an extra request arrives prematurely. No new migration is required for this safeguard.
+
+Provider quota/HTTP 429 responses immediately stop the job with status `needs_review`; the quota-blocked tile is recorded as a failure attributable to provider limits, **not environmental loss**. The staff UI has a guarded **Requeue rate-limited tiles after quota review** action, which resets only such failures and does not automatically submit satellite requests. Existing valid tiles and low-clear-coverage review cases are retained.
+
+The first Benue job's recorded failure reasons were **490 provider rate-limit errors, 4 comparison-period clear-coverage review cases and 21 completed tiles**. Requeueing is safe for data history but **not evidence that the Copernicus allowance has reset**. Inspect the connected Copernicus account and obtain adequate request/processing-unit capacity before pressing the recovery button. At least roughly two NDVI statistics calls are needed per outstanding tile; processing may require a larger provider allowance. Do not use repeated manual retries to evade hard quota limits.
+
+The API bounds each individual Sentinel statistics request to 16 seconds to reduce risk of Vercel 60-second execution timeouts. Remote timeouts remain infrastructure failures, not zero vegetation.
