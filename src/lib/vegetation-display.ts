@@ -9,6 +9,7 @@ export type PublishedVegetationFeature={
     changeHa?:number|null;changePct?:number|null;
     changeDirection?:"gain"|"loss"|"stable"|null;
     baselineDate?:string|null;comparisonDate?:string|null;
+    lgaNames?:string[];stateName?:string|null;
   };
 };
 
@@ -27,6 +28,7 @@ export function vegetationSummary(item:PublishedVegetationFeature){
     [(extent[0]+extent[2])/2,(extent[1]+extent[3])/2] as [number,number]:null;
   return{
     name:p.name?.trim()||"Vegetation-change area",
+    location:p.lgaNames?.length? p.lgaNames.join(", ")+(p.lgaNames.length===1?" LGA":" LGAs")+(p.stateName?", "+p.stateName+" State":""):"LGA and state not identified",
     direction,
     label:direction==="gain"?"Vegetation gain":direction==="loss"?"Vegetation loss":
       direction==="stable"?"No measured area change":"Vegetation result",
