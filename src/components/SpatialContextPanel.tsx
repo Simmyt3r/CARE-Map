@@ -2,10 +2,10 @@
 import {useEffect,useState} from "react";
 import type {SpatialContext} from "@/lib/spatial-context";
 
-export default function SpatialContextPanel({geometry,latitude,longitude,refreshKey}:{
+export default function SpatialContextPanel({geometry,latitude,longitude,refreshKey,changeHa}:{
   geometry?:{type:string;coordinates:unknown}|null;
   latitude?:string|number|null;longitude?:string|number|null;
-  refreshKey?:number;
+  refreshKey?:number;changeHa?:number|null;
 }){
   const[context,setContext]=useState<SpatialContext|null>(null);
   const[busy,setBusy]=useState(false);
@@ -59,6 +59,15 @@ export default function SpatialContextPanel({geometry,latitude,longitude,refresh
     {!valid&&<p className="muted">Choose a valid polygon or enter latitude and longitude to identify it.</p>}
     {message&&<div className="notice" role="status">{message}</div>}
     {context&&<div className="stack">
+      {changeHa!=null&&Number.isFinite(Number(changeHa))&&
+        <div className="notice" role="status">
+          <strong>Geographically located NDVI result:</strong> The selected analysis area shows
+          {" "}{Number(changeHa)>0?"+":""}{Number(changeHa).toFixed(1)} ha of estimated vegetation-area change
+          {context.communities.length?" near "+context.communities[0].name:""}
+          {context.lgas.length?" in "+context.lgas.map(l=>l.name).join(" / ")+" LGA"+(context.lgas.length>1?"s":""):""}
+          {context.state?", "+context.state+" State":""}.
+          This is an estimate for the whole AOI, not a separate community or LGA NDVI measurement.
+        </div>}
       <div className="resource-facts">
         <div><span>State (mapped)</span><strong>{context.state?context.state+" State":"Not established"}</strong></div>
         <div><span>Local government area{context.lgas.length!==1?"s":""}</span>
