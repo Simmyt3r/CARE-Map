@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 import {useEffect,useState} from "react";
+import SpatialContextPanel from "@/components/SpatialContextPanel";
 
 export default function RemoteSensingResultDrawer({analysis,onClose,onUpdated,onReuse}:{
   analysis:any;onClose:()=>void;onUpdated:()=>void;onReuse:(data:any)=>void
@@ -70,7 +71,8 @@ export default function RemoteSensingResultDrawer({analysis,onClose,onUpdated,on
           <div className="muted">Minimum clear-pixel coverage: {fmt(Number(d.minimum_clear_fraction||0.6)*100,0)}% in each period.</div>
         </section>
 
-        {(d.status==="completed"||d.status==="needs_review")&&<>
+        {d.aoi_geometry&&<SpatialContextPanel geometry={d.aoi_geometry}/>}
+                {(d.status==="completed"||d.status==="needs_review")&&<>
           <section className="drawer-section stack">
             <h3>Vegetation change</h3>
             <div className="stats">
