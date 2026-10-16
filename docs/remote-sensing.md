@@ -377,3 +377,19 @@ The public CARE-Map does **not** publish every submitted area of interest. Only 
 On the public map, choose **Vegetation change** under Layer, or use **Find published vegetation change** to zoom to approved AOIs. Approved vegetation gains are green, losses orange/red and negligible/no measured changes blue-grey. Selecting a colored polygon displays its change in hectares and percent, plus the comparison dates. This is **AOI-level summary visualization**, not a per-pixel NDVI raster or a claim of surveyed restoration effectiveness. The status dropdown for boreholes/assets does not apply to the vegetation layer.
 
 If even approved areas fail to load, inspect `/api/map/features` availability and Aiven PostgreSQL connection pressure. The serverless pool was limited to one short-lived connection per instance in the October 2026 hardening to reduce exhausted connection slots; production service capacity, connection-pooling options, and real-load testing still require operations review.
+
+
+## Administrative area, community and mapped-asset context (2026-10-16)
+
+The staff Sentinel-2 AOI editor and saved results now include a **Where is this analysis?** check. The spatial lookup uses stored PostGIS records rather than an external, unverified geocoder. It identifies:
+
+- **State** only if the geometry matches an LGA polygon in the current state-specific deployment. The existing deployment uses **Benue**; points outside imported LGA boundaries remain **state not established** rather than being labelled automatically.
+- **LGA(s)** by actual polygon intersection. For an area crossing several LGAs, CARE-Map reports each overlap percentage of the whole AOI (an administrative overlap, **not a per-LGA NDVI measurement**).
+- **Communities/settlements** using mapped settlement **points** inside the AOI or up to 2.5 km away. Display explicitly marks verified versus unverified records. A settlement point is **not a community boundary**; proximity cannot justify claiming the entire AOI's NDVI change belongs to that community.
+- **Registered assets/interventions** by PostGIS intersection for polygon AOIs, or within the specified search radius for point queries. These include boreholes, assets, forest sites, verified rivers and intervention records. Contact person names and numbers are **never included**.
+
+The same geographical context is available beside coordinate-based spatial analysis in the staff GIS Workbench. It requires staff access and uses an on-demand lookup to avoid consuming limited Aiven connections unnecessarily. An empty result can mean incomplete inventory, not the absence of real infrastructure.
+
+The public vegetation map now includes matched LGA name(s) and state in the published AOI summary. It continues to display **the whole AOI's change in hectares and percent**: disaggregated community and per-LGA NDVI results require explicit new, correctly clipped analysis areas or authoritative community polygons and independent scientific review.
+
+No production schema migration was introduced for this enhancement. Before acceptance, test with actual approved LGA boundaries, sample settlement points and assets, and record the running production Git SHA.
