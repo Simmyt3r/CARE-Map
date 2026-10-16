@@ -5,6 +5,7 @@ import StatewideNdviMap from "@/components/StatewideNdviMap";
 type StateJob={
  id:string;state_name:string;status:string;baseline_date:string;comparison_date:string;
  total_tiles:number;completed_tiles:number;needs_review_tiles:number;failed_tiles:number;
+ quota_blocked_tiles:number;
  pending_tiles:number;coveragePercent:number;estimatedChangeHa:number|null;
  estimatedChangePct:number|null;resultsComplete:boolean;expected_lgas:number;
 };
@@ -64,24 +65,58 @@ export default function StatewideNdviWorkbench(){
   }catch(e){setMessage(e instanceof Error?e.message:"Could not prepare state-wide analysis.");}
   finally{setBusy(false);}
  }
+ async function retryQuotaTiles(){
+  if(!selected||busy||running)return;
+  if(!confirm("Have you checked the Copernicus account and confirmed enough request/processing quota is available? This will requeue only rate-limited tiles and will NOT immediately process them."))return;
+  setBusy(true);setMessage("");
+  try{
+    const r=await fetch("/api/remote-sensing/statewide/"+selected+"/resume",{
+      method:"POST",headers:{"content-type":"application/json"},
+      body:JSON.stringify({providerQuotaConfirmed:true})
+    });
+    const json=await r.json().catch(()=>({}));
+    if(!r.ok)throw Error(json.error?.message||"Unable to requeue rate-limited tiles.");
+    setMessage(json.data.requeued+" provider-limited tile(s) queued for a controlled retry. Existing passing tiles and cloud-review cases were preserved. Process a small batch to confirm quota is available.");
+    await refresh(selected);
+  }catch(e){
+    setMessage(e instanceof Error?e.message:"Quota recovery unavailable.");
+  }finally{setBusy(false);}
+ }
  async function process(){
   if(!selected||running)return;
-  keepRunning.current=true;setRunning(true);setMessage("Processing one tile per request. Keep this page open or stop and resume later.");
+  keepRunning.current=true;setRunning(true);
+  const maxPerSession=8;
+  setMessage("Processing a safety-limited batch of up to "+maxPerSession+" tiles. Provider rate limits will stop the batch immediately.");
   try{
-   for(let n=1;n<=1600&&keepRunning.current;n++){
+   let processed=0;
+   for(let n=1;n<=maxPerSession&&keepRunning.current;n++){
     const r=await fetch("/api/remote-sensing/statewide/"+selected+"/advance",{method:"POST"});
     const j=await r.json().catch(()=>({}));
     if(!r.ok)throw Error(j.error?.message||"Satellite tile processing failed.");
-    if(n%3===0||!j.data?.processed){await refresh(selected);}
-    if(!j.data?.processed){
-      setMessage("No queued tiles remain. Check the quality summary; cloud-obscured or failed tiles prevent a complete state estimate.");
+    if(j.data?.providerBlocked){
+      setMessage("STOPPED: Copernicus has reached its request or processing limit. No more tiles will be submitted. Review the Copernicus account quota before using the recovery action.");
       break;
     }
-    if(j.data.status==="failed"&&n%3!==0)setMessage("Some tiles failed and may be retried once. Processing continues.");
+    if(!j.data?.processed){
+      setMessage("No eligible queued tiles remain. Check the LGA quality summary; cloud-obscured tiles require a separate scientific review.");
+      break;
+    }
+    processed++;
+    if(n%2===0)await refresh(selected);
+    if(n<maxPerSession&&keepRunning.current){
+      // Gentle pacing is only a courtesy. It does not bypass a provider
+      // subscription's hard monthly/daily processing-unit limit.
+      await new Promise(resolve=>setTimeout(resolve,12000));
+    }
    }
-  }catch(e){setMessage("Processing stopped: "+(e instanceof Error?e.message:"Provider unavailable.")+" Progress is saved. Check quotas and try resuming.");}
-  finally{keepRunning.current=false;setRunning(false);await refresh(selected);}
+   if(processed>=maxPerSession&&keepRunning.current)
+     setMessage("Safety batch finished ("+processed+" tiles). Progress is saved. Check provider usage before another batch.");
+  }catch(e){
+   setMessage("Processing stopped: "+(e instanceof Error?e.message:"Provider unavailable.")+
+     ". Progress is retained; check your Copernicus account and retry only when appropriate.");
+  }finally{keepRunning.current=false;setRunning(false);await refresh(selected);}
  }
+
  const job=detail?.job||jobs.find(x=>x.id===selected);
  const pending=job?Number(job.pending_tiles||0):0;
  const done=job?Number(job.completed_tiles||0):0;
@@ -128,6 +163,7 @@ export default function StatewideNdviWorkbench(){
       <div><span>Pending</span><strong>{pending}</strong></div>
       <div><span>Needs review</span><strong>{job.needs_review_tiles}</strong></div>
       <div><span>Failed</span><strong>{job.failed_tiles}</strong></div>
+      <div><span>Provider rate-limited</span><strong>{job.quota_blocked_tiles||0}</strong></div>
     </div>
     <div className="statewide-progress" role="progressbar" aria-label="Passed Sentinel tile coverage" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(percent)}>
       <div style={{width:Math.max(0,Math.min(100,percent))+"%"}}/>
@@ -137,8 +173,17 @@ export default function StatewideNdviWorkbench(){
       <div><span>State vegetation change</span><strong>{job.resultsComplete?(Number(job.estimatedChangeHa)>0?"+":"")+format(job.estimatedChangeHa)+" ha":"Incomplete — no state estimate"}</strong></div>
       <div><span>Change from baseline</span><strong>{job.resultsComplete?format(job.estimatedChangePct)+"%":"Not yet established"}</strong></div>
     </div>
+    {Number(job.quota_blocked_tiles||0)>0&&<div className="notice" role="alert">
+      <strong>Copernicus provider limit reached.</strong> {job.quota_blocked_tiles} tile(s) failed because processing requests exceeded the provider quota.
+      This is not a vegetation-loss result. No additional imagery processing should be started until the provider account's limits are checked.
+      {admin&&job.status==="needs_review"&&<div className="actions">
+        <button type="button" className="btn" disabled={busy||running} onClick={()=>void retryQuotaTiles()}>
+          Requeue rate-limited tiles after quota review
+        </button>
+      </div>}
+    </div>}
     {admin&&job.status!=="completed"&&job.status!=="needs_review"&&<div className="actions">
-      {!running?<button className="btn primary" type="button" onClick={()=>void process()}>Process / resume tiles</button>
+      {!running?<button className="btn primary" type="button" onClick={()=>void process()}>Process next 8 tiles</button>
         :<button className="btn danger" type="button" onClick={()=>{keepRunning.current=false;setMessage("Stopping after the current tile request finishes. Saved work will be retained.");}}>Stop after current tile</button>}
       <button type="button" className="btn" onClick={()=>void refresh(selected)} disabled={running}>Refresh progress</button>
     </div>}
@@ -157,6 +202,6 @@ export default function StatewideNdviWorkbench(){
   {message&&<div className="notice" role="status">{message}</div>}
   {message.toLowerCase().includes("migration")&&
     <p className="muted">An administrator can apply pending database migrations using the existing <a href="/staff/extension">Staff Extension database setup</a> panel after confirming backup and change approval. No separate login is required if the administrator is already signed in.</p>}
-  <p className="muted">Processing is resumable, but browser-driven processing runs only while this page remains open. Each tile consumes real Copernicus requests. No state-wide or LGA result is automatically published to the public map. A programme reviewer must approve results and geographic sources before external reporting.</p>
+  <p className="muted">Processing is resumable in paced batches of at most eight tiles. Keep this page open during a batch. Each tile consumes real Copernicus requests; check daily/monthly processing-unit and request quotas. No state-wide or LGA result is automatically published to the public map. A programme reviewer must approve results and geographic sources before external reporting.</p>
  </section>;
 }
