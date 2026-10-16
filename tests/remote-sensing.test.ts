@@ -1,5 +1,5 @@
 import {describe,expect,it} from "vitest";
-import {assessNdviQuality,changeLevel,dateWindow,normalizeAoi} from "../src/lib/remote-sensing";
+import {assessNdviQuality,changeLevel,dateWindow,normalizeAoi,isSentinelProviderLimit,SentinelProviderLimitError} from "../src/lib/remote-sensing";
 
 describe("remote sensing helpers",()=>{
   it("builds a deterministic UTC observation window",()=>{
@@ -29,6 +29,13 @@ describe("Satellite reliability",()=>{
     meanNdvi:0.45,vegetationFraction:0.7,clearFraction:0.82,
     vegetationHa:70,raw:null
   };
+  it("recognizes provider exhaustion without misclassifying cloud-quality failures",()=>{
+    expect(isSentinelProviderLimit(new SentinelProviderLimitError(120))).toBe(true);
+    expect(isSentinelProviderLimit(new Error("You have exceeded your rate limit"))).toBe(true);
+    expect(isSentinelProviderLimit(new Error("Exceeded monthly processing units quota"))).toBe(true);
+    expect(isSentinelProviderLimit(new Error("Comparison clear-pixel coverage is below 60%"))).toBe(false);
+    expect(isSentinelProviderLimit(new Error("No usable Sentinel observation"))).toBe(false);
+  });
   it("flags cloud-obscured observation dates before publication",()=>{
     expect(assessNdviQuality(valid,{...valid,clearFraction:0.38}).publishable).toBe(false);
     expect(assessNdviQuality(valid,{...valid,meanNdvi:null}).issues).toHaveLength(1);
