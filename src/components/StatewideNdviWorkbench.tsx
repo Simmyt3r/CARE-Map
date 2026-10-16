@@ -1,6 +1,7 @@
 "use client";
 import {useEffect,useRef,useState} from "react";
 import {comparisonWindowError} from "@/lib/sentinel-date-quality";
+import StatewideNdviMap from "@/components/StatewideNdviMap";
 type StateJob={
  id:string;state_name:string;status:string;baseline_date:string;comparison_date:string;
  total_tiles:number;completed_tiles:number;needs_review_tiles:number;failed_tiles:number;
@@ -141,6 +142,7 @@ export default function StatewideNdviWorkbench(){
         :<button className="btn danger" type="button" onClick={()=>{keepRunning.current=false;setMessage("Stopping after the current tile request finishes. Saved work will be retained.");}}>Stop after current tile</button>}
       <button type="button" className="btn" onClick={()=>void refresh(selected)} disabled={running}>Refresh progress</button>
     </div>}
+    {!!detail?.lgas?.length&&<StatewideNdviMap lgas={detail.lgas}/>}
     {!!detail?.lgas?.length&&<div className="table-wrap"><table>
       <thead><tr><th>LGA</th><th>Valid tiles</th><th>Area covered</th><th>Vegetation change</th><th>Change %</th><th>Review / failed</th></tr></thead>
       <tbody>{detail.lgas.map(l=><tr key={l.code}>
