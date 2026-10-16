@@ -64,14 +64,14 @@ export default function PublicMap(){
       button.type="button";
       button.className="vegetation-map-marker vegetation-map-marker-"+result.direction;
       button.textContent=result.metric;
-      button.title=result.name+" · "+result.label+" · "+(result.dates||"");
+      button.title=result.name+" · "+result.location+" · "+result.label+" · "+(result.dates||"");
       button.setAttribute("aria-label",result.name+": "+result.label+" "+result.metric);
       const content=document.createElement("div");
       content.className="map-popup";
       const heading=document.createElement("strong");
       heading.textContent=result.name;
       const detail=document.createElement("p");
-      detail.textContent=result.label+" · "+result.metric+
+      detail.textContent=result.location+" · "+result.label+" · "+result.metric+
         (result.percentage?" ("+result.percentage+")":"")+
         (result.dates?" · "+result.dates:"");
       const note=document.createElement("small");
@@ -352,7 +352,7 @@ export default function PublicMap(){
           return <button className={"vegetation-result vegetation-result-"+result.direction}
             key={feature.properties.id||feature.id} type="button"
             onClick={()=>showVegetation(feature)}>
-            <span><strong>{result.name}</strong><small>{result.dates||"Published vegetation comparison"}</small></span>
+            <span><strong>{result.name}</strong><small>{result.location}</small><small>{result.dates||"Published vegetation comparison"}</small></span>
             <span className="vegetation-result-metric">
               <strong>{result.metric}</strong><small>{result.label}{result.percentage?" · "+result.percentage:""}</small>
             </span>
