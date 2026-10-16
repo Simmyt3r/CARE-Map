@@ -135,7 +135,7 @@ export async function statewideOverview(){
   return rows.rows.map(r=>{
     const complete=Number(r.completed_tiles)===Number(r.total_tiles)&&Number(r.total_tiles)>0;
     const baseline=Number(r.baseline_ha),comparison=Number(r.comparison_ha);
-    return {...r,
+    return {id:String(r.id),...r,
       coveragePercent:Number(r.total_area_ha)>0
         ?100*Number(r.completed_area_ha)/Number(r.total_area_ha):0,
       estimatedChangeHa:complete?comparison-baseline:null,
