@@ -69,3 +69,23 @@ Aiven's small connection budget requires low-concurrency tile work. The recommen
 - [ ] Check the stop/resume, provider outage, bad-scene, partial-completion, duplicate-admin, and stale-claim cases in real deployment.
 - [ ] Review Copernicus quotas and actual wall-clock processing time for a complete state.
 - [ ] Obtain programme acceptance for any external state-wide vegetation reporting.
+
+## Operational incident: provider request limit (16 October 2026)
+
+The first Benue-wide comparison (`2025-01-15` versus `2026-01-15`, 14-day windows) planned **515 tiles**. Production tile diagnostics confirmed: **21 completed**, **4 lacked sufficient comparison clear-pixel coverage**, and **490 failed after two attempts with the exact provider response "You have exceeded your rate limit"**. The provider-limit errors are **not vegetation loss**. They do not establish a whole-state NDVI change.
+
+### Protection and selective recovery
+
+- NDVI statistics now recognize both HTTP 429 and Copernicus quota-limit messages as a distinct provider-limit condition.
+- The first new quota failure **stops the entire job** in `needs_review` state and the UI stops its loop immediately. Successful tile results remain intact.
+- A processing session is capped at **8 tiles** with ~12-second pacing between tile requests. Pacing may reduce burst traffic, but cannot increase subscription processing-unit quota or bypass a hard monthly/daily limit.
+- State-wide processing attempts the baseline statistics request before the comparison one and stops on a quota failure, instead of issuing four requests concurrently for a tile already blocked by the provider.
+- The existing stopped job may be selectively reopened by an administrator using **Requeue rate-limited tiles after quota review**. This requires an explicit acknowledgement that provider allowances have been inspected. Requeueing does **not** automatically launch Copernicus processing.
+- The recovery SQL requeues **only** tiles failed with provider rate-limit/quota messages and resets their attempts for a controlled retry. Valid completed records and the four scientific/cloud-coverage `needs_review` records are preserved. It uses the existing schema; **no new database migration is needed**.
+- A state or LGA total remains `Incomplete` until all its own tiles are scientifically quality-passing. Requeueing cannot promote failed/obscured observations into valid results.
+
+**Operator steps:** Sign into the actual Copernicus service account and inspect request/processing quotas, consumption and reset policy. Do **not** resume until sufficient capacity is available. Return to `/staff/remote-sensing`, open the original job, use the explicit requeue action, then process **at most eight tiles** and confirm no further provider-limit message before continuing gradually. If the account cannot accommodate roughly two statistical requests per outstanding tile plus associated catalogue checks, procure approved additional provider capacity or redesign the batch processing service. Never start a second full-state job merely to bypass the quota.
+
+**Scientific follow-up:** After provider capacity is restored, inspect the four comparison clear-coverage review cases independently. Changing dates or cloud thresholds must not quietly overwrite the original selected comparison period.
+
+**Reporting to stakeholders:** This run demonstrates that tiling, persistence and a portion of the Sentinel flow work. It **does not demonstrate a completed Benue-wide vegetation-change product**. Quote passed area/quality and source limitations rather than extrapolating the 21 tiles to all 23 LGAs.
