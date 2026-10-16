@@ -175,7 +175,7 @@ export default function StatewideNdviWorkbench(){
     </div>
     {Number(job.quota_blocked_tiles||0)>0&&<div className="notice" role="alert">
       <strong>Copernicus provider limit reached.</strong> {job.quota_blocked_tiles} tile(s) failed because processing requests exceeded the provider quota.
-      This is not a vegetation-loss result. No additional imagery processing should be started until the provider account's limits are checked.
+      This is not a vegetation-loss result. No additional imagery processing should be started until the provider account limits are checked.
       {admin&&job.status==="needs_review"&&<div className="actions">
         <button type="button" className="btn" disabled={busy||running} onClick={()=>void retryQuotaTiles()}>
           Requeue rate-limited tiles after quota review
