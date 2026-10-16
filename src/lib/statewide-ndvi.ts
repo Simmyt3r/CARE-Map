@@ -1,6 +1,6 @@
 import {query} from "@/lib/db";
 import {deploymentProfile} from "@/lib/deployment-profile";
-import {comparisonWindowError} from "@/lib/sentinel-date-quality";
+import {comparisonWindowError,observationDate} from "@/lib/sentinel-date-quality";
 import {
   assessNdviQuality,fetchNdviStats,NoSentinelObservationError,remoteSensingConfigured,
   searchSentinelScenes,type GeoPolygon
@@ -208,8 +208,8 @@ export async function runNextStatewideTile(jobId:string){
   let baseline:null|Awaited<ReturnType<typeof fetchNdviStats>>=null;
   let comparison:null|Awaited<ReturnType<typeof fetchNdviStats>>=null;
   try{
-    const baselineDate=String(tile.baseline_date).slice(0,10);
-    const comparisonDate=String(tile.comparison_date).slice(0,10);
+    const baselineDate=observationDate(tile.baseline_date);
+    const comparisonDate=observationDate(tile.comparison_date);
     const opts=Number(tile.window_days),areaHa=Number(tile.area_ha),threshold=Number(tile.vegetation_threshold);
     const [bscenes,cscenes,b,c]=await Promise.all([
       searchSentinelScenes(tile.aoi_geometry,baselineDate,opts,70),
