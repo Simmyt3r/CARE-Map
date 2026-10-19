@@ -34,7 +34,7 @@ export default function PublicMap(){
   const[countBusy,setCountBusy]=useState(true);
   const[countError,setCountError]=useState("");
   const[viewportCount,setViewportCount]=useState<number|null>(null);
-  const[firstLgaEffect]=useState(()=>({seen:false}));
+  const firstLgaEffect=useRef(false);
 
 
   useEffect(()=>{tRef.current=t;},[t]);
@@ -61,7 +61,7 @@ export default function PublicMap(){
   // Published NDVI statistics are a separate data layer. LGA filters must
   // apply to its source and markers too; other filters hide the layer entirely.
   useEffect(()=>{
-    if(!firstLgaEffect.seen){firstLgaEffect.seen=true;return;}
+    if(!firstLgaEffect.current){firstLgaEffect.current=true;return;}
     void fetchPublishedVegetation();
   },[lga]);
 
