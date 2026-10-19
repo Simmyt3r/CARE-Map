@@ -675,3 +675,34 @@ main:has(.staff-workspace)>.shell{max-width:1720px}
 .statewide-progress>div{height:100%;background:#21865a;transition:width .25s ease}
 .statewide-ndvi-map{position:relative;min-height:350px;height:min(540px,62vh);border-radius:13px;overflow:hidden;border:1px solid #c7dbcd}
 @media(max-width:650px){.statewide-ndvi-map{min-height:300px;height:350px}}
+
+
+/* Public CARE-Map inventory counts stay separate from satellite-analysis counts. */
+.map-intervention-counts{margin:12px 0 14px;padding:14px;border-radius:13px;
+  background:#f7faf8;border:1px solid #d7e6db}
+.map-count-head{display:flex;flex-wrap:wrap;align-items:center;
+  justify-content:space-between;gap:7px;margin-bottom:11px;font-size:14px}
+.map-count-head .muted{font-size:12px}
+.map-count-categories{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.map-count-option{min-width:0;display:flex;align-items:center;gap:8px;
+  justify-content:space-between;text-align:left;border-radius:10px;
+  border:1px solid #d3e3d9;padding:10px 12px;background:#fff;
+  color:#28503a;cursor:pointer}
+.map-count-option span{font-size:12px;font-weight:700}
+.map-count-option strong{font-size:19px;font-variant-numeric:tabular-nums}
+.map-count-option:hover,.map-count-option:focus-visible{
+  border-color:#4d9970;outline-offset:2px;background:#f0f8f3}
+.map-count-option[aria-pressed="true"]{background:#1f6b3b;border-color:#1f6b3b;color:#fff}
+.map-count-explanation{font-size:12px;line-height:1.55;margin:10px 0 0}
+.map-popup-image{display:block;width:100%;max-height:160px;object-fit:cover;
+  border:1px solid #e1ebe3;border-radius:9px;margin:9px 0 5px}
+.map-popup-image-caption{display:block;font-size:11px;color:#526759;
+  line-height:1.4;margin-bottom:6px}
+@media(max-width:760px){
+  .map-count-categories{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:460px){
+  .map-count-categories{grid-template-columns:1fr 1fr;gap:6px}
+  .map-count-option{display:grid;gap:4px;padding:9px}
+  .map-count-option strong{font-size:18px}
+}
