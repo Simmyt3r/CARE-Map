@@ -6,6 +6,8 @@ import {geometryExtent} from "@/lib/geojson";
 import {useI18n} from "@/components/LocalizationProvider";
 import {vegetationSummary,type PublishedVegetationFeature} from "@/lib/vegetation-display";
 import {deploymentProfile} from "@/lib/deployment-profile";
+import type {PublicMapCounts,PublicMapCategory} from "@/lib/map-public-counts";
+import {safePublicMapImageUrl} from "@/lib/public-map-images";
 
 type Lga={code:string;name:string};
 type Filters={type:string;lga:string;status:string};
@@ -28,14 +30,47 @@ export default function PublicMap(){
   const[publishedNdvi,setPublishedNdvi]=useState<PublishedVegetationFeature[]>([]);
   const[publishedLoading,setPublishedLoading]=useState(true);
   const[publishedError,setPublishedError]=useState("");
+  const[counts,setCounts]=useState<{counts:PublicMapCounts;physicalTotal:number;satelliteTotal:number}|null>(null);
+  const[countBusy,setCountBusy]=useState(true);
+  const[countError,setCountError]=useState("");
+  const[viewportCount,setViewportCount]=useState<number|null>(null);
+  const[firstLgaEffect]=useState(()=>({seen:false}));
+
 
   useEffect(()=>{tRef.current=t;},[t]);
   useEffect(()=>{fetch("/api/lgas").then(r=>r.json()).then(j=>setLgas(j.data||[])).catch(()=>{});},[]);
 
+  useEffect(()=>{
+    const controller=new AbortController();
+    setCountBusy(true);setCountError("");
+    const params=new URLSearchParams();
+    if(lga)params.set("lga",lga);
+    if(status&&type!=="ndvi_change")params.set("status",status);
+    void fetch("/api/map/counts"+(params.size?"?"+params.toString():""),{signal:controller.signal})
+      .then(async response=>{
+        if(!response.ok)throw new Error("Map counts are temporarily unavailable.");
+        return response.json();
+      }).then(json=>{
+        if(!controller.signal.aborted)setCounts(json.data);
+      }).catch(()=>{
+        if(!controller.signal.aborted){setCountError("Could not load intervention counts.");setCounts(null);}
+      }).finally(()=>{if(!controller.signal.aborted)setCountBusy(false);});
+    return()=>controller.abort();
+  },[lga,status,type==="ndvi_change"]);
+
+  // Published NDVI statistics are a separate data layer. LGA filters must
+  // apply to its source and markers too; other filters hide the layer entirely.
+  useEffect(()=>{
+    if(!firstLgaEffect.seen){firstLgaEffect.seen=true;return;}
+    void fetchPublishedVegetation();
+  },[lga]);
+
   async function fetchPublishedVegetation():Promise<PublishedVegetationFeature[]>{
     setPublishedLoading(true);setPublishedError("");
     try{
-      const response=await fetch("/api/map/features?type=ndvi_change");
+      const params=new URLSearchParams({type:"ndvi_change"});
+      if(filterRef.current.lga)params.set("lga",filterRef.current.lga);
+      const response=await fetch("/api/map/features?"+params.toString());
       if(!response.ok)throw new Error("The public vegetation results are temporarily unavailable.");
       const data=await response.json();
       const features:PublishedVegetationFeature[]=Array.isArray(data.features)
@@ -66,6 +101,7 @@ export default function PublicMap(){
       button.textContent=result.metric;
       button.title=result.name+" · "+result.location+" · "+result.label+" · "+(result.dates||"");
       button.setAttribute("aria-label",result.name+": "+result.label+" "+result.metric);
+      button.style.display=filterRef.current.type==="ndvi_change"?"":"none";
       const content=document.createElement("div");
       content.className="map-popup";
       const heading=document.createElement("strong");
@@ -102,7 +138,9 @@ export default function PublicMap(){
       const r=await fetch("/api/gis/lga-boundaries");
       if(!r.ok)return;
       const data=await r.json();
+      if(controller.signal.aborted)return;
       const features=Array.isArray(data.features)?data.features:[];
+      setViewportCount(features.length);
       boundaryByCodeRef.current=Object.fromEntries(features.map((feature:any)=>[feature.properties?.code,feature]));
       (map.getSource("lga-boundaries") as GeoJSONSource|undefined)?.setData({type:"FeatureCollection",features} as any);
       const selected=filterRef.current.lga;
@@ -125,6 +163,7 @@ export default function PublicMap(){
     featureAbort.current=null;
     const b=map.getBounds(),f=filterRef.current;
     if(f.type==="ndvi_change"){
+      setViewportCount(null);
       (map.getSource("carepoints") as GeoJSONSource|undefined)
         ?.setData({type:"FeatureCollection",features:[]} as GeoJSON.FeatureCollection);
       (map.getSource("careshapes") as GeoJSONSource|undefined)
@@ -133,7 +172,7 @@ export default function PublicMap(){
       return;
     }
     const qs=new URLSearchParams({bbox:[b.getWest(),b.getSouth(),b.getEast(),b.getNorth()].join(",")});
-    if(f.type)qs.set("type",f.type);
+    qs.set("type",f.type||"all_resources");
     if(f.lga)qs.set("lga",f.lga);
     if(f.status)qs.set("status",f.status);
     const controller=new AbortController();
@@ -150,7 +189,7 @@ export default function PublicMap(){
       (map.getSource("careshapes") as GeoJSONSource|undefined)?.setData(shapes);
       setHasError(false);
     }catch(e){
-      if(!controller.signal.aborted)setHasError(true);
+      if(!controller.signal.aborted){setHasError(true);setViewportCount(null);}
     }finally{
       if(featureAbort.current===controller)featureAbort.current=null;
     }
@@ -185,8 +224,10 @@ export default function PublicMap(){
       const ndviPaint:any=["match",["get","changeDirection"],
         "gain","#16a34a","loss","#e36432","stable","#578899","#578899"];
       map.addLayer({id:"ndvi-change-fill",type:"fill",source:"published-vegetation",
+        layout:{visibility:"none"},
         paint:{"fill-color":ndviPaint,"fill-opacity":0.48}});
       map.addLayer({id:"ndvi-change-outline",type:"line",source:"published-vegetation",
+        layout:{visibility:"none"},
         paint:{"line-color":ndviPaint,"line-width":5,"line-opacity":1}});
       map.addLayer({id:"care-lines",type:"line",source:"careshapes",filter:["in",["geometry-type"],["literal",["LineString","MultiLineString"]]],paint:{"line-color":"#2878a8","line-width":["interpolate",["linear"],["zoom"],6,2,13,5]}});
 
@@ -263,6 +304,23 @@ export default function PublicMap(){
           ].filter(Boolean).join(" • ");
         }
         div.append(title,meta);
+        const imageUrl=safePublicMapImageUrl(p.imageUrl);
+        if(imageUrl&&p.entityType!=="ndvi_change"){
+          const photo=document.createElement("img");
+          photo.className="map-popup-image";
+          photo.src=imageUrl;
+          photo.alt="Public resource photograph: "+(p.name||"mapped site");
+          photo.loading="lazy";
+          photo.referrerPolicy="no-referrer";
+          photo.onerror=()=>{photo.remove();};
+          div.append(photo);
+          if(typeof p.imageCaption==="string"&&p.imageCaption.trim()){
+            const caption=document.createElement("small");
+            caption.className="map-popup-image-caption";
+            caption.textContent=p.imageCaption;
+            div.append(caption);
+          }
+        }
         const kindMap:Record<string,string>={borehole:"boreholes",asset:"assets",forest_site:"forest-sites",river:"rivers"};
         const publicKind=kindMap[String(p.entityType||"")];
         if(publicKind&&p.id){
@@ -323,8 +381,32 @@ export default function PublicMap(){
       const extent=geometryExtent(feature?.geometry);
       if(extent)map.fitBounds([[extent[0],extent[1]],[extent[2],extent[3]]],{padding:42,maxZoom:12});
     }
+    for(const layer of ["ndvi-change-fill","ndvi-change-outline"]){
+      if(map?.getLayer(layer)){
+        map.setLayoutProperty(layer,"visibility",type==="ndvi_change"?"visible":"none");
+      }
+    }
+    vegetationMarkers.current.forEach(marker=>{
+      marker.getElement().style.display=type==="ndvi_change"?"":"none";
+    });
     scheduleFeatures();
   },[type,lga,status]);
+
+  const countKeys:{kind:PublicMapCategory;label:string}[]=[
+    {kind:"borehole",label:t("map.boreholes")},
+    {kind:"asset",label:t("map.assets")},
+    {kind:"forest_site",label:t("map.forests")},
+    {kind:"river",label:t("map.rivers")},
+    {kind:"ndvi_change",label:t("map.vegetationChange")}
+  ];
+  const selectedCount=counts
+    ?type?counts.counts[type as PublicMapCategory]:counts.physicalTotal
+    :null;
+  function chooseType(value:string){
+    setType(value);
+    if(value==="ndvi_change")setStatus("");
+    setNdviNotice("");
+  }
 
   return <div className="card">
     <section className="vegetation-map-spotlight" aria-label="Published satellite vegetation results">
@@ -364,11 +446,36 @@ export default function PublicMap(){
       <p className="vegetation-estimate-note">Colored boundaries summarize estimated vegetation-area change across each analysis area. They are not per-pixel satellite change images and do not prove an intervention caused the change. <a href="/extension#lesson-ndvi" style={{textDecoration:"underline",fontWeight:750}}>Learn how to read this map</a>.</p>
     </section>
     <div className="filters">
-      <div className="field"><label>{t("map.layer")}</label><select value={type} onChange={e=>{const value=e.target.value;setType(value);if(value==="ndvi_change")setStatus("");setNdviNotice("");}}><option value="">{t("map.allInterventions")}</option><option value="borehole">{t("map.boreholes")}</option><option value="asset">{t("map.assets")}</option><option value="forest_site">{t("map.forests")}</option><option value="river">{t("map.rivers")}</option><option value="ndvi_change">{t("map.vegetationChange")}</option></select></div>
+      <div className="field"><label>{t("map.layer")}</label><select value={type} onChange={e=>chooseType(e.target.value)}><option value="">{t("map.allInterventions")}</option><option value="borehole">{t("map.boreholes")}</option><option value="asset">{t("map.assets")}</option><option value="forest_site">{t("map.forests")}</option><option value="river">{t("map.rivers")}</option><option value="ndvi_change">{t("map.vegetationChange")}</option></select></div>
       <div className="field"><label>{t("map.lga")}</label><select value={lga} onChange={e=>setLga(e.target.value)}><option value="">{t("map.allLgas")}</option>{lgas.map(x=><option key={x.code} value={x.code}>{x.name}</option>)}</select></div>
       <div className="field"><label>{t("map.status")}</label><select value={status} disabled={type==="ndvi_change"} onChange={e=>setStatus(e.target.value)}><option value="">{t("map.anyStatus")}</option><option value="functional">{t("map.functional")}</option><option value="needs_maintenance">{t("map.needsMaintenance")}</option><option value="non_functional">{t("map.nonFunctional")}</option></select></div>
       <div className="field"><label>{t("map.legend")}</label><div className="map-legend"><span><i className="legend-low"/>{t("map.low")}</span><span><i className="legend-medium"/>{t("map.medium")}</span><span><i className="legend-high"/>{t("map.high")}</span><span><i className="legend-critical"/>{t("map.critical")}</span></div></div>
     </div>
+    <section className="map-intervention-counts" aria-label="Counts for selected map filters">
+      <div className="map-count-head">
+        <strong>Mapped intervention and resource counts</strong>
+        <span className="muted" role="status">{countBusy?"Updating counts…":countError||
+          (selectedCount===null?"Totals unavailable":selectedCount.toLocaleString("en-NG")+" matching "+(type==="ndvi_change"?"published satellite analyses":"mapped resource records"))}</span>
+      </div>
+      <div className="map-count-categories">
+        <button className="map-count-option" type="button" aria-pressed={!type}
+          onClick={()=>chooseType("")}>
+          <span>All physical resources</span><strong>{counts?counts.physicalTotal.toLocaleString("en-NG"):"—"}</strong>
+        </button>
+        {countKeys.map(item=><button className="map-count-option" type="button"
+            key={item.kind} aria-pressed={type===item.kind}
+            onClick={()=>chooseType(item.kind)}>
+          <span>{item.label}</span>
+          <strong>{counts?counts.counts[item.kind].toLocaleString("en-NG"):"—"}</strong>
+        </button>)}
+      </div>
+      <p className="muted map-count-explanation">
+        Totals reflect the selected {lga?"LGA":"state"}{status&&type!=="ndvi_change"?" and status":""}, not just the visible map.
+        Satellite observations are counted separately from physical resources.
+        {viewportCount!==null&&type!=="ndvi_change"?
+          " "+viewportCount+" map record(s) currently loaded within the visible area.":""}
+      </p>
+    </section>
     <div className="map-vegetation-tools">
       <div className="map-vegetation-legend" aria-label="Vegetation change legend">
         <strong>Sentinel-2 vegetation change</strong>
