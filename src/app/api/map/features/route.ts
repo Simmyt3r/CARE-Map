@@ -40,7 +40,7 @@ export async function GET(request:Request){
   ] as const;
 
   for(const[entityType,table,geom,nameExpr,statusExpr,visibility]of configs){
-    if(type&&type!==entityType)continue;
+    if(type&&type!=="all_resources"&&type!==entityType)continue;
     const clauses:string[]=[visibility];
     const params:unknown[]=[...baseParams];
     if(bbox)clauses.push("ST_Intersects("+geom+",ST_MakeEnvelope($1,$2,$3,$4,4326))");
