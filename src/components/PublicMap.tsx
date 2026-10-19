@@ -138,9 +138,7 @@ export default function PublicMap(){
       const r=await fetch("/api/gis/lga-boundaries");
       if(!r.ok)return;
       const data=await r.json();
-      if(controller.signal.aborted)return;
       const features=Array.isArray(data.features)?data.features:[];
-      setViewportCount(features.length);
       boundaryByCodeRef.current=Object.fromEntries(features.map((feature:any)=>[feature.properties?.code,feature]));
       (map.getSource("lga-boundaries") as GeoJSONSource|undefined)?.setData({type:"FeatureCollection",features} as any);
       const selected=filterRef.current.lga;
@@ -181,7 +179,9 @@ export default function PublicMap(){
       const r=await fetch("/api/map/features?"+qs,{signal:controller.signal});
       if(!r.ok)throw new Error();
       const data=await r.json();
+      if(controller.signal.aborted)return;
       const features=Array.isArray(data.features)?data.features:[];
+      setViewportCount(features.length);
       const points={type:"FeatureCollection",features:features.filter((x:any)=>x.geometry?.type==="Point")} as any;
       const shapes={type:"FeatureCollection",features:features.filter((x:any)=>
         x.geometry?.type!=="Point"&&x.properties?.entityType!=="ndvi_change")} as any;
