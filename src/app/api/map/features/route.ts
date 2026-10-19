@@ -2,6 +2,7 @@ import {NextResponse} from "next/server";
 import {parseBbox} from "@/lib/http";
 import {query} from "@/lib/db";
 import {deploymentProfile} from "@/lib/deployment-profile";
+import {safePublicMapImageUrl,publicMapCaption} from "@/lib/public-map-images";
 
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
@@ -102,6 +103,36 @@ export async function GET(request:Request){
     rows.push(...result.rows);
   }
 
+  // Photos already appear in the existing public resource-detail gallery.
+  // Fetch only the newest image of each *visible public resource* in one batch.
+  // Never read community reports or staff-only extension evidence.
+  const resourceRows=rows.filter(r=>["borehole","asset","forest_site","river"].includes(r.entity_type));
+  const primaryPhotos=new Map<string,{url:string;caption:string|null}>();
+  if(resourceRows.length){
+    try{
+      const photos=await query<{
+        entity_type:string;entity_id:string;url:string;caption:string|null;
+      }>(`
+        SELECT DISTINCT ON (entity_type,entity_id)
+          entity_type,entity_id::text,url,caption
+        FROM photos
+        WHERE entity_type=ANY($1::text[]) AND entity_id=ANY($2::uuid[])
+        ORDER BY entity_type,entity_id,uploaded_at DESC
+      `,[
+        ["borehole","asset","forest_site","river"],
+        resourceRows.map(r=>r.id)
+      ]);
+      for(const photo of photos.rows){
+        const safeUrl=safePublicMapImageUrl(photo.url);
+        if(safeUrl)primaryPhotos.set(photo.entity_type+":"+photo.entity_id,
+          {url:safeUrl,caption:publicMapCaption(photo.caption)});
+      }
+    }catch{
+      // A photo lookup should never make a working geographic map unavailable.
+      console.warn("Public map images could not be loaded.");
+    }
+  }
+
   return NextResponse.json({
     type:"FeatureCollection",
     features:rows.map(r=>({
@@ -115,6 +146,11 @@ export async function GET(request:Request){
         lga:r.lga_code,
         status:r.status,
         riskLevel:r.risk_level,
+        ...(primaryPhotos.has(r.entity_type+":"+r.id)
+          ?{
+            imageUrl:primaryPhotos.get(r.entity_type+":"+r.id)!.url,
+            imageCaption:primaryPhotos.get(r.entity_type+":"+r.id)!.caption
+          }:{}),
         ...(r.entity_type==="ndvi_change"?{
           changeHa:r.change_ha==null?null:Number(r.change_ha),
           changePct:r.change_pct==null?null:Number(r.change_pct),
