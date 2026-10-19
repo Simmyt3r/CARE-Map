@@ -62,14 +62,14 @@ export default function PublicMap(){
   // apply to its source and markers too; other filters hide the layer entirely.
   useEffect(()=>{
     if(!firstLgaEffect.current){firstLgaEffect.current=true;return;}
-    void fetchPublishedVegetation();
+    void fetchPublishedVegetation(lga);
   },[lga]);
 
-  async function fetchPublishedVegetation():Promise<PublishedVegetationFeature[]>{
+  async function fetchPublishedVegetation(lgaCode=filterRef.current.lga):Promise<PublishedVegetationFeature[]>{
     setPublishedLoading(true);setPublishedError("");
     try{
       const params=new URLSearchParams({type:"ndvi_change"});
-      if(filterRef.current.lga)params.set("lga",filterRef.current.lga);
+      if(lgaCode)params.set("lga",lgaCode);
       const response=await fetch("/api/map/features?"+params.toString());
       if(!response.ok)throw new Error("The public vegetation results are temporarily unavailable.");
       const data=await response.json();
