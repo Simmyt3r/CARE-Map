@@ -18,7 +18,7 @@ export default function CrfLedgerWorkflow({loans,roles}:{
  ]);
  const [tranche,setTranche]=useState<1|2>(1);
  const [payment,setPayment]=useState({transferDate:today,bankReference:"",t15EndorsementRef:"",
-  evidenceRef:"",loanAppReference:"",firstTrancheUseRef:""});
+  evidenceRef:"",loanAppReference:"",loanAppRecordedAt:"",firstTrancheUseRef:""});
  const [message,setMessage]=useState("");
  const [busy,setBusy]=useState(false);
  const canRecord=roles.some(r=>["finance_officer","desk_officer"].includes(r));
@@ -102,6 +102,7 @@ export default function CrfLedgerWorkflow({loans,roles}:{
      transferDate:payment.transferDate,bankReference:payment.bankReference,
      t15EndorsementRef:payment.t15EndorsementRef,evidenceRef:payment.evidenceRef,
      loanAppReference:payment.loanAppReference,
+     loanAppRecordedAt:new Date(payment.loanAppRecordedAt).toISOString(),
      ...(tranche===2?{firstTrancheUseRef:payment.firstTrancheUseRef}:{})
    });}}>
     <h4>Register a bank-confirmed disbursement (T11/T12A/T15C)</h4>
@@ -118,6 +119,10 @@ export default function CrfLedgerWorkflow({loans,roles}:{
        ["loanAppReference","Official CRF Loan App entry reference"]] as const).map(([key,label])=>
        <div className="field" key={key}><label>{label}</label><input required
         value={payment[key]} onChange={e=>setPayment(v=>({...v,[key]:e.target.value}))}/></div>)}
+     <div className="field"><label>Actual entry date/time in official CRF Loan App</label>
+      <input type="datetime-local" required value={payment.loanAppRecordedAt}
+       onChange={e=>setPayment(v=>({...v,loanAppRecordedAt:e.target.value}))}/>
+     </div>
      {tranche===2&&<div className="field"><label>CBA first-tranche use verification reference</label><input required
        value={payment.firstTrancheUseRef}
        onChange={e=>setPayment(v=>({...v,firstTrancheUseRef:e.target.value}))}/></div>}
