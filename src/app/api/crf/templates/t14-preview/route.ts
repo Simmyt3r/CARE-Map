@@ -42,6 +42,7 @@ export async function GET(request:Request){
      SELECT s.id,i.due_date,(i.principal_due_ngn+i.service_charge_due_ngn) total
      FROM scoped s JOIN crf_instalments i ON i.loan_id=s.id
      WHERE i.due_date<($2::date+INTERVAL '1 month')
+     AND EXISTS(SELECT 1 FROM crf_disbursements d WHERE d.loan_id=s.id AND d.verification='verified' AND d.transfer_date<($2::date+INTERVAL '1 month'))
    )
    SELECT cm.community_name,cm.lga_code,
      (SELECT count(DISTINCT id)::int FROM disbursements WHERE transfer_date>=$2::date) financed_month,
