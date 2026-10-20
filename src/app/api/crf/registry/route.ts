@@ -24,6 +24,7 @@ const commands=z.discriminatedUnion("action",[
   sex:z.enum(["female","male","other","undisclosed"]),youthUnder35:z.boolean().nullable().optional(),
   participationVerified:z.boolean().default(false)}),
  z.object({action:z.literal("qualify"),cigId:id,qualificationRef:reference}),
+ z.object({action:z.literal("verify_member"),memberId:id,verificationRef:reference}),
  z.object({action:z.literal("verify_community"),communityId:id,approvalReference:reference,
    bankMandateRef:reference,account1EvidenceRef:reference,account2EvidenceRef:reference,
    spmuEndorsementRef:reference})
@@ -35,7 +36,7 @@ export async function GET(request:Request){
   if(!access||!canCrf(access.roles,"view"))return error("CRF role required.",403,"CRF_FORBIDDEN");
   const lga=new URL(request.url).searchParams.get("lga")||"";
   if(lga.length>60)return error("Invalid LGA filter.");
-  const [communities,cigs,lgas]=await Promise.all([
+  const [communities,cigs,lgas,members]=await Promise.all([
    query(`SELECT id,community_code,community_name,lga_code,cycle,status,
          ST_Y(location) latitude,ST_X(location) longitude,crfmc_formed,
          (account1_evidence_ref IS NOT NULL AND account2_evidence_ref IS NOT NULL
@@ -52,9 +53,14 @@ export async function GET(request:Request){
        WHERE ($1='' OR k.lga_code=$1)
        GROUP BY c.id,k.id
        ORDER BY c.created_at DESC LIMIT 400`,[lga]),
-   query("SELECT code,name FROM lgas ORDER BY name")
+   query("SELECT code,name FROM lgas ORDER BY name"),
+   query(`SELECT m.id,m.cig_id,m.member_reference,m.sex,m.participation_verified,m.recorded_by,
+      m.verification_ref FROM crf_cig_members m JOIN crf_cigs c ON c.id=m.cig_id
+      JOIN crf_communities k ON k.id=c.community_id
+      WHERE ($1='' OR k.lga_code=$1) ORDER BY m.created_at DESC LIMIT 750`,[lga])
   ]);
-  return NextResponse.json({data:{communities:communities.rows,cigs:cigs.rows,lgas:lgas.rows},
+  return NextResponse.json({data:{communities:communities.rows,cigs:cigs.rows,
+    lgas:lgas.rows,members:members.rows},
     roles:access.roles},{headers:{"Cache-Control":"no-store"}});
  }catch{
   return error("CRF registry is unavailable. Confirm database migration 019 and Aiven connectivity.",503,"CRF_NOT_READY");
@@ -100,13 +106,25 @@ export async function POST(request:Request){
     idValue=r.rows[0].id;
    }else if(x.action==="member"){
     entity="crf_cig_member";
+    const locked=await tx.query("SELECT id FROM crf_cigs WHERE id=$1 AND qualification IN ('draft','review') FOR UPDATE",[x.cigId]);
+    if(!locked.rowCount)throw new Error("CIG is unavailable or already qualified.");
     const count=await tx.query<{count:string}>(`SELECT COUNT(*)::text count FROM crf_cig_members WHERE cig_id=$1`,[x.cigId]);
     if(Number(count.rows[0].count)>=15)throw new Error("Each CIG is limited to 15 registered members.");
     const r=await tx.query<{id:string}>(`INSERT INTO crf_cig_members(
-      cig_id,member_reference,sex,youth_under_35,participation_verified)
-      VALUES($1,$2,$3,$4,$5) RETURNING id`,
-      [x.cigId,x.memberReference,x.sex,x.youthUnder35??null,x.participationVerified]);
+      cig_id,member_reference,sex,youth_under_35,participation_verified,recorded_by)
+      VALUES($1,$2,$3,$4,FALSE,$5) RETURNING id`,
+      [x.cigId,x.memberReference,x.sex,x.youthUnder35??null,actor!.sub]);
     idValue=r.rows[0].id;
+   }else if(x.action==="verify_member"){
+    entity="crf_cig_member";
+    const row=await tx.query<{recorded_by:string}>(`SELECT recorded_by FROM crf_cig_members
+      WHERE id=$1 AND participation_verified=FALSE FOR UPDATE`,[x.memberId]);
+    if(!row.rowCount)throw new Error("Member record is missing or already verified.");
+    if(row.rows[0].recorded_by===actor!.sub)
+      throw new Error("The registrar cannot independently verify their own member entry.");
+    await tx.query(`UPDATE crf_cig_members SET participation_verified=TRUE,
+      verified_by=$2,verification_ref=$3 WHERE id=$1`,[x.memberId,actor!.sub,x.verificationRef]);
+    idValue=x.memberId;
    }else if(x.action==="qualify"){
     entity="crf_cig";
     const cig=await tx.query<{created_by:string}>(`SELECT created_by FROM crf_cigs
