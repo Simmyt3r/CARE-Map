@@ -2,6 +2,7 @@
 import {useCallback,useEffect,useState} from "react";
 import CrfFieldCenter from "@/components/CrfFieldCenter";
 import CrfLedgerWorkflow from "@/components/CrfLedgerWorkflow";
+import CrfTemplateCenter from "@/components/CrfTemplateCenter";
 type Lga={code:string;name:string};
 type Community={id:string;community_code:string;community_name:string;lga_code:string;status:string;bank_controls_documented:boolean};
 type Cig={id:string;cig_code:string;cig_name:string;community_name:string;community_id:string;
@@ -25,7 +26,7 @@ const simpleDate=new Date().toISOString().slice(0,10);
 export default function CrfOperationsCenter({admin,initialAccess}:{
  admin:boolean;initialAccess:boolean;
 }){
- const[tab,setTab]=useState<"overview"|"registry"|"finance"|"field"|"access">("overview");
+ const[tab,setTab]=useState<"overview"|"registry"|"finance"|"field"|"templates"|"access">("overview");
  const[overview,setOverview]=useState<Summary|null>(null);
  const[communities,setCommunities]=useState<Community[]>([]);
  const[cigs,setCigs]=useState<Cig[]>([]);
@@ -115,10 +116,10 @@ export default function CrfOperationsCenter({admin,initialAccess}:{
    authorize disbursement or imply that the SPMU has approved any example records. All figures come from existing verified records.
   </div>
   <div className="staff-tabs" role="group" aria-label="CRF workspace sections">
-   {(["overview","registry","finance","field",...(admin?["access" as const]:[])] as const).map(t=>
+   {(["overview","registry","finance","field","templates",...(admin?["access" as const]:[])] as const).map(t=>
     <button key={t} className={"btn"+(tab===t?" primary":"")} type="button"
       aria-pressed={tab===t} onClick={()=>setTab(t)}>{t==="overview"?"Command dashboard":
-       t==="registry"?"Communities & CIGs":t==="finance"?"Loans & recovery":t==="field"?"Inspections & T16/T17":"Role assignments"}</button>)}
+       t==="registry"?"Communities & CIGs":t==="finance"?"Loans & recovery":t==="field"?"Inspections & T16/T17":t==="templates"?"Manual T1–T19":"Role assignments"}</button>)}
   </div>
   {loading&&<p className="muted" role="status">Checking authenticated CRF records…</p>}
   {message&&<div className="notice" role="status">{message}</div>}
@@ -375,6 +376,7 @@ export default function CrfOperationsCenter({admin,initialAccess}:{
    <CrfLedgerWorkflow loans={loans} roles={roles}/>
   </div>}
   {initialAccess&&tab==="field"&&<CrfFieldCenter cigs={cigs} communities={communities} roles={roles}/>}
+  {initialAccess&&tab==="templates"&&<CrfTemplateCenter communities={communities} cigs={cigs} loans={loans}/>}
   {admin&&tab==="access"&&<div className="card stack">
    <h2>Confidential CRF role assignments</h2>
    <p className="muted">Only grant duties to actual SPMU-authorized personnel. Existing CARE-Map staff access alone does not expose beneficiary and financial records.</p>
