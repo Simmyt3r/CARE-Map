@@ -2,7 +2,7 @@ import {NextResponse} from "next/server";
 import {z} from "zod";
 import {getSession} from "@/lib/auth";
 import {query} from "@/lib/db";
-import {canCrf,crfAccess,crfAudit,crfTransaction,flatServiceCharge,trancheAmount,roundNairaCents} from "@/lib/crf";
+import {canCrf,crfAccess,crfAudit,crfTransaction,trancheAmount,roundNairaCents} from "@/lib/crf";
 import {error} from "@/lib/http";
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
