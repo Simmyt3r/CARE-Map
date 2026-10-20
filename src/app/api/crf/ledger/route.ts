@@ -21,7 +21,7 @@ const actions=z.discriminatedUnion("action",[
  z.object({action:z.literal("record_disbursement"),loanId:uuid,
   tranche:z.union([z.literal(1),z.literal(2)]),amountNgn:positive,
   transferDate:date,bankReference:ref,t15EndorsementRef:ref,evidenceRef:ref,
-  loanAppReference:ref,firstTrancheUseRef:ref.optional()}),
+  loanAppReference:ref,loanAppRecordedAt:z.iso.datetime({offset:true}),firstTrancheUseRef:ref.optional()}),
  z.object({action:z.literal("record_repayment"),loanId:uuid,paidAt:date,
   principalNgn:money,serviceChargeNgn:money,defaultFeeNgn:money,
   bankReference:ref,bankEvidenceRef:ref}),
@@ -162,9 +162,9 @@ export async function POST(request:Request){
        x.t15EndorsementRef,x.evidenceRef,user!.sub
       ]);
     await tx.query(`UPDATE crf_loans SET loan_app_reference=$2,
-      loan_app_recorded_at=COALESCE(loan_app_recorded_at,now()),
+      loan_app_recorded_at=COALESCE(loan_app_recorded_at,$4::timestamptz),
       first_tranche_use_ref=COALESCE($3,first_tranche_use_ref)
-      WHERE id=$1`,[x.loanId,x.loanAppReference,x.firstTrancheUseRef||null]);
+      WHERE id=$1`,[x.loanId,x.loanAppReference,x.firstTrancheUseRef||null,x.loanAppRecordedAt]);
     idValue=r.rows[0].id;
    }else if(x.action==="record_repayment"){
     entity="crf_repayment";
