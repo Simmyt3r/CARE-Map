@@ -127,11 +127,14 @@ export async function POST(request:Request){
    const template=getCrfTemplate(existing.template_code);
    if(!template)throw Error("Unrecognized CRF template version.");
    if(cmd.action==="update"){
-    if(!mayWrite(template,access.roles)||existing.prepared_by!==user!.sub||existing.status!=="draft")
-     throw Error("Only the preparer may edit an unsubmitted draft.");
+    if(!mayWrite(template,access.roles)||existing.prepared_by!==user!.sub||
+       !["draft","returned"].includes(existing.status))
+     throw Error("Only the preparer may revise a draft or reviewer-returned filing.");
     const fields=safeCrfFormValues(template,cmd.values);
     await tx.query(`UPDATE crf_template_records SET field_values=$2::jsonb,
-        signed_original_ref=$3,support_evidence_ref=$4,revision=revision+1,updated_at=now()
+        signed_original_ref=$3,support_evidence_ref=$4,revision=revision+1,
+        status='draft',reviewed_by=NULL,reviewed_at=NULL,
+        updated_at=now()
       WHERE id=$1`,[cmd.recordId,JSON.stringify(fields),cmd.signedOriginalRef||null,cmd.supportEvidenceRef||null]);
     await crfAudit(tx,user!.sub,"edit_draft","crf_template_record",cmd.recordId,{template:template.code});
     return {id:cmd.recordId,status:"draft"};
