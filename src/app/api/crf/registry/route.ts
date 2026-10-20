@@ -74,7 +74,8 @@ export async function POST(request:Request){
  const x=parsed.data;
  try{
   const result=await crfTransaction(async tx=>{
-   let entity="crf_community",event=x.action,idValue="";
+   let entity="crf_community",idValue="";
+   const event=x.action;
    if(x.action==="community"){
     let locationAllowed=true;
     if(x.latitude!==undefined&&x.longitude!==undefined){
