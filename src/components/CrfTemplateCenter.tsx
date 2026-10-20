@@ -116,6 +116,7 @@ export default function CrfTemplateCenter({communities,cigs,loans}:{
    const r=await fetch("/api/crf/templates/t14-preview?"+qs,{cache:"no-store"});
    const j=await r.json().catch(()=>({}));
    if(!r.ok)throw Error(j.error?.message||"T14 preview unavailable.");
+   if(!j.data.hasVerifiedEntries)throw Error("No verified disbursements exist for this community. Reconcile the source ledger before T14 prefill.");
    setValues(v=>({...v,...j.data.values}));
    setPreviewNotes(j.data.missing||[]);
    setMessage("Pre-filled from recorded and verified entries. Examine bank statements and sign the official T14 before submitting.");
