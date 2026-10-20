@@ -706,3 +706,98 @@ main:has(.staff-workspace)>.shell{max-width:1720px}
   .map-count-option{display:grid;gap:4px;padding:9px}
   .map-count-option strong{font-size:18px}
 }
+
+
+/* CARE-Map Extension Learning Centre: illustrated, accessible lessons. */
+.citizen-learning-hero{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(230px,.75fr);
+  gap:20px;align-items:center;background:linear-gradient(117deg,#e8f4e9,#f7fbf2 58%,#e9f3e9);
+  border:1px solid #c9dfcd;border-radius:18px;padding:clamp(18px,3vw,28px)}
+.citizen-learning-hero h2{max-width:690px;margin:9px 0 12px;font-size:clamp(24px,3vw,34px);
+  letter-spacing:-.035em;line-height:1.2;color:#183d2a}
+.citizen-learning-hero-copy>p{max-width:710px;line-height:1.7;margin:0;color:#475e4f}
+.citizen-learning-highlights{display:flex;gap:9px;flex-wrap:wrap;margin-top:18px}
+.citizen-learning-highlights span{display:inline-flex;align-items:center;gap:5px;
+  padding:8px 10px;border-radius:999px;background:#fff;border:1px solid #cfdfd1;
+  font-size:12px;color:#355b45}
+.citizen-learning-highlights strong{color:#16633f;font-size:14px}
+.citizen-learning-progress{padding:20px;border:1px solid #c7ddce;border-radius:15px;
+  background:#fff;box-shadow:0 8px 24px #224a2810;min-width:0}
+.citizen-learning-progress>strong{display:block;font-size:47px;line-height:1.2;margin:5px 0;
+  color:#1a7249;letter-spacing:-.05em;font-variant-numeric:tabular-nums}
+.citizen-learning-progress>strong small{font-size:20px;letter-spacing:0;color:#587363}
+.citizen-learning-progress>p{font-size:12px;color:#607569;line-height:1.6;margin:9px 0 0}
+.citizen-learning-meter{height:10px;border-radius:100px;background:#dcebe1;overflow:hidden}
+.citizen-learning-meter>span{display:block;height:100%;background:#2b915d;transition:width .2s}
+.citizen-category-area{display:grid;gap:12px}
+.citizen-learning-subhead h3{font-size:21px;color:#1a4630;margin:0 0 4px}
+.citizen-learning-subhead p{font-size:13px;color:#66766a;margin:0}
+.citizen-category-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.citizen-category-option{appearance:none;text-align:left;min-width:0;display:grid;gap:6px;
+  background:#fff;border:1px solid #d4e4d9;border-radius:12px;padding:14px;cursor:pointer;
+  color:#305540;min-height:101px;transition:background .15s,border-color .15s,box-shadow .15s}
+.citizen-category-option:hover{background:#f2f9f3;border-color:#8bb79b}
+.citizen-category-option:focus-visible{outline:3px solid #a7d4bc;outline-offset:2px}
+.citizen-category-option[aria-pressed="true"]{border-color:#1f8051;background:#eef8f0;
+  box-shadow:inset 0 0 0 1px #1f8051}
+.citizen-category-option-top{display:flex;justify-content:space-between;gap:8px;align-items:start}
+.citizen-category-option-top strong{font-size:14px;line-height:1.35;color:#1e4731}
+.citizen-category-option-top span{white-space:nowrap;font-size:11px;color:#2b7050;
+  padding:3px 6px;border-radius:999px;background:#dff1e5}
+.citizen-category-option>small{line-height:1.5;font-size:12px;color:#5a6d5e}
+.citizen-learning-control-foot{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.citizen-learning-control-foot .muted{margin-left:auto;font-size:12px}
+.citizen-lesson.card{padding:15px;gap:12px}
+.citizen-lesson-tags{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-bottom:6px}
+.citizen-lesson-level,.citizen-lesson-done{border-radius:100px;padding:3px 8px;
+  background:#edf3f0;color:#496a57;font-size:11px;font-weight:700}
+.citizen-lesson-done{background:#d5f1df;color:#146239}
+.citizen-graphic{background:#edf6ee;border:1px solid #d4e6d8;border-radius:12px;overflow:hidden}
+.citizen-graphic svg{display:block;width:100%;height:auto;aspect-ratio:600 / 210}
+.citizen-graphic-caption{padding:6px 11px 9px;margin:0;font-size:10px;line-height:1.5;
+  color:#66796a;background:#f7faf7}
+.citizen-lesson-expanded{gap:18px;padding-top:2px}
+.citizen-lesson-expanded h4{font-size:15px;line-height:1.35;color:#183f2a;margin:0 0 6px}
+.citizen-lesson-expanded p{font-size:13px;line-height:1.7;color:#465b4f;margin:0}
+.citizen-lesson-reason{border-left:4px solid #63a67c;padding:9px 12px;background:#f1f8f1;
+  border-radius:3px 10px 10px 3px}
+.citizen-lesson-chapters{display:grid;gap:15px}
+.citizen-lesson-chapter{display:grid;grid-template-columns:29px minmax(0,1fr);gap:10px}
+.citizen-lesson-chapter-number{display:grid;place-items:center;width:28px;height:28px;
+  border-radius:9px;background:#e2f3e7;color:#1c7248;font-weight:800;font-size:12px}
+.citizen-lesson-example{padding:15px;border:1px solid #cce2d1;border-radius:12px;background:#f4f9f4}
+.citizen-lesson-example h4{margin:8px 0 5px}
+.citizen-lesson-practice{border-top:1px solid #dce9df;padding-top:15px}
+.citizen-lesson-practice ol{padding-left:22px;margin:9px 0 0;display:grid;gap:7px}
+.citizen-lesson-practice li{font-size:13px;line-height:1.6;color:#40594a}
+.citizen-lesson-caution{padding:12px;border:1px solid #f2d3af;background:#fffaef;border-radius:11px}
+.citizen-lesson-caution h4{color:#825126}
+.citizen-lesson-glossary>dl{display:grid;gap:7px;margin:0}
+.citizen-lesson-glossary dl>div{border-bottom:1px solid #dce8df;padding:8px 0}
+.citizen-lesson-glossary dt{font-size:13px;font-weight:800;color:#224c33}
+.citizen-lesson-glossary dd{margin:3px 0 0;font-size:12px;line-height:1.6;color:#506457}
+.citizen-lesson .citizen-knowledge-check{gap:9px}
+.citizen-lesson .citizen-knowledge-check legend{font-size:13px}
+.citizen-lesson .citizen-source{border-top:1px solid #deeadf;padding-top:10px;
+  display:grid;gap:5px;font-size:12px}
+.citizen-lesson .citizen-source a{overflow-wrap:anywhere}
+.citizen-lesson .citizen-remember{border-radius:11px}
+@media(max-width:1000px){
+  .citizen-category-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:760px){
+  .citizen-learning-hero{grid-template-columns:1fr}
+  .citizen-category-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .citizen-learning-hero h2{font-size:25px}
+}
+@media(max-width:480px){
+  .citizen-category-grid{grid-template-columns:1fr}
+  .citizen-category-option{min-height:0}
+  .citizen-learning-control-foot .muted{margin-left:0;flex-basis:100%}
+  .citizen-lesson .citizen-lesson-header{grid-template-columns:33px minmax(0,1fr)}
+  .citizen-lesson-number{width:32px;height:32px}
+  .citizen-lesson-header h3{font-size:18px}
+  .citizen-learning-highlights span{font-size:11px}
+}
+@media(prefers-reduced-motion:reduce){
+  .citizen-learning-meter>span,.citizen-category-option{transition:none}
+}
