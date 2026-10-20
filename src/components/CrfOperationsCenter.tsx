@@ -27,6 +27,13 @@ export default function CrfOperationsCenter({admin,initialAccess}:{
  const[overview,setOverview]=useState<Summary|null>(null);
  const[communities,setCommunities]=useState<Community[]>([]);
  const[cigs,setCigs]=useState<Cig[]>([]);
+ const[members,setMembers]=useState<Array<{id:string;cig_id:string;member_reference:string;sex:string;
+   participation_verified:boolean;recorded_by:string}>>([]);
+ const[memberVerificationRef,setMemberVerificationRef]=useState("");
+ const[communityChecks,setCommunityChecks]=useState({
+  communityId:"",approvalReference:"",bankMandateRef:"",account1EvidenceRef:"",
+  account2EvidenceRef:"",spmuEndorsementRef:""
+ });
  const[loans,setLoans]=useState<Loan[]>([]);
  const[users,setUsers]=useState<Staff[]>([]);
  const[assignments,setAssignments]=useState<Array<{user_id:string;name:string;crf_role:string}>>([]);
@@ -70,7 +77,7 @@ export default function CrfOperationsCenter({admin,initialAccess}:{
      read("/api/crf/overview?month="+month+"&lga="+encodeURIComponent(lga))
     ].map(p=>p.catch(e=>({failed:String(e)}))));
     if("failed" in reg)throw Error(reg.failed);
-    setCommunities(reg.data.communities);setCigs(reg.data.cigs);
+    setCommunities(reg.data.communities);setCigs(reg.data.cigs);setMembers(reg.data.members||[]);
     setRoles(reg.roles||[]);
     if(!("failed" in fin))setLoans(fin.data.loans);
     if(!("failed" in sum))setOverview(sum);
@@ -225,6 +232,24 @@ export default function CrfOperationsCenter({admin,initialAccess}:{
     </div>
     <button className="btn primary" type="submit" disabled={busy}>Add member record</button>
    </form>}
+   {canRegistry&&<form className="card stack" onSubmit={e=>{e.preventDefault();void send("/api/crf/registry",{
+    action:"verify_community",...communityChecks
+   });}}>
+    <h3>Independent community and bank-control review</h3>
+    <p className="muted">Enter the actual SPMU approval and T15 evidence references. A second authorized officer must verify a draft community.</p>
+    <div className="grid three">
+     <div className="field"><label>Draft community</label><select required value={communityChecks.communityId}
+      onChange={e=>setCommunityChecks(x=>({...x,communityId:e.target.value}))}>
+      <option value="">Select community</option>{communities.filter(c=>c.status==="draft").map(c=><option key={c.id} value={c.id}>{c.community_name}</option>)}
+     </select></div>
+     {([["approvalReference","SPMU approval memorandum"],["bankMandateRef","T15A bank mandate"],
+       ["account1EvidenceRef","Account 1 evidence"],["account2EvidenceRef","Account 2 evidence"],
+       ["spmuEndorsementRef","SPMU bank endorsement"]] as const).map(([key,label])=>
+       <div className="field" key={key}><label>{label}</label><input required
+        value={communityChecks[key]} onChange={e=>setCommunityChecks(x=>({...x,[key]:e.target.value}))}/></div>)}
+    </div>
+    <button className="btn primary" type="submit" disabled={busy}>Verify community eligibility evidence</button>
+   </form>}
    <section className="card stack"><h3>Participating communities</h3>
     <div className="table-wrap"><table><thead><tr><th>Community</th><th>LGA</th><th>Status</th><th>Bank controls</th></tr></thead>
      <tbody>{communities.map(c=><tr key={c.id}>
@@ -232,6 +257,36 @@ export default function CrfOperationsCenter({admin,initialAccess}:{
       <td>{c.bank_controls_documented?"Documented":"Not yet verified"}</td>
      </tr>)}</tbody></table></div>
    </section>
+   {canRegistry&&<section className="card stack">
+    <h3>Independently verify member entries</h3>
+    <div className="field"><label>Supporting verification reference</label><input
+      value={memberVerificationRef} onChange={e=>setMemberVerificationRef(e.target.value)}
+      placeholder="Approved member register and reviewer reference"/></div>
+    <div className="table-wrap"><table><thead><tr><th>CIG</th><th>Member reference</th>
+      <th>Sex</th><th>Review</th></tr></thead><tbody>
+     {members.slice(0,100).map(m=><tr key={m.id}><td>{cigs.find(c=>c.id===m.cig_id)?.cig_name||"CIG"}</td>
+      <td>{m.member_reference}</td><td>{m.sex}</td>
+      <td>{m.participation_verified?"Verified":<button type="button" className="btn"
+        disabled={busy||memberVerificationRef.trim().length<3} onClick={()=>
+          void send("/api/crf/registry",{action:"verify_member",memberId:m.id,
+            verificationRef:memberVerificationRef})}>Verify</button>}</td>
+     </tr>)}</tbody></table></div>
+   </section>}
+   {canRegistry&&<form className="card stack" onSubmit={e=>{e.preventDefault();void send("/api/crf/registry",{
+      action:"qualify",cigId:record.cigId,qualificationRef:record.qualificationRef
+    });}}>
+    <h3>Qualify a CIG after independent review</h3>
+    <p className="muted">The system checks exactly 15 members, a minimum of six women, and independent member verification. This action records qualification evidence, not financial approval.</p>
+    <div className="grid two">
+     <div className="field"><label>CIG</label><select required value={record.cigId}
+      onChange={e=>setRecord(x=>({...x,cigId:e.target.value}))}>
+      <option value="">Select group</option>{cigs.filter(c=>c.qualification!=="qualified").map(c=>
+       <option key={c.id} value={c.id}>{c.cig_name} ({c.member_count}/15)</option>)}</select></div>
+     <div className="field"><label>Qualification scoring/evidence reference</label><input required
+      value={record.qualificationRef} onChange={e=>setRecord(x=>({...x,qualificationRef:e.target.value}))}/></div>
+    </div>
+    <button className="btn primary" type="submit" disabled={busy}>Record independent qualification</button>
+   </form>}
    <section className="card stack"><h3>CIG eligibility register</h3>
     <div className="table-wrap"><table><thead><tr><th>Group</th><th>Community</th>
      <th>Members</th><th>Female</th><th>Verified members</th><th>Qualification</th></tr></thead>
