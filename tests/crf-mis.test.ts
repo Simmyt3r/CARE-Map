@@ -8,7 +8,7 @@ describe("Benue CRF policy and governance",()=>{
   expect(assessGroup(group.slice(0,14)).ready).toBe(false);
   expect(assessGroup(group.map((x,i)=>i===0?{...x,participation_verified:false}:x)).ready).toBe(false);
   expect(assessGroup(group.map((x,i)=>i===5?{...x,sex:"male"}:x)).ready).toBe(false);
-  expect(CRF_POLICY).toMatchObject({recoveryMinimum:75,par60Maximum:25,womenFundMinimum:undefined});
+  expect(CRF_POLICY).toMatchObject({recoveryMinimum:75,par60Maximum:25,womenValueMinimum:30});
  });
  it("calculates the approved flat service charge and exact 70/30 tranches",()=>{
   expect(flatServiceCharge(3)).toBe(50000);
