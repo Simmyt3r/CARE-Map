@@ -29,14 +29,26 @@ describe("Public vegetation change display",()=>{
   });
 });
 describe("Citizen education quality",()=>{
-  it("ships topic and named source for each lesson, with no external response capture",()=>{
-    expect(citizenLessons.length).toBeGreaterThanOrEqual(6);
+  it("ships twelve structured lessons across the seven useful categories, with named sources",()=>{
+    expect(citizenLessons.length).toBeGreaterThanOrEqual(12);
+    expect(citizenCategories).toHaveLength(8);
+    const represented=new Set(citizenLessons.map(item=>item.category));
+    for(const category of citizenCategories.filter(x=>x!=="All topics")){
+      expect(represented.has(category)).toBe(true);
+    }
     const ids=new Set(citizenLessons.map(x=>x.id));
     expect(ids.size).toBe(citizenLessons.length);
     for(const lesson of citizenLessons){
       expect(citizenCategories.includes(lesson.category)).toBe(true);
       expect(lesson.summary.length).toBeGreaterThan(25);
-      expect(lesson.actions.length).toBeGreaterThanOrEqual(2);
+      expect(lesson.sections.length).toBeGreaterThanOrEqual(4);
+      expect(lesson.sections.every(section=>section.heading.length>7&&section.body.length>70)).toBe(true);
+      expect(lesson.graphic).toBeTruthy();
+      expect(lesson.example.title.length).toBeGreaterThan(7);
+      expect(lesson.example.body.length).toBeGreaterThan(60);
+      expect(lesson.terms.length).toBeGreaterThanOrEqual(2);
+      expect(lesson.avoid.length).toBeGreaterThan(30);
+      expect(lesson.actions.length).toBeGreaterThanOrEqual(3);
       expect(lesson.choices).toHaveLength(3);
       expect(lesson.correct).toBeGreaterThanOrEqual(0);
       expect(lesson.correct).toBeLessThan(lesson.choices.length);
@@ -44,7 +56,14 @@ describe("Citizen education quality",()=>{
       expect(lesson.source.url.startsWith("https://")).toBe(true);
     }
   });
-  it("teaches NDVI uncertainty rather than guaranteeing restoration",()=>{
+  it("does not give unsafe emergency instructions or imply official certification",()=>{
+    const flood=citizenLessons.find(item=>item.id==="flood");
+    const warning=citizenLessons.find(item=>item.id==="warning");
+    expect(flood?.avoid).toMatch(/never cross floodwater/i);
+    expect(warning?.remember).toMatch(/verify/i);
+    expect(citizenLessons.every(item=>item.source.url.startsWith("https://"))).toBe(true);
+  });
+    it("teaches NDVI uncertainty rather than guaranteeing restoration",()=>{
     const lesson=citizenLessons.find(x=>x.id==="ndvi");
     expect(lesson?.remember).toContain("verify on the ground");
     expect(lesson?.summary).toContain("NDVI");
