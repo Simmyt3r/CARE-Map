@@ -26,6 +26,7 @@ CARE-Map is the Benue ACReSAL Smart Asset, Forest, River & Borehole Tracking Sys
 - [GIS Boundaries](lga-boundaries.md), [Coverage Analysis](intervention-coverage.md), [Settlement Access](settlement-access.md), [River Exposure](river-corridor-exposure.md), [Hazard Zones](hazard-zones.md), [Catchments](catchments-landscape-planning.md)
 - [Remote Sensing](remote-sensing.md), [Map Composer](map-composer.md), [Localization](localization.md)
 - [State-wide Sentinel-2 Workflow](remote-sensing-statewide.md) (LGA-clipped tiles, resumable processing, coverage and scientific quality gates)
+- [Citizen Education Curriculum](citizen-learning-curriculum.md) (12 illustrated lessons, category guide, sources, safety and editorial review)
 - [ACReSAL Extension and Community Stewardship](planning/community-extension.md) (project contacts, visits, evidence-backed assessment and reward governance)
 - [GPS Field Acceptance and Regression Checklist](quality/gps-field-acceptance.md) (current capture thresholds, known limits and device tests)
 - [System Hardening Audit — 2026-10-14](quality/system-hardening-audit-2026-10-14.md) (component inventory, verified defects, risk register, prioritized release gates)
