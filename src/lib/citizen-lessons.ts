@@ -60,7 +60,7 @@ export const citizenLessons:CitizenLesson[]=[
   terms:[{term:"Climate adaptation",definition:"Actions that reduce harm from climate-related changes."},{term:"Climate mitigation",definition:"Actions that limit greenhouse gas emissions or enhance their removal."}],
   question:"What is the best response to an unusual rainy season?",
   choices:["Make all decisions from one afternoon's weather","Consult official forecasts and locally qualified advice","Assume every year will be identical"],
-  correct:1,source:{name:"United Nations – Climate action and adaptation",url:"https://www.un.org/en/climatechange/climate-adaptation"}
+  correct:1,source:{name:"United Nations – Climate action and adaptation",url:"https://www.un.org/climatechange/what-is-climate-change/"}
  },
  {
   id:"flood",category:"Water & floods",graphic:"flood",
@@ -140,7 +140,7 @@ export const citizenLessons:CitizenLesson[]=[
   terms:[{term:"Watershed",definition:"The land area draining toward a common water outlet."},{term:"Upstream",definition:"Toward where water flows from; downstream is toward where it flows to."}],
   question:"Why could a problem upstream matter to a downstream community?",
   choices:["Water systems are always isolated","Water and sediment can travel through connected channels","Streams do not move soil"],
-  correct:1,source:{name:"USGS – Watersheds and drainage basins",url:"https://www.usgs.gov/special-topics/water-science-school/science/watersheds-and-drainage-basins"}
+  correct:1,source:{name:"USGS – Watersheds and drainage basins",url:"https://www.usgs.gov/water-science-school/science/watersheds-and-drainage-basins"}
  },
  {
   id:"trees",category:"Trees & farming",graphic:"trees",
