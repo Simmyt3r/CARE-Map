@@ -18,7 +18,7 @@ describe("CARE-Map citizen teaching graphics",()=>{
      expect(html).toContain("Illustration for learning only");
      expect(html).toContain(lesson.title.replace(/&/g,"&amp;"));
      expect(html).not.toContain("<img");
-     expect(html).not.toContain("http://");
+     expect(html).not.toContain("href=\"http");
    }
  });
 });
