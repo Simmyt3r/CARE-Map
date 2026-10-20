@@ -25,6 +25,7 @@ export default function CrfTemplateCenter({communities,cigs,loans}:{
  const[signed,setSigned]=useState("");
  const[support,setSupport]=useState("");
  const[reviewNote,setReviewNote]=useState("");
+ const[previewNotes,setPreviewNotes]=useState<string[]>([]);
  const[loading,setLoading]=useState(true);
  const[busy,setBusy]=useState(false);
  const[message,setMessage]=useState("");
@@ -106,6 +107,21 @@ export default function CrfTemplateCenter({communities,cigs,loans}:{
     values,signedOriginalRef:signed||null,supportEvidenceRef:support||null});
   }
  }
+ async function prefillT14(){
+  if(!scope.communityId||!scope.periodMonth){setMessage("Choose a community and reporting month first.");return;}
+  if(Object.values(values).some(Boolean)&&!confirm("Replace existing draft fields with verified CARE-Map figures? Unsupported T14 fields will remain unchanged."))return;
+  setBusy(true);
+  try{
+   const qs=new URLSearchParams({communityId:scope.communityId,month:scope.periodMonth});
+   const r=await fetch("/api/crf/templates/t14-preview?"+qs,{cache:"no-store"});
+   const j=await r.json().catch(()=>({}));
+   if(!r.ok)throw Error(j.error?.message||"T14 preview unavailable.");
+   setValues(v=>({...v,...j.data.values}));
+   setPreviewNotes(j.data.missing||[]);
+   setMessage("Pre-filled from recorded and verified entries. Examine bank statements and sign the official T14 before submitting.");
+  }catch(e){setMessage(e instanceof Error?e.message:"Cannot prefill T14.");}
+  finally{setBusy(false);}
+ }
  function viewSheet(){
   window.print();
  }
@@ -158,6 +174,10 @@ export default function CrfTemplateCenter({communities,cigs,loans}:{
      <p className="muted">Manual p. {selected.manualPage} · Filing {record?.status||"new draft"} · Revision {record?.revision||"1"}</p></div>
     <button type="button" className="btn no-print" onClick={viewSheet}>Print companion view</button>
    </div>
+   {selected.code==="T14"&&(!record||["draft","returned"].includes(record.status))&&<div className="stack no-print">
+    <div className="actions"><button className="btn" type="button" disabled={busy||!scope.communityId||!scope.periodMonth} onClick={()=>void prefillT14()}>Prefill verified T14 figures</button></div>
+    {previewNotes.length>0&&<div className="notice"><strong>Not calculated from source records:</strong><ul>{previewNotes.map(p=><li key={p}>{p}</li>)}</ul></div>}
+   </div>}
    {grouped.map(section=><fieldset key={section.name} className="crf-form-section">
     <legend>{section.name}</legend>
     <div className="grid two">
