@@ -16,7 +16,7 @@ describe("CARE-Map citizen teaching graphics",()=>{
      expect(html).toContain('viewBox="0 0 600 210"');
      expect(html).toContain('role="img"');
      expect(html).toContain("Illustration for learning only");
-     expect(html).toContain(lesson.title.replace(/&/g,"&amp;"));
+     expect(html).toContain(lesson.title.replace(/&/g,"&amp;").replace(/\x27/g,"&#x27;"));
      expect(html).not.toContain("<img");
      expect(html).not.toContain("href=\"http");
    }
