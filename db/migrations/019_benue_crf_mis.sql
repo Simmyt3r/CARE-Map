@@ -59,8 +59,12 @@ CREATE TABLE IF NOT EXISTS crf_cig_members (
   sex TEXT NOT NULL CHECK(sex IN ('female','male','other','undisclosed')),
   youth_under_35 BOOLEAN,
   participation_verified BOOLEAN NOT NULL DEFAULT FALSE,
+  recorded_by UUID NOT NULL REFERENCES users(id),
+  verified_by UUID REFERENCES users(id),
+  verification_ref TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  UNIQUE(cig_id,member_reference)
+  UNIQUE(cig_id,member_reference),
+  CHECK(verified_by IS NULL OR verified_by<>recorded_by)
 );
 CREATE INDEX IF NOT EXISTS crf_cig_members_cig ON crf_cig_members(cig_id);
 
