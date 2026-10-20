@@ -54,10 +54,13 @@ export async function GET(request:Request){
        GROUP BY c.id,k.id
        ORDER BY c.created_at DESC LIMIT 400`,[lga]),
    query("SELECT code,name FROM lgas ORDER BY name"),
-   query(`SELECT m.id,m.cig_id,m.member_reference,m.sex,m.participation_verified,m.recorded_by,
-      m.verification_ref FROM crf_cig_members m JOIN crf_cigs c ON c.id=m.cig_id
-      JOIN crf_communities k ON k.id=c.community_id
-      WHERE ($1='' OR k.lga_code=$1) ORDER BY m.created_at DESC LIMIT 750`,[lga])
+   canCrf(access.roles,"registry")||access.roles.some(role=>
+     ["me_officer","finance_officer","internal_auditor"].includes(role))
+    ?query(`SELECT m.id,m.cig_id,m.member_reference,m.sex,m.participation_verified,m.recorded_by,
+       m.verification_ref FROM crf_cig_members m JOIN crf_cigs c ON c.id=m.cig_id
+       JOIN crf_communities k ON k.id=c.community_id
+       WHERE ($1='' OR k.lga_code=$1) ORDER BY m.created_at DESC LIMIT 750`,[lga])
+    :Promise.resolve({rows:[]})
   ]);
   return NextResponse.json({data:{communities:communities.rows,cigs:cigs.rows,
     lgas:lgas.rows,members:members.rows},
