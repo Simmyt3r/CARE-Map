@@ -49,7 +49,7 @@ export const citizenLessons:CitizenLesson[]=[
   why:"Heat, rainfall patterns and extreme events affect people differently. Understanding risk helps communities plan instead of reacting only after damage occurs.",
   sections:[
    {heading:"Weather is not the same as climate",body:"Weather describes short-term conditions such as today's rain, sunshine, temperature and wind. Climate describes patterns and their variations over many years. One unusual storm or hot afternoon alone cannot establish a climate trend."},
-   {heading:"How climate change can affect Benue communities",body:"Changes in heat, the timing and intensity of rainfall and water availability can influence crops, soil, drainage, flooding and everyday activities. The type and severity of risk vary by locality, season and people's ability to prepare."},
+   {heading:"How climate change can affect communities",body:"Changes in heat, the timing and intensity of rainfall and water availability can influence crops, soil, drainage, flooding and everyday activities. The type and severity of risk vary by locality, season and people's ability to prepare."},
    {heading:"Mitigation and adaptation",body:"Mitigation means reducing the causes of climate change, such as unnecessary emissions. Adaptation means preparing for consequences, for example improving warnings, keeping drainage routes clear and selecting suitable local farm practices. Communities often need both."},
    {heading:"Where decisions should come from",body:"Use official forecasts, extension officers and emergency-management advice for time-sensitive decisions. General online articles cannot predict rainfall for a particular village or replace a local safety announcement."}
   ],
