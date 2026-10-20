@@ -117,7 +117,7 @@ export default function CrfTemplateCenter({communities,cigs,loans}:{
     <p className="muted">Register the actual official forms, supporting evidence and independent reviews. T12A–D and T15A–E remain separate distinct documents.</p>
    </div><button type="button" className="btn" disabled={loading} onClick={()=>void reload()}>Refresh</button>
   </div>
-  <div className="notice"><strong>Source document controls:</strong> States may translate but must not change the substance of the Manual's forms. These editable fields are an internal indexing companion, <strong>not</strong> recreated official forms. Keep the original completed, signed PDF/paper in approved SPMU storage. Enter its reference here, not sensitive NINs, phone numbers, account numbers or signatures. The source PDF still identifies its document-control status as a draft for review; confirm the adopted edition with FPMU.</div>
+  <div className="notice"><strong>Source document controls:</strong> States may translate but must not change the substance of the Manual&apos;s forms. These editable fields are an internal indexing companion, <strong>not</strong> recreated official forms. Keep the original completed, signed PDF/paper in approved SPMU storage. Enter its reference here, not sensitive NINs, phone numbers, account numbers or signatures. The source PDF still identifies its document-control status as a draft for review; confirm the adopted edition with FPMU.</div>
   {loading&&<p role="status">Loading authorized CRF form records…</p>}
   {message&&<div className="notice" role="status">{message}</div>}
   {!!templates.length&&<div className="grid two">
@@ -139,7 +139,7 @@ export default function CrfTemplateCenter({communities,cigs,loans}:{
     <p className="muted">{records.filter(r=>r.template_code===chosen).length} recent filings of this type. Filing status is a document-review state, not CRF financial authorization.</p>
    </div>
    <div className="card stack">
-    <h3>Link to Benue's official CRF records</h3>
+    <h3>Link to Benue&apos;s official CRF records</h3>
     {([["communityId","Community",communities.map(c=>({id:c.id,label:c.community_name}))],
        ["cigId","CIG",cigs.map(c=>({id:c.id,label:c.cig_name}))],
        ["loanId","Loan",loans.map(l=>({id:l.id,label:l.loan_reference}))]] as [keyof typeof scope,string,Choice[]][]).map(([key,label,choices])=>
