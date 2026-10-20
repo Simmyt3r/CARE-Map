@@ -7,7 +7,7 @@ import {canCrf,crfAccess,crfAudit,crfTransaction,type CrfRole} from "@/lib/crf";
 import {CRF_TEMPLATES,getCrfTemplate,safeCrfFormValues,missingCrfFields,validateCrfScoring,type CrfTemplate} from "@/lib/crf-templates";
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
-const uid=z.string().uuid(),ref=z.string().trim().min(3).max(350),note=z.string().trim().max(1000);
+const uid=z.string().uuid(),ref=z.string().trim().min(3).max(350),note=z.string().trim().min(5).max(1000);
 const scopeId=uid.nullish();
 const create=z.object({
  action:z.literal("create"),templateCode:z.string().min(2).max(5),
@@ -95,6 +95,7 @@ export async function POST(request:Request){
     const cm=cmd.communityId||null,cig=cmd.cigId||null,loan=cmd.loanId||null;
     if(!cm&&!cig&&!loan&&!["T15B","T16","T19"].includes(template.code))
      throw Error("Link this form to an existing community, CIG or loan.");
+    if(template.code==="T14"&&!cmd.periodMonth)throw Error("T14 requires an explicit reporting month.");
     if(cmd.periodMonth&&!/^\d{4}-\d{2}-01$/.test(cmd.periodMonth))
      throw Error("The reporting month must be the first day of the month.");
     const check=await tx.query(`
