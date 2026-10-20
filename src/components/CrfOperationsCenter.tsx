@@ -1,6 +1,7 @@
 "use client";
 import {useCallback,useEffect,useState} from "react";
 import CrfFieldCenter from "@/components/CrfFieldCenter";
+import CrfLedgerWorkflow from "@/components/CrfLedgerWorkflow";
 type Lga={code:string;name:string};
 type Community={id:string;community_code:string;community_name:string;lga_code:string;status:string;bank_controls_documented:boolean};
 type Cig={id:string;cig_code:string;cig_name:string;community_name:string;community_id:string;
@@ -371,7 +372,7 @@ export default function CrfOperationsCenter({admin,initialAccess}:{
     <button type="submit" className="btn primary" disabled={busy}>Record pending repayment</button>
     <p className="muted">A different officer must independently verify the bank statement before this receipt affects recovery figures.</p>
    </form>}
-   {canVerify&&<p className="notice">Verification access is assigned. Ledger review and independent reconciliation require opening the specific transaction record; unverified entries are not counted in the dashboard.</p>}
+   <CrfLedgerWorkflow loans={loans} roles={roles}/>
   </div>}
   {initialAccess&&tab==="field"&&<CrfFieldCenter cigs={cigs} communities={communities} roles={roles}/>}
   {admin&&tab==="access"&&<div className="card stack">
