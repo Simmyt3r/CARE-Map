@@ -113,3 +113,38 @@ The dashboard's women-led value indicator currently summarizes verified disburse
 **Preferred PC demonstration:** show Benue LGA filter, a sandbox CIG with clearly labelled synthetic data, a pending evidence entry, a second-officer verification, an inspection and T16 action, and an automatically recomputed monthly report. Never run demonstration records in real SPMU finance tables.
 
 The request to the PC should be **technical appraisal and controlled SPMU pilot authorization**, not retrospective approval of a Silabs contract or any financial transfer.
+
+
+## Mandatory forms integration — October 20, 2026 (migration 020)
+
+Part Four of the revised Manual states: **all listed forms are mandatory; states may translate them but may not alter their substance.** CARE-Map now offers a restricted **Manual T1–T19** section at `/staff/crf`. It stores a **companion metadata index for the signed official template**, not an unapproved replacement, reproduced legal agreement or bank payment instruction.
+
+| Manual form | Template page in Manual | CARE-Map location / evidence link |
+|---|---:|---|
+| T1 CIG loan application | 62–64 | CIG registration, 15-member eligibility; official signed application reference |
+| T2 business plan | 65 | Linked CIG/loan application, costs, market, risks, inclusion, safeguards |
+| T3 crop hectare budget | 66–68 | Linked local-rate-backed costing sheet |
+| T4 processing model | 69–70 | Equipment, operating capital, monthly margin, feasibility evidence |
+| T5 produce marketing model | 71 | Inventory, storage loss, floor price and repayment buffer |
+| T6 appraisal and scoring | 72 | Eight criteria, total /100; rejection guard for score below 60 or zero in criteria 1 or 5 |
+| T7 loan offer | 73–74 | Signed 21-day offer; SPMU memo and terms |
+| T8 loan agreement | 75–77 | Executed agreement and 15-member joint liability references |
+| T9 joint liability undertaking | 78 | All member execution evidence |
+| T10 repayment schedule | 79 | Ledger instalment schedule and signed original |
+| T11 disbursement voucher | 80 | Externally bank-confirmed transfer and SPMU-endorsed T15C |
+| T12A, B, C, D ledgers and register | 81–82 | Separate companion filing for each of the four registers; source financial ledger remains reconciled |
+| T13 arrears/demand notice | 83 | Notice, stage, dates, cause, action and signatures |
+| T14 monthly community return | 84 | This-month/cumulative figures and dual account balances; signed Chairperson/CBA original |
+| T15A–E fiduciary bank forms | 85–95 | Independent restricted record per lettered form. Never substitute for bank-acknowledged originals |
+| T16 corrective action log | 96–97 | Existing T16 action tracker plus filed state log and SPC certification reference |
+| T17 asset register | 98 | Existing spatial asset inventory plus signed monthly CBA/internal auditor verification |
+| T18 market linkage agreement | 99–101 | Signed buyer relationship evidence; not a guarantee or substitute for T8 |
+| T19 state off-taker register | 102–103 | State-level filed buyer register; pilot activity not presumed for Benue |
+
+**Security design:** All records are staff-only and gated by CRF-specific duty roles, not general CARE-Map user access. Financial/bank-form metadata requires financial or audit authorization. The signed original is a **controlled-storage reference**, not an attached image or the original bank instruction. Records remain **draft → submitted → verified/returned**, with independent reviewer enforcement. Returned records may be revised and resubmitted; edits are logged and revisioned.
+
+**Hard compliance boundary:** A verified filed form means a designated reviewer has checked the original's existence. It does **not** approve a loan, authorize a bank debit, override the Loan App, establish formal external signatures or validate underlying expenditure. The signed official Manual page controls form layout and substance. In particular, do not enter NINs, phone numbers, account numbers or signature scans into freeform form metadata.
+
+**Activation:** new `db/migrations/020_crf_manual_template_records.sql` is strictly additive. **Migration 019 and then 020 must be applied in sequence** through the authorized existing admin migration process after approved backup. No beneficiary records or approval evidence is seeded, and the user interface cannot operate until authorized CRF roles exist.
+
+**Reporting/rollout caveats:** T14 filing is indexed; existing `/api/crf/overview` separately computes a subset of verified ledger indicators, not every row of T14. An authorized, reconciled, signed T14 return is still required. Advanced bank feeds, secure document custody/upload, complete Section 22 reports, offline mobile evidence, and formal loan-app synchronization are future acceptance-gated work, not claimed present. The Manual PDF document-control page calls itself **draft for review**, despite a separate covering communication describing approval. Obtain the binding adopted issue and circulars before enforcing any legal form electronically.
