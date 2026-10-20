@@ -1,14 +1,14 @@
 import Link from "next/link";
 import CitizenLearningCenter from "@/components/CitizenLearningCenter";
 export const metadata={title:"ACReSAL Community Extension | CARE-Map",
- description:"Citizen education about climate change, soil care, water, green landscapes and ACReSAL community aftercare."};
+ description:"Free illustrated citizen education in climate, flood safety, soil erosion, water, farming, remote sensing and community stewardship."};
 
 export default function ExtensionPage(){
   return <div className="stack">
     <section className="card stack">
       <span className="page-eyebrow">CARE-Map · Citizen education & community extension</span>
-      <h1>Learn. Protect our environment. Care for community projects.</h1>
-      <p>Understand climate change, protect soil and water, and learn practical steps to care for boreholes, trees and other ACReSAL-related interventions. Free lessons are available below, with simple knowledge checks and source links.</p>
+      <h1>ACReSAL community extension and environmental learning</h1>
+      <p>Explore illustrated, practical lessons about climate change, flooding, soil and water care, resilient farming, satellite vegetation maps and responsible reporting. Each lesson includes clear explanations, a community example, a glossary and a knowledge check.</p>
       <div className="actions">
         <Link className="btn primary" href="/report">Report a project problem</Link>
         <a className="btn" href="#community-lessons">Start learning</a>
