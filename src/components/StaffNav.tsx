@@ -13,6 +13,7 @@ const groups:NavGroup[]=[
   ]},
   {title:"Community programs",items:[
     {href:"/staff/extension",label:"Extension & communities",short:"EX"},
+    {href:"/staff/crf",label:"CRF monitoring & accountability",short:"CRF"},
     {href:"/staff/field-acceptance",label:"Field acceptance",short:"FA"}
   ]},
   {title:"GIS & environment",items:[
