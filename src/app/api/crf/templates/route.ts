@@ -93,7 +93,8 @@ export async function POST(request:Request){
     if(!template||!mayWrite(template,access.roles))throw Error("This CRF duty cannot create that template.");
     const fields=safeCrfFormValues(template,cmd.values);
     const cm=cmd.communityId||null,cig=cmd.cigId||null,loan=cmd.loanId||null;
-    if(!cm&&!cig&&!loan)throw Error("Link this form to an existing community, CIG or loan.");
+    if(!cm&&!cig&&!loan&&!["T15B","T16","T19"].includes(template.code))
+     throw Error("Link this form to an existing community, CIG or loan.");
     if(cmd.periodMonth&&!/^\d{4}-\d{2}-01$/.test(cmd.periodMonth))
      throw Error("The reporting month must be the first day of the month.");
     const check=await tx.query(`
