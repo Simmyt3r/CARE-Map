@@ -71,7 +71,7 @@ CREATE TABLE IF NOT EXISTS crf_loans (
   cycle INTEGER NOT NULL CHECK(cycle BETWEEN 1 AND 50),
   principal_ngn NUMERIC(18,2) NOT NULL CHECK(principal_ngn>0),
   approved_ceiling_ngn NUMERIC(18,2) NOT NULL CHECK(approved_ceiling_ngn>0),
-  cnb_rate_reference TEXT NOT NULL,
+  cbn_rate_reference TEXT NOT NULL,
   tenor_months INTEGER NOT NULL CHECK(tenor_months IN (3,6,12)),
   service_charge_ngn NUMERIC(18,2) GENERATED ALWAYS AS
     (CASE tenor_months WHEN 3 THEN 50000.00 WHEN 6 THEN 75000.00 ELSE 100000.00 END) STORED,
