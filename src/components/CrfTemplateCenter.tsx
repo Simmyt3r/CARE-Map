@@ -164,25 +164,25 @@ export default function CrfTemplateCenter({communities,cigs,loans}:{
     {section.fields.map(field=><div className="field" key={field.key}>
      <label htmlFor={"crf-form-"+field.key}>{field.label}{field.required?" *":""}</label>
      {field.kind==="textarea"?
-       <textarea id={"crf-form-"+field.key} rows={3} disabled={!!record&&record.status!=="draft"}
+       <textarea id={"crf-form-"+field.key} rows={3} disabled={!!record&&!["draft","returned"].includes(record.status)}
         value={values[field.key]||""} onChange={e=>setValues(v=>({...v,[field.key]:e.target.value}))}/>:
        <input id={"crf-form-"+field.key} type={field.kind||"text"} maxLength={2800}
-        disabled={!!record&&record.status!=="draft"} value={values[field.key]||""}
+        disabled={!!record&&!["draft","returned"].includes(record.status)} value={values[field.key]||""}
         onChange={e=>setValues(v=>({...v,[field.key]:e.target.value}))}/>}
      </div>)}
     </div>
    </fieldset>)}
    <div className="grid two">
     <div className="field"><label htmlFor="crf-form-original">Signed official form · controlled-storage reference *</label>
-     <input id="crf-form-original" value={signed} disabled={!!record&&record.status!=="draft"} maxLength={350}
+     <input id="crf-form-original" value={signed} disabled={!!record&&!["draft","returned"].includes(record.status)} maxLength={350}
       placeholder="SPMU-controlled file reference (not a public URL)"
       onChange={e=>setSigned(e.target.value)}/></div>
     <div className="field"><label htmlFor="crf-form-evidence">Supporting evidence folder/reference</label>
-     <input id="crf-form-evidence" value={support} disabled={!!record&&record.status!=="draft"} maxLength={350}
+     <input id="crf-form-evidence" value={support} disabled={!!record&&!["draft","returned"].includes(record.status)} maxLength={350}
       onChange={e=>setSupport(e.target.value)}/></div>
    </div>
    <div className="actions no-print">
-    {mayPrepare(selected.scope)&&(!record||record.status==="draft")&&
+    {mayPrepare(selected.scope)&&(!record||["draft","returned"].includes(record.status))&&
      <button type="button" className="btn primary" disabled={busy} onClick={doSave}>
       {record?"Save draft revision":"Create form filing"}</button>}
     {record?.status==="draft"&&mayPrepare(selected.scope)&&
