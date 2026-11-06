@@ -1,3 +1,4 @@
+import {isWithinNigeriaExtent} from "@/lib/nigeria-geography";
 import {z} from "zod";
 export const loginSchema=z.object({email:z.email().max(254),password:z.string().min(8).max(200)});
 export const registerSchema=z.object({name:z.string().min(2).max(120),email:z.email().max(254),password:z.string().min(10).max(200),privacyAcknowledged:z.literal(true),privacyNoticeVersion:z.string().min(1).max(40)});
@@ -5,6 +6,9 @@ export const reportSchema=z.object({type:z.enum(["problem_report","small_river_r
   const source=d.captureSource||"manual";
   const accuracy=d.gpsAccuracy??null;
   const capturedAt=d.capturedAt??null;
+  if(!isWithinNigeriaExtent(d.latitude,d.longitude)){
+    ctx.addIssue({code:"custom",path:["latitude"],message:"CARE-Map accepts reports from Nigeria only. Check the coordinates."});
+  }
   if(d.latitude===0&&d.longitude===0){
     ctx.addIssue({code:"custom",path:["latitude"],message:"Coordinates at 0,0 are not a valid CARE-Map field position."});
   }

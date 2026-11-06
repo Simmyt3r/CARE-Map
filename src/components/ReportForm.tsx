@@ -128,7 +128,7 @@ export default function ReportForm({relatedEntityType=null,relatedEntityId=null,
     <div className="actions">
       <button type="button" className="btn" disabled={gps.capturing||busy} onClick={()=>{setForm(x=>({...x,gpsAccuracy:"",capturedAt:"",captureSource:"manual"}));gps.capture();}}>{gps.capturing?"Refining GPS (up to 30 s)…":t("report.useGps")}</button>
       {gps.capturing&&<button type="button" className="btn" onClick={()=>{gps.cancel();setMessage("GPS acquisition cancelled.");}}>Cancel GPS</button>}<button className="btn primary" disabled={busy||gps.capturing||!privacyAcknowledged||Boolean((form.reporterName||form.reporterContact)&&!optionalContactConsent)}>{busy?t("report.submitting"):t("report.submit")}</button></div>
-    <p className="muted">For accurate field reports, let the device refine its GPS fix. Target reported accuracy ≤30 m. A manual location or a weaker fix is acceptable for reporting but must be independently reviewed.</p>
+    <p className="muted">CARE-Map covers Nigeria only. Coordinates outside the national screening extent are rejected; border locations require geographic verification. For accurate field reports, let the device refine its GPS fix. Target reported accuracy ≤30 m. A manual location or a weaker fix is acceptable for reporting but must be independently reviewed.</p>
     {form.captureSource==="device_gps"&&Number(form.gpsAccuracy)>30&&<div className="notice" role="status">Reported GPS precision is low (±{form.gpsAccuracy} m). Consider recapturing outdoors.</div>}
     {message&&<div role="status" className={message.startsWith(t("report.submitted"))||message.includes(t("report.reconnectSubmittedSuffix"))?"success":"notice"}>{message}</div>}
   </form>;
