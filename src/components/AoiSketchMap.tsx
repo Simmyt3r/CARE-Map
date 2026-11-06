@@ -1,3 +1,4 @@
+import {deploymentProfile} from "@/lib/deployment-profile";
 "use client";
 import {useCallback,useEffect,useRef,useState} from "react";
 import * as maplibregl from "maplibre-gl";
@@ -53,8 +54,9 @@ export default function AoiSketchMap({geometry,onChange}:{
     if(!node.current||mapRef.current)return;
     const map=new maplibregl.Map({
       container:node.current,
-      center:[8.75,7.35],
-      zoom:7,
+      center:deploymentProfile.mapCenter,
+      zoom:deploymentProfile.mapZoom,
+      maxBounds:deploymentProfile.mapBounds,
       interactive:true,
       style:{
         version:8,

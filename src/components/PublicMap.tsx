@@ -201,6 +201,7 @@ export default function PublicMap(){
       container:node.current,
       center:deploymentProfile.mapCenter,
       zoom:deploymentProfile.mapZoom,
+      maxBounds:deploymentProfile.mapBounds,
       style:{version:8,sources:{osm:{type:"raster",tiles:["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],tileSize:256,attribution:"© OpenStreetMap contributors"}},layers:[{id:"osm",type:"raster",source:"osm"}]}
     });
     map.addControl(new maplibregl.NavigationControl(),"top-right");
@@ -470,7 +471,7 @@ export default function PublicMap(){
         </button>)}
       </div>
       <p className="muted map-count-explanation">
-        Totals reflect the selected {lga?"LGA":"state"}{status&&type!=="ndvi_change"?" and status":""}, not just the visible map.
+        Totals reflect the selected {lga?"LGA":"Nigeria-wide inventory"}{status&&type!=="ndvi_change"?" and status":""}, not just the visible map.
         Satellite observations are counted separately from physical resources.
         {viewportCount!==null&&type!=="ndvi_change"?
           " "+viewportCount+" map record(s) currently loaded within the visible area.":""}
