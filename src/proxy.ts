@@ -1,5 +1,5 @@
 import {NextRequest,NextResponse} from "next/server";
-import {getSession,isAdmin,isStaff} from "@/lib/auth";
+import {getSession,isStaff} from "@/lib/auth";
 import {loadWorkspaceAccess} from "@/lib/workspace-access";
 import {requiredWorkspaceAccess,canAccessAnyWorkspace} from "@/lib/workspaces";
 
@@ -21,7 +21,7 @@ export async function proxy(request:NextRequest){
    login.searchParams.set("next",path);
    return NextResponse.redirect(login);
   }
-  if(isAdmin(session))return NextResponse.next();
+  if(session.role==="admin")return NextResponse.next();
   if(required==="admin"||!canAccessAnyWorkspace(session.role,await loadWorkspaceAccess(session),required)){
    if(api)return denied("This interface has not been assigned to your account.");
    return NextResponse.redirect(new URL("/staff?access=restricted",request.url));
