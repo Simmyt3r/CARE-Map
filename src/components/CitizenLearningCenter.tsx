@@ -168,7 +168,7 @@ export default function CitizenLearningCenter(){
   <p className="muted citizen-learning-note">
    These are educational explanations, not official weather warnings, medical advice,
    engineering instructions, land-survey results or locally approved farm prescriptions.
-   Contact the responsible ACReSAL/extension team for site-specific guidance.
+   Contact the responsible environmental or extension team for site-specific guidance.
    Diagrams are conceptual; no illustrated example is a verified intervention.
   </p>
  </section>;

@@ -1,7 +1,7 @@
 /**
  * CARE-Map citizen education curriculum. Plain-language, offline-renderable
  * lessons with named primary sources and illustrative (not surveyed) examples.
- * Content is educational; ACReSAL officers must approve local translations,
+ * Content is educational; qualified regional reviewers must approve local translations,
  * intervention-specific methods and official emergency guidance.
  */
 export const citizenCategories=[
@@ -23,24 +23,24 @@ export type CitizenLesson={
 
 export const citizenLessons:CitizenLesson[]=[
  {
-  id:"acresal",category:"Getting started",graphic:"overview",
-  title:"ACReSAL: why landscapes and communities matter",level:"Start here",minutes:7,
-  summary:"Understand what ACReSAL seeks to address and why communities need to help care for environmental interventions after construction.",
-  why:"Damaged land, poorly managed water, and weak project maintenance can affect food production, community safety and livelihoods.",
+  id:"local-action",category:"Getting started",graphic:"overview",
+  title:"Climate resilience: why communities and landscapes matter",level:"Start here",minutes:7,
+  summary:"Explore climate resilience, environmental resources and how people can record, verify and maintain local adaptation projects.",
+  why:"Extreme weather, degraded land and unreliable infrastructure can affect livelihoods, safety, ecosystems and access to water.",
   sections:[
-   {heading:"What is ACReSAL?",body:"ACReSAL stands for Agro-Climatic Resilience in Semi-Arid Landscapes. The programme supports landscape management, climate resilience and stronger institutions and communities. The exact activities in your community depend on approved state plans; a photo or map marker does not itself prove a completed project."},
-   {heading:"What is an environmental intervention?",body:"An intervention is an organized action to address a problem, such as restoring degraded land, managing water, reducing erosion or supporting a community-managed asset. It should have a known location, responsible team, purpose and a way to check its condition after implementation."},
-   {heading:"Why involve citizens?",body:"People who live near an intervention may notice early warning signs that are missed between formal inspections. They can report damage, join agreed maintenance work, learn safe practices and help ensure that issues reach the responsible staff. Technical repairs remain the duty of qualified personnel."},
-   {heading:"How CARE-Map fits in",body:"CARE-Map provides a map, location-based records, a report form and educational lessons. It helps connect observations to a geographical place and review workflow. It does not replace official project registers, field verification or approval by ACReSAL management."}
+   {heading:"What is climate resilience?",body:"Climate resilience means preparing for and adapting to climate-related risks while protecting people and ecosystems. Actions vary by community and may involve drainage, forests, water, soil management or more reliable infrastructure. Maps are useful evidence, not proof that an intervention was approved or completed."},
+   {heading:"What is an environmental intervention?",body:"An intervention is an organized response to a documented environmental problem. Restoration, erosion control, water-system maintenance and climate-smart farming are examples. A useful project record includes location, source, responsible organization, condition and follow-up history."},
+   {heading:"Why involve local communities?",body:"People who live nearby often observe faults or environmental changes between formal inspections. They can report conditions, participate in approved maintenance, consult relevant authorities and help verify what happened. Qualified professionals remain responsible for hazardous technical work."},
+   {heading:"How CARE-Map supports action",body:"CARE-Map connects environmental records, geospatial analysis, satellite observations, reports and operational follow-ups. It is a decision-support tool, not an emergency warning service or substitute for a legally responsible authority's verification and approval."}
   ],
-  example:{title:"A borehole stops supplying water",body:"Residents notice a faulty hand pump and report its location and symptoms without trying to dismantle it. The responsible team checks the record, inspects the site and decides whether repair is needed. The community then receives suitable maintenance guidance."},
-  actions:["Find out which organization is responsible for an intervention before raising a maintenance request.","Attend official community consultations and share observations, not rumours.","Report site damage using a clear description and verified location when safe.","Keep evidence factual and respect the privacy of community members."],
-  avoid:"Do not assume that every facility shown on a map was built or funded by ACReSAL; verify its official project record.",
-  remember:"An intervention needs monitoring, maintenance and community participation, not just a commissioning ceremony.",
-  terms:[{term:"Resilience",definition:"The ability to prepare for, cope with and recover from stresses."},{term:"Intervention",definition:"A planned action or project addressing an identified issue."}],
-  question:"Which statement best describes community participation?",
-  choices:["Citizens independently repair unsafe equipment","Citizens observe, report and support approved maintenance","Construction ends all responsibility"],
-  correct:1,source:{name:"ACReSAL programme",url:"https://acresal.gov.ng/"}
+  example:{title:"A shared water point needs attention",body:"Residents document a faulty water point with a clear description and its location, without attempting unsafe repairs. The responsible organization validates the report, inspects the equipment and coordinates a suitable response."},
+  actions:["Identify who maintains local environmental infrastructure and how to contact them.","Use official climate and disaster guidance for safety decisions.","Submit factual observations with locations and dates when safe.","Respect people's privacy when recording images or community reports."],
+  avoid:"Do not treat an unverified map marker as evidence of ownership, funding, completion or a confirmed climate hazard.",
+  remember:"Strong climate action joins trusted local knowledge, reliable evidence, responsible institutions and ongoing maintenance.",
+  terms:[{term:"Resilience",definition:"The ability to prepare for, cope with and recover from environmental pressures."},{term:"Intervention",definition:"A planned response to a documented problem."}],
+  question:"What is a responsible way for communities to participate?",
+  choices:["Repair hazardous equipment without training","Report observations and support authorized follow-up","Assume mapped projects are already verified"],
+  correct:1,source:{name:"United Nations – Climate action",url:"https://www.un.org/en/climatechange"}
  },
  {
   id:"climate",category:"Climate & weather",graphic:"climate",
@@ -194,13 +194,13 @@ export const citizenLessons:CitizenLesson[]=[
    {heading:"Why dates and clouds matter",body:"Comparing a rainy-season period with a dry-season period can show normal seasonal differences rather than long-term land recovery. Clouds and shadows can hide land. CARE-Map applies minimum clear-pixel checks, but an acceptable software quality score is not independent scientific verification."},
    {heading:"Community, LGA and state attribution",body:"An AOI may overlap a known LGA or have a mapped settlement nearby. These labels explain where the analysis was performed. They do not turn an AOI-wide estimate into a verified change for every nearby community. Accurate community totals require reliable area boundaries and properly clipped analyses."}
   ],
-  example:{title:"A published result says +150 hectares",body:"This means the software estimated about 150 more hectares above its selected vegetation threshold within the particular AOI and periods. It does not mean 150 hectares of trees were planted, that exactly 150 hectares were restored, or that ACReSAL caused the change."},
+  example:{title:"A published result says +150 hectares",body:"This means the software estimated about 150 more hectares above its selected vegetation threshold within the particular AOI and periods. It does not mean 150 hectares of trees were planted, that exactly 150 hectares were restored, or that a specific programme caused the change."},
   actions:["Check baseline and comparison dates and whether they use comparable seasons.","Read the hectares and percentage beside the coloured AOI.","Inspect cloud/clear-pixel quality and whether the area is approved for publication.","Ask for field verification before reporting success or decline as a programme outcome."],
   avoid:"Never treat a green NDVI polygon alone as proof that a particular project caused land recovery.",
   remember:"Green means estimated vegetation gain; orange means estimated loss. Compare similar seasons and verify on the ground.",
   terms:[{term:"NDVI",definition:"A satellite-derived index of vegetation greenness calculated from red and near-infrared light."},{term:"AOI",definition:"Area of Interest: the geographic boundary selected for analysis."},{term:"Hectare",definition:"An area of 10,000 square metres."}],
   question:"What does a green NDVI analysis polygon prove?",
-  choices:["Every tree inside it is newly planted","The selected AOI has an estimated increase for the specified periods","An ACReSAL intervention definitely caused the change"],
+  choices:["Every tree inside it is newly planted","The selected AOI has an estimated increase for the specified periods","A particular project definitely caused the change"],
   correct:1,source:{name:"NASA – Measuring vegetation: NDVI",url:"https://science.nasa.gov/earth/earth-observatory/measuring-vegetation-ndvi-evi/"}
  },
  {
@@ -221,7 +221,7 @@ export const citizenLessons:CitizenLesson[]=[
   terms:[{term:"GPS",definition:"Satellite-based technology that can estimate a device's position."},{term:"Verification",definition:"Checking whether reported information is supported by reliable evidence."}],
   question:"What makes a useful community report?",
   choices:["An unverified rumour and someone's private phone number","A clear observation, useful location and safe evidence","A dramatic claim without a location"],
-  correct:1,source:{name:"ACReSAL Nigeria – Public programme information",url:"https://acresal.gov.ng/"}
+  correct:1,source:{name:"UN Environment Programme",url:"https://www.unep.org/"}
  },
  {
   id:"waste",category:"Community action",graphic:"waste",
@@ -266,7 +266,7 @@ export const citizenLessons:CitizenLesson[]=[
 ];
 
 export const categoryDescriptions:Record<CitizenCategory,string>={
- "Getting started":"Understand ACReSAL and community responsibilities.",
+ "Getting started":"Understand climate resilience and community responsibilities.",
  "Climate & weather":"Understand changing conditions and prepare for hazards.",
  "Land & soil":"Protect the ground beneath farms, roads and homes.",
  "Water & floods":"Care for waterways, water points and safer communities.",

@@ -2,8 +2,8 @@ import {getSession,isAdmin} from "@/lib/auth";
 import {crfAccess} from "@/lib/crf";
 import CrfOperationsCenter from "@/components/CrfOperationsCenter";
 export const dynamic="force-dynamic";
-export const metadata={title:"Benue CRF Monitoring | CARE-Map"};
-export default async function BenueCrfPage(){
+export const metadata={title:"Community Fund Monitoring | CARE-Map"};
+export default async function CommunityFundPage(){
  const session=await getSession();
  let initialAccess=false;
  try{initialAccess=Boolean(await crfAccess(session));}catch{

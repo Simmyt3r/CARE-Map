@@ -7,7 +7,7 @@ type Kind="boreholes"|"assets"|"forest-sites"|"rivers";
 type Lga={code:string;name:string};
 const labels:Record<Kind,string>={boreholes:"Boreholes",assets:"Assets","forest-sites":"Forest sites",rivers:"Rivers"};
 const blank={
-  name:"",lgaCode:"MAKURDI",status:"functional",assetType:"",siteType:"afforestation_site",source:"official",localName:"",
+  name:"",lgaCode:"",status:"functional",assetType:"",siteType:"afforestation_site",source:"official",localName:"",
   latitude:"",longitude:"",geometry:"",description:"",lastMaintenanceDate:"",installationDate:"",
   code:"",gpsAccuracy:"",capturedAt:"",captureSource:"manual"
 };

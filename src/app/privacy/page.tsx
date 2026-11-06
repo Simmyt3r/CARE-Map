@@ -5,7 +5,7 @@ import PrivacyLanguageNotice from "@/components/PrivacyLanguageNotice";
 export const dynamic="force-dynamic";
 
 export default function PrivacyPage(){
-  const controller=process.env.DATA_CONTROLLER_NAME||"Benue ACReSAL / CARE-Map";
+  const controller=process.env.DATA_CONTROLLER_NAME||"CARE-Map deployment operator (not configured)";
   const email=process.env.PRIVACY_CONTACT_EMAIL||"Privacy contact pending formal launch configuration";
   const address=process.env.DATA_CONTROLLER_ADDRESS||"Controller address pending formal launch configuration";
   const reportsBasis=process.env.PRIVACY_LAWFUL_BASIS_REPORTS||"Lawful basis pending formal legal review";
@@ -37,7 +37,7 @@ export default function PrivacyPage(){
         <p>CARE-Map does not ask anonymous reporters to provide a name or contact detail.</p>
       </div>
       <div className="card stack"><h2>Why we process it</h2>
-        <p>Core report and location data is processed to receive, investigate, map, verify, prioritize, resolve, and audit ACReSAL-related operational issues.</p>
+        <p>Core report and location data is processed to receive, investigate, map, verify, prioritize, resolve, and audit environmental and climate-related operational issues.</p>
         <p>Optional reporter identity/contact details are used only for follow-up and are collected separately from the core report. Where you voluntarily provide them, the form asks for explicit consent.</p>
         <p>Registered account data is processed to authenticate you and let you track reports linked to your account.</p>
       </div>
@@ -46,7 +46,7 @@ export default function PrivacyPage(){
     <section className="card stack"><h2>Retention and anonymization</h2>
       <p>CARE-Map’s current operating rule is to anonymize personal identifiers attached to resolved reports after two years, while retaining de-identified operational information where needed for historical, audit, monitoring, or trend purposes.</p>
       <p>Community accounts remain active until disabled or erased. Self-service erasure anonymizes the account identity and removes optional reporter identity/contact fields from linked reports, while operational report records may remain in de-identified form where there is a lawful project need.</p>
-      <p>This retention schedule is subject to formal legal review and any applicable ACReSAL or records-management obligations before public launch.</p>
+      <p>This retention schedule is subject to formal legal review and applicable local laws and records-management obligations before public launch.</p>
     </section>
 
     <section className="grid two">
@@ -57,7 +57,7 @@ export default function PrivacyPage(){
       <div className="card stack"><h2>Sharing, security and complaints</h2>
         <p>Access to non-public personal data is restricted to authorized CARE-Map staff/admin workflows. Database, session, and audit controls are used to reduce unauthorized access.</p>
         <p>Third-party infrastructure may process data on behalf of CARE-Map, including Vercel for application hosting, Aiven for database hosting, and Cloudinary for new photo storage. Older photos may remain on Vercel Blob. Cloudinary photo delivery URLs currently use publicly accessible links, so staff must upload only approved, non-sensitive and redacted evidence. Final processor/cross-border records and storage permissions require legal review before public launch.</p>
-        <p>You may also lodge a complaint with the Nigeria Data Protection Commission.</p>
+        <p>You may also contact the competent data-protection regulator in your jurisdiction.</p>
       </div>
     </section>
 

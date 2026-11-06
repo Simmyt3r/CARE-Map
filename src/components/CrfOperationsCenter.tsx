@@ -18,7 +18,7 @@ type Summary={scope:{month:string;lga:string};counts:Record<string,number>;
 type Staff={id:string;name:string;email:string};
 const roleOptions=[
  ["desk_officer","CRF Desk Officer"],["me_officer","M&E Officer"],["gis_officer","GIS Officer"],
- ["finance_officer","Financial Management"],["internal_auditor","Internal Auditor"],["management","SPMU Management"]
+ ["finance_officer","Financial Management"],["internal_auditor","Internal Auditor"],["management","Programme Management"]
 ];
 function format(v:unknown){const n=Number(v);return Number.isFinite(n)?"₦"+n.toLocaleString("en-NG",{maximumFractionDigits:2}):"—";}
 function percent(v:number|null){return v===null?"N/A":v.toFixed(1)+"%";}
@@ -105,7 +105,7 @@ export default function CrfOperationsCenter({admin,initialAccess}:{
  const numeric=(v:string)=>Number(v);
  return <div className="stack">
   <div className="section-head">
-   <div><span className="page-eyebrow">Benue SPMU · Private working environment</span>
+   <div><span className="page-eyebrow">Community resilience funding · Restricted workspace</span>
     <h1>CRF Monitoring & Accountability</h1>
     <p className="muted">Community and CIG registry, evidenced loan monitoring, GIS-linked inspections and management reporting.</p></div>
    <span className="badge">Monitoring only · No bank transfers</span>
@@ -135,7 +135,7 @@ export default function CrfOperationsCenter({admin,initialAccess}:{
      onChange={e=>setMonth(e.target.value)}/></div>
     <div className="field"><label htmlFor="crf-lga">LGA</label>
      <select id="crf-lga" value={lga} onChange={e=>setLga(e.target.value)}>
-      <option value="">All Benue LGAs</option>{overview?.lgas.map(a=><option key={a.code} value={a.code}>{a.name}</option>)}
+      <option value="">All administrative areas</option>{overview?.lgas.map(a=><option key={a.code} value={a.code}>{a.name}</option>)}
      </select></div>
     <div className="field"><label>Reporting</label><strong>Community T14: 7th</strong></div>
     <div className="field"><label>Submission</label><strong>SPMU report & T16: 12th</strong></div>

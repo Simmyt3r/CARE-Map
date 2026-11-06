@@ -72,14 +72,14 @@ export default function LgaBoundaryManager(){
 
   return <section className="card stack">
     <div className="section-head">
-      <div><h2>LGA administrative boundaries</h2><div className="muted">Load a verified Benue LGA GeoJSON dataset. CARE-Map stores the polygons, source provenance and import audit trail.</div></div>
+      <div><h2>LGA administrative boundaries</h2><div className="muted">Load verified administrative boundaries for the configured deployment region. CARE-Map stores the polygons, source provenance and import audit trail.</div></div>
       <button className="btn" onClick={loadStatus}>Refresh status</button>
     </div>
 
     <div className="stats">
       <div className="stat"><strong>{status?.summary?.mapped??"–"}</strong><span>Boundaries loaded</span></div>
       <div className="stat"><strong>{status?.summary?.missing??"–"}</strong><span>Still missing</span></div>
-      <div className="stat"><strong>{status?.summary?.total??23}</strong><span>Benue LGAs</span></div>
+      <div className="stat"><strong>{status?.summary?.total??0}</strong><span>Administrative areas</span></div>
     </div>
 
     <div className="notice">
@@ -87,7 +87,7 @@ export default function LgaBoundaryManager(){
     </div>
 
     <div className="grid two">
-      <div className="field"><label>Boundary source / version</label><input value={source} onChange={e=>setSource(e.target.value)} placeholder="e.g. Approved Benue SPMU boundary dataset · 2026-10"/></div>
+      <div className="field"><label>Boundary source / version</label><input value={source} onChange={e=>setSource(e.target.value)} placeholder="e.g. Verified administrative boundary dataset · source and version"/></div>
       <div className="field"><label>GeoJSON FeatureCollection</label><input type="file" accept=".geojson,.json,application/geo+json,application/json" onChange={e=>e.target.files?.[0]&&readFile(e.target.files[0])}/></div>
     </div>
 
