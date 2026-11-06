@@ -1,14 +1,18 @@
-/**
- * Region-neutral presentation settings. These values do not create data
- * isolation: each deployment must use its own reviewed GIS data and database.
- * A regional label is allowed only after explicit dataset approval.
- */
+import {
+  NIGERIA_CENTER,NIGERIA_COUNTRY_CODE,NIGERIA_COUNTRY_NAME,NIGERIA_MAP_BOUNDS,
+  isWithinNigeriaExtent,normalizeNigerianState
+} from "@/lib/nigeria-geography";
+
+/** Nigeria-wide platform; approved Nigerian state subdeployments are optional. */
 export type DeploymentProfile={
-  regionName:string;
-  /** Compatibility alias for legacy consumers; prefer regionName. */
+  countryName:"Nigeria";
+  countryCode:"NG";
+  regionName:"Nigeria";
+  /** Specific Nigerian state or nationwide fallback ("Nigeria"). */
   stateName:string;
   mapCenter:[number,number];
   mapZoom:number;
+  mapBounds:[[number,number],[number,number]];
 };
 export function parseDeploymentProfile(config:{
   regionName?:string;
@@ -19,23 +23,26 @@ export function parseDeploymentProfile(config:{
   regionDataApproved?:string;
   stateDataApproved?:string;
 }={}):DeploymentProfile{
-  const regionName=(config.regionName||config.stateName||"Global").trim();
-  if(!/^[A-Za-z][A-Za-z0-9 .,'()-]{1,79}$/.test(regionName))
-    throw new Error("CARE-Map region name must be a normal geographic name.");
-  const global=regionName.toLowerCase()==="global";
+  const requested=(config.regionName||config.stateName||"Nigeria").trim();
+  const nationwide=requested.toLowerCase()==="nigeria";
+  const state=nationwide?null:normalizeNigerianState(requested);
+  if(!nationwide&&!state)
+    throw new Error("CARE-Map supports Nigeria and its 36 states/FCT only.");
   const approved=config.regionDataApproved==="true"||config.stateDataApproved==="true";
-  if(!global&&!approved)
-    throw new Error("Regional deployment requires explicit dataset acceptance before public branding changes.");
-  if(!global&&(config.centerLongitude===undefined||config.centerLatitude===undefined))
-    throw new Error("Regional deployment must provide its reviewed map center coordinates.");
-  const longitude=config.centerLongitude===undefined?0:Number(config.centerLongitude);
-  const latitude=config.centerLatitude===undefined?0:Number(config.centerLatitude);
-  const zoom=config.zoom===undefined?(global?2:6):Number(config.zoom);
-  if(!Number.isFinite(latitude)||latitude< -90||latitude>90||
-     !Number.isFinite(longitude)||longitude< -180||longitude>180||
-     !Number.isFinite(zoom)||zoom<1||zoom>15)
-    throw new Error("Invalid CARE-Map deployment map center or zoom.");
-  return {regionName,stateName:regionName,mapCenter:[longitude,latitude],mapZoom:zoom};
+  if(state&&!approved)
+    throw new Error("State-specific deployment requires approved Nigerian GIS data.");
+  if(state&&(config.centerLongitude===undefined||config.centerLatitude===undefined))
+    throw new Error("State-specific deployment requires a reviewed map centre.");
+  const longitude=config.centerLongitude===undefined?NIGERIA_CENTER[0]:Number(config.centerLongitude);
+  const latitude=config.centerLatitude===undefined?NIGERIA_CENTER[1]:Number(config.centerLatitude);
+  const zoom=config.zoom===undefined?(state?7:5):Number(config.zoom);
+  if(!isWithinNigeriaExtent(latitude,longitude)||!Number.isFinite(zoom)||zoom<1||zoom>15)
+    throw new Error("CARE-Map map centre must be within Nigeria's geographic extent, with a valid zoom.");
+  return{
+    countryName:NIGERIA_COUNTRY_NAME,countryCode:NIGERIA_COUNTRY_CODE,
+    regionName:"Nigeria",stateName:state||"Nigeria",
+    mapCenter:[longitude,latitude],mapZoom:zoom,mapBounds:NIGERIA_MAP_BOUNDS
+  };
 }
 export const deploymentProfile=parseDeploymentProfile({
   regionName:process.env.NEXT_PUBLIC_CAREMAP_REGION_NAME,
