@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import {useEffect,useState} from "react";
+import {useEffect,useId,useState} from "react";
 import {
  WORKSPACES,WORKSPACE_PRESETS,DEFAULT_STAFF_WORKSPACES,type WorkspaceId
 } from "@/lib/workspaces";
@@ -21,13 +21,14 @@ const blank=():CreateForm=>({
 function AccessPicker({value,onChange,disabled=false}:{
  value:WorkspaceId[];onChange:(value:WorkspaceId[])=>void;disabled?:boolean;
 }){
+ const presetId=useId();
  const toggle=(id:WorkspaceId,checked:boolean)=>{
   onChange(checked?[...new Set([...value,id])]:value.filter(x=>x!==id));
  };
  return <div className="stack">
   <div className="field">
-   <label htmlFor={"workspace-preset-"+(disabled?"disabled":"editor")}>Workspace role preset</label>
-   <select id={"workspace-preset-"+(disabled?"disabled":"editor")} disabled={disabled} value="custom"
+   <label htmlFor={presetId}>Workspace role preset</label>
+   <select id={presetId} disabled={disabled} value="custom"
     onChange={e=>{
      const preset=WORKSPACE_PRESETS.find(x=>x.id===e.target.value);
      if(preset&&preset.modules.length)onChange([...preset.modules] as WorkspaceId[]);
@@ -136,7 +137,7 @@ export default function AdminUsers(){
   <div className="grid two">
    <form className="card stack" onSubmit={submit}>
     <div><h2>Create account</h2>
-     <p className="muted">Choose the user's portal role and the staff interfaces they can access.</p></div>
+     <p className="muted">Choose the account role and the staff interfaces they can access.</p></div>
     {(["name","email","password"] as const).map(key=><div className="field" key={key}>
      <label htmlFor={"new-"+key}>{key[0].toUpperCase()+key.slice(1)}</label>
      <input id={"new-"+key} type={key==="password"?"password":key==="email"?"email":"text"}
