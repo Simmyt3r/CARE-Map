@@ -1,5 +1,5 @@
-import {deploymentProfile} from "@/lib/deployment-profile";
 "use client";
+import {deploymentProfile} from "@/lib/deployment-profile";
 import {useCallback,useEffect,useRef,useState} from "react";
 import * as maplibregl from "maplibre-gl";
 import {coordinateVertex,polygonFromVertices,verticesFromAoi,
