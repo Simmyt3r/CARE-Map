@@ -1,5 +1,6 @@
 import {query} from "@/lib/db";
 import {deploymentProfile} from "@/lib/deployment-profile";
+import {isWithinNigeriaExtent} from "@/lib/nigeria-geography";
 
 export type NamedLga={
   code:string;name:string;overlapHa:number|null;coveragePct:number|null;
@@ -26,7 +27,8 @@ export function parsePoint(latitude:unknown,longitude:unknown){
   const lat=Number(latitude),lng=Number(longitude);
   if(!Number.isFinite(lat)||lat< -90||lat>90||!Number.isFinite(lng)||lng< -180||lng>180)
     throw new Error("Coordinates must be valid WGS84 latitude (-90 to 90) and longitude (-180 to 180).");
-  if(lat===0&&lng===0)throw new Error("Coordinates at 0,0 are not a valid CARE-Map field position.");
+  if(!isWithinNigeriaExtent(lat,lng))
+    throw new Error("CARE-Map only analyzes locations within Nigeria\x27s geographic extent.");
   return {type:"Point" as const,coordinates:[lng,lat]};
 }
 export function informativeLocationText(context:SpatialContext){
