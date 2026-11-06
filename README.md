@@ -1,12 +1,12 @@
 # CARE-Map
 
-**Benue ACReSAL Smart Asset, Forest, River & Borehole Tracking System**
+**Climate Intelligence, Environmental Mapping & Community Resilience Platform**
 
-CARE-Map is a mobile-first GIS platform for tracking ACReSAL interventions, collecting community reports, monitoring maintenance, and prioritizing field action with explainable risk scoring.
+CARE-Map is a mobile-first, region-configurable GIS platform for mapping environmental resources, tracking climate resilience actions, collecting community observations, monitoring vegetation change, and prioritizing verified field action.
 
 ## Current implementation
 
-The repository now contains a working Next.js application and Aiven/PostGIS database migration, not only planning documents.
+The repository contains an implemented Next.js application, PostGIS migrations, automated tests and deployment guidance, not only planning documents.
 
 ### Public
 - Interactive MapLibre map backed by PostGIS GeoJSON queries
@@ -105,19 +105,19 @@ Architecture decision: docs/architecture/decisions/0003-adopt-aiven-postgis-next
 
 ## Aiven migration
 
-db/migrations/001_init.sql enables PostGIS, pgcrypto, and citext; creates the operational schema; creates GIST spatial indexes; and seeds all 23 Benue LGAs with the 14 initial CARE-Map pilot LGAs marked. db/migrations/002_field_operations.sql adds GPS quality/provenance, inspections, import auditing, and GIS quality views. db/migrations/003_operations_governance.sql adds report ownership, priority/deadlines, status history, account governance metadata, and supporting indexes. db/migrations/004_remote_sensing.sql adds persisted Sentinel-2 vegetation analyses and spatial indexes. db/migrations/005_vegetation_monitoring.sql adds recurring vegetation watchlists, observation history, and acknowledgeable satellite alerts. db/migrations/006_satellite_field_verification.sql links satellite alerts to field-verification reports and records report origin. db/migrations/007_lga_boundaries.sql adds authoritative LGA polygons, source provenance, spatial indexes and boundary-import audit history. db/migrations/008_coverage_geography_indexes.sql adds functional GiST geography indexes for metre-based borehole and asset proximity analysis. db/migrations/009_settlements_access.sql adds verified settlement/community points, population provenance safeguards, spatial indexes and settlement-import audit history. db/migrations/010_river_corridor_indexes.sql adds geography indexes for verified river corridors and open-report proximity queries. db/migrations/011_hazard_zones.sql adds verified hazard polygons, provenance/verification metadata, spatial indexes and audited hazard imports. db/migrations/012_catchments.sql adds verified catchment/landscape polygons, optional hierarchy, provenance metadata, spatial indexes and audited imports. db/migrations/013_field_acceptance.sql adds field acceptance runs, canonical workflow checks and dedicated evidence records. db/migrations/014_privacy_governance.sql adds privacy-notice evidence, data-subject rights requests, and the breach-response register. db/migrations/015_localization.sql adds reviewed translation packs and import audit history. Migration execution is tracked separately in care_map_schema_migrations using filename, SHA-256 checksum and applied timestamp.
+db/migrations/001_init.sql enables PostGIS, pgcrypto, and citext; creates the operational schema; creates GIST spatial indexes; and contains historical seed geography for the first deployment; regional reuse requires a separately reviewed geographic dataset. db/migrations/002_field_operations.sql adds GPS quality/provenance, inspections, import auditing, and GIS quality views. db/migrations/003_operations_governance.sql adds report ownership, priority/deadlines, status history, account governance metadata, and supporting indexes. db/migrations/004_remote_sensing.sql adds persisted Sentinel-2 vegetation analyses and spatial indexes. db/migrations/005_vegetation_monitoring.sql adds recurring vegetation watchlists, observation history, and acknowledgeable satellite alerts. db/migrations/006_satellite_field_verification.sql links satellite alerts to field-verification reports and records report origin. db/migrations/007_lga_boundaries.sql adds authoritative LGA polygons, source provenance, spatial indexes and boundary-import audit history. db/migrations/008_coverage_geography_indexes.sql adds functional GiST geography indexes for metre-based borehole and asset proximity analysis. db/migrations/009_settlements_access.sql adds verified settlement/community points, population provenance safeguards, spatial indexes and settlement-import audit history. db/migrations/010_river_corridor_indexes.sql adds geography indexes for verified river corridors and open-report proximity queries. db/migrations/011_hazard_zones.sql adds verified hazard polygons, provenance/verification metadata, spatial indexes and audited hazard imports. db/migrations/012_catchments.sql adds verified catchment/landscape polygons, optional hierarchy, provenance metadata, spatial indexes and audited imports. db/migrations/013_field_acceptance.sql adds field acceptance runs, canonical workflow checks and dedicated evidence records. db/migrations/014_privacy_governance.sql adds privacy-notice evidence, data-subject rights requests, and the breach-response register. db/migrations/015_localization.sql adds reviewed translation packs and import audit history. Migration execution is tracked separately in care_map_schema_migrations using filename, SHA-256 checksum and applied timestamp.
 
-## Environment variables
+## Region-neutral deployment\n\nThe default public presentation is **Global** and makes no claim that a worldwide dataset is available. To brand an installation for a specific region, set `NEXT_PUBLIC_CAREMAP_REGION_NAME`, `NEXT_PUBLIC_CAREMAP_REGION_DATA_APPROVED=true`, and verified map longitude/latitude. The approval flag does not change the underlying database or guarantee that source geography matches. Historical migration `001_init.sql` contains the initial project's locality seed; follow [the regional deployment guardrails](docs/architecture/multi-state-deployment.md) rather than relabeling legacy records.\n\n## Environment variables
 
 | Variable | Purpose |
 |---|---|
-| DATABASE_URL | Aiven PostgreSQL connection URI |
+| NEXT_PUBLIC_CAREMAP_REGION_NAME | Optional approved deployment region (default: Global) |\n| NEXT_PUBLIC_CAREMAP_REGION_DATA_APPROVED | Required `true` when claiming a specific region |\n| NEXT_PUBLIC_CAREMAP_MAP_LONGITUDE / NEXT_PUBLIC_CAREMAP_MAP_LATITUDE | Verified initial map centre for regional deployment |\n| DATABASE_URL | Aiven PostgreSQL connection URI |
 | AIVEN_CA_CERT | Aiven CA certificate for TLS verification |
 | SESSION_SECRET | Signs authentication sessions |
 | CRON_SECRET | Protects scheduled maintenance/risk endpoint |
 | ADMIN_EMAIL | Initial administrator email |
 | ADMIN_PASSWORD | Initial administrator password |
-| BLOB_READ_WRITE_TOKEN | Vercel Blob token for field photo uploads |
+| CLOUDINARY_CLOUD_NAME / CLOUDINARY_API_KEY / CLOUDINARY_API_SECRET | Server-side photo uploads to Cloudinary |
 | CDSE_CLIENT_ID | Copernicus Data Space OAuth client ID for Sentinel processing |
 | CDSE_CLIENT_SECRET | Copernicus Data Space OAuth client secret |
 | CDSE_TOKEN_URL | Optional Copernicus OAuth token endpoint override |
@@ -203,4 +203,4 @@ See docs/planning, docs/architecture, docs/design, docs/IMPLEMENTATION.md, docs/
 
 ## Production status
 
-Application implementation is substantially complete. The remaining production gate is external: provision the real Aiven service, apply the migration, configure Vercel secrets, run CI against the branch, and perform field acceptance testing with real Benue intervention coordinates before public launch.
+Application implementation is substantially complete. The remaining production gate is external: provision the real Aiven service, apply the migration, configure Vercel secrets, run CI against the branch, and perform field acceptance testing with approved real-world intervention coordinates and region-specific field verification before public launch.

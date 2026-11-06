@@ -7,7 +7,7 @@
 ### Synchronized references
 
 - **GPS reliability:** [field accuracy checklist](quality/gps-field-acceptance.md), [user manual](client-handover/user-manual.md), [field acceptance](field-acceptance.md), [deployment runbook](client-handover/deployment-operations.md), [requirements](planning/requirements.md) and [implementation summary](IMPLEMENTATION.md).
-- **ACReSAL extension:** community intervention focal-person consent, visit/follow-up records, photo-backed and independently reviewed maintenance assessments and explicit management approval for competition rewards.
+- **Environmental extension:** community intervention focal-person consent, visit/follow-up records, photo-backed and independently reviewed maintenance assessments and explicit management approval for competition rewards.
 - **Storage:** Cloudinary for new evidence/photos; historical Vercel Blob URL references may remain. Delivery URLs are currently public, so no sensitive or unredacted evidence.
 - **Sentinel-2:** cloud/SCL masking, minimum clear-pixel quality threshold in **both** periods, `needs_review` status for insufficient imagery and admin-only publication.
 - **Aiven/PostGIS:** current repository migration files are **001–017**. No assumption that the production database has applied them. The signed-in Admin Migrations page `/staff/admin/migrations` uses server-configured credentials without a second login.

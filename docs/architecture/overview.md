@@ -5,7 +5,7 @@
 **Authority:** [ADR-0003](decisions/0003-adopt-aiven-postgis-nextjs.md) supersedes the exploratory stack in ADR-0002.
 
 ## Purpose and boundaries
-CARE-Map is the Benue ACReSAL geospatial operations platform for tracking interventions, boreholes, infrastructure assets, forests, rivers, settlements, hazard areas, and catchments, with field reports and satellite vegetation observations. It is not a replacement for QGIS/ArcGIS or an independently certified hazard prediction system.
+CARE-Map is a region-configurable climate and environmental geospatial operations platform for tracking interventions, boreholes, infrastructure assets, forests, rivers, settlements, hazard areas, and catchments, with field reports and satellite vegetation observations. It is not a replacement for QGIS/ArcGIS or an independently certified hazard prediction system.
 
 ## Runtime architecture
 
@@ -55,6 +55,6 @@ Source implementation exists, **not** proof that the client's production environ
 - [User manual](../client-handover/user-manual.md)
 - [Acceptance and support plan](../client-handover/acceptance-support.md)
 - [Production readiness](../production-readiness.md)
-- [ACReSAL extension and stewardship](../planning/community-extension.md)
+- [Community extension and stewardship](../planning/community-extension.md)
 - [GPS field acceptance](../quality/gps-field-acceptance.md)
 - [ADR-0003](decisions/0003-adopt-aiven-postgis-nextjs.md)

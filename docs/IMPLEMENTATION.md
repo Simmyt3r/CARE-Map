@@ -8,7 +8,7 @@ The authoritative feature inventory and API list are in the [root README](../REA
 - Public MapLibre/PostGIS maps, LGA filters, public resource details and QR report entry.
 - Community problem/stream reporting, optional accounts, public privacy flows and an offline community report queue.
 - Staff asset, borehole, river and forest data management; inspections and maintenance; Cloudinary photos, GPS provenance, verification review and report assignment.
-- Public ACReSAL extension information and staff community interventions with consenting contact persons, extension visits and photo-backed independent maintenance scoring. Reward decisions need separate project/budget authority.
+- Public environmental extension information and staff community interventions with consenting contact persons, extension visits and photo-backed independent maintenance scoring. Reward decisions need separate project/budget authority.
 - Shared high-accuracy GPS sampling for field asset/intervention, report and inspection forms: rejection of stale/invalid fixes, acquisition/cancellation feedback, and manual-coordinate provenance clearing.
 - GIS CSV/GeoJSON import, data quality, spatial proximity, LGA coverage, settlement-water access, river exposure, hazard polygons and catchment analysis; printable Map Composer.
 - Sentinel-2 scene search, baseline/comparison NDVI, monitored areas, alerts and linked field verification tasks.

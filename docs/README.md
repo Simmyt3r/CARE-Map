@@ -2,7 +2,7 @@
 
 **Updated:** 2026-10-13 | **Release:** implementation / quality-hardening baseline; deployment and field acceptance are separate checks.
 
-CARE-Map is the Benue ACReSAL Smart Asset, Forest, River & Borehole Tracking System. The repository implements substantial functionality; the client must separately approve requirements, provision services, validate GIS data and complete acceptance testing.
+CARE-Map is a region-configurable climate intelligence and environmental resilience mapping platform. The repository implements substantial functionality; the client must separately approve requirements, provision services, validate GIS data and complete acceptance testing.
 
 ## The five essential client-facing documents
 
@@ -27,7 +27,7 @@ CARE-Map is the Benue ACReSAL Smart Asset, Forest, River & Borehole Tracking Sys
 - [Remote Sensing](remote-sensing.md), [Map Composer](map-composer.md), [Localization](localization.md)
 - [State-wide Sentinel-2 Workflow](remote-sensing-statewide.md) (LGA-clipped tiles, resumable processing, coverage and scientific quality gates)
 - [Citizen Education Curriculum](citizen-learning-curriculum.md) (12 illustrated lessons, category guide, sources, safety and editorial review)
-- [ACReSAL Extension and Community Stewardship](planning/community-extension.md) (project contacts, visits, evidence-backed assessment and reward governance)
+- [Community Extension and Stewardship](planning/community-extension.md) (project contacts, visits, evidence-backed assessment and reward governance)
 - [GPS Field Acceptance and Regression Checklist](quality/gps-field-acceptance.md) (current capture thresholds, known limits and device tests)
 - [System Hardening Audit — 2026-10-14](quality/system-hardening-audit-2026-10-14.md) (component inventory, verified defects, risk register, prioritized release gates)
 - [Multi-State Deployment & Data Isolation](architecture/multi-state-deployment.md) (state-by-state deployment plan and mandatory GIS/authorization checks)
@@ -53,4 +53,4 @@ CARE-Map is the Benue ACReSAL Smart Asset, Forest, River & Borehole Tracking Sys
 ## Documentation maintenance
 Update the architecture index and SRS for material changes; issue new numbered migrations rather than changing applied files. Document the Git commit/version, author, date, review and approval for each client delivery. Architecture decisions are preserved as ADRs; new decisions supersede accepted ADRs rather than rewriting history.
 
-- [Benue CRF-MIS implementation and acceptance](planning/benue-crf-mis.md) (restricted community/CIG registry, verified loan monitoring, manual requirements, reporting caveats and rollout gates)
+- [Community Fund-MIS implementation and acceptance](planning/benue-crf-mis.md) (restricted community/CIG registry, verified loan monitoring, manual requirements, reporting caveats and rollout gates)

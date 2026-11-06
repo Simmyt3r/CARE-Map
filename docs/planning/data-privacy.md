@@ -16,7 +16,7 @@ Official references:
 ## Principles built into CARE-Map
 
 - **Lawfulness, fairness and transparency:** the public privacy notice describes the processing and deployment-configured lawful-basis wording.
-- **Purpose limitation:** public reports are used for ACReSAL monitoring, verification, response and audit rather than unrelated purposes.
+- **Purpose limitation:** public reports are used for environmental monitoring, verification, response and audit rather than unrelated purposes.
 - **Data minimization:** anonymous reporters do not need to provide a name or contact detail.
 - **Storage limitation:** resolved report identifiers are anonymized under the existing two-year operating rule, subject to formal records/legal review.
 - **Accuracy:** community and staff workflows preserve correction/verification paths rather than silently overwriting provenance.
@@ -129,7 +129,7 @@ Current project operating rule:
 | Linked community user identity | Removed from the old resolved report at anonymization |
 | Report-linked privacy acceptance user link | Detached when the old report is anonymized |
 
-The two-year period is still subject to confirmation against ACReSAL, government, donor/World Bank, litigation-hold and records-management obligations.
+The two-year period is still subject to confirmation against applicable laws, controller, donor, litigation-hold and records-management obligations.
 
 ### Community accounts
 
@@ -166,7 +166,7 @@ CARE-Map's Privacy Center includes this as a compliance-preparation checklist, b
 - [ ] Confirm whether the operating entity is a Data Controller/Processor of Major Importance and any NDPC registration/CAR obligations.
 - [ ] Confirm DPO/DPCO requirements.
 - [ ] Complete or formally assess the need for DPIA(s).
-- [ ] Approve the two-year report-identifier retention rule against ACReSAL/government/donor record obligations.
+- [ ] Approve the two-year report-identifier retention rule against applicable legal, controller and donor record obligations.
 - [ ] Create/approve processor and cross-border transfer records for Aiven, Vercel, Copernicus and any other vendors.
 - [ ] Review cookie/local-storage requirements.
 - [ ] Review children's/minors' data handling if the public service may be used by minors.

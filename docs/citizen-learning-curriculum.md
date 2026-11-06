@@ -1,6 +1,6 @@
 # CARE-Map Citizen Education Curriculum (October 2026)
 
-**Location:** Public `/extension` route. **Audience:** community members, farmers, students and field extension teams. **Language:** plain English; local language versions must be reviewed by competent translators and ACReSAL staff. **Status:** education content for review, not official extension certification.
+**Location:** Public `/extension` route. **Audience:** community members, farmers, students and field extension teams. **Language:** plain English; local language versions must be reviewed by competent translators and qualified regional reviewers. **Status:** education content for review, not official extension certification.
 
 ## Learning structure
 
@@ -8,7 +8,7 @@ The extension Learning Centre now provides **12 illustrated lessons in seven cat
 
 | Category | Lessons | Main learning outcome |
 |---|---|---|
-| Getting started | ACReSAL: why landscapes and communities matter | Understand the programme, interventions and who maintains them |
+| Getting started | Climate resilience: why landscapes and communities matter | Understand climate action, environmental resources and responsible local follow-up |
 | Climate & weather | Climate change and everyday decisions; Official warnings | Distinguish weather/climate, prepare for hazards |
 | Land & soil | Soil erosion | Understand runoff and soil protection |
 | Water & floods | Flood preparedness; Water points and drainage; Watersheds | Recognize flood hazards, water safety and drainage connectivity |
@@ -28,7 +28,7 @@ Category filters, search and completion counts run entirely in React on the brow
 
 ## Source and editorial safeguards
 
-Lesson explanations are carefully paraphrased and point to public source pages. Core sources include ACReSAL Nigeria, the UN, FAO, NEMA Nigeria, WHO, NASA and USGS. Educational graphics are designed in source code, not copied from publications.
+Lesson explanations are carefully paraphrased and point to public source pages. Core sources include the UN, UNEP, FAO, NEMA Nigeria, WHO, NASA and USGS. Educational graphics are designed in source code, not copied from publications.
 
 Review by the responsible programme's environmental, agriculture, forestry, GIS, emergency management and public communication personnel is required before officially endorsing or translating lessons. Time-sensitive flood advice should reference current NEMA/SEMA notices; this page is **not** an alerting or dispatch service.
 
@@ -40,7 +40,7 @@ Review by the responsible programme's environmental, agriculture, forestry, GIS,
 - Reuse a graphic type or add an original diagram variant in `src/components/CitizenLessonGraphic.tsx`, using responsive `viewBox` SVG and accessible titles. Never label fabricated scenes as real evidence.
 - UI search, quiz and category design reside in `src/components/CitizenLearningCenter.tsx` and `src/app/globals.css`.
 - Run `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`.
-- Check primary-source links periodically, especially Nigerian emergency warnings. Document source changes and any local ACReSAL approval.
+- Check primary-source links periodically, especially Nigerian emergency warnings. Document source changes and any independent local review.
 - Test a narrow phone display, screen reader reading order, keyboard-accessible details, searchable topic categories, quiz feedback and reduced-motion preferences.
 
 ## Interoperability and expansion

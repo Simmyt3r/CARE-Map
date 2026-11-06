@@ -4,7 +4,7 @@ CARE-Map uses a reviewed translation-pack model for public-facing local-language
 
 English is the built-in default and permanent safe fallback.
 
-Initial Benue target packs:
+Original pilot-language packs (regional deployments require their own reviewed lists):
 
 - Tiv — language tag `tiv`
 - Idoma — language tag `idu`
@@ -153,7 +153,7 @@ The Production Readiness Center reports:
 - whether migration 015 is available in the database
 - how many local-language packs are both reviewed and publicly enabled
 
-A future decision can promote local-language availability to a required launch gate if ACReSAL policy requires it.
+A future decision can promote local-language availability to a required launch gate if the deploying organisation requires it.
 
 ## Content-quality rule
 
