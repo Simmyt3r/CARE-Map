@@ -24,4 +24,4 @@ export const reportSchema=z.object({type:z.enum(["problem_report","small_river_r
     // Offline reports retain their original position time and may sync later.
   }
 });
-export const userCreateSchema=z.object({name:z.string().min(2).max(120),email:z.email().max(254),password:z.string().min(12).max(200),role:z.enum(["staff","admin","registered_community"])});
+export const userCreateSchema=z.object({name:z.string().min(2).max(120),email:z.email().max(254),password:z.string().min(12).max(200),role:z.enum(["staff","admin","registered_community"]),workspaceAccess:z.array(z.string()).optional()});
