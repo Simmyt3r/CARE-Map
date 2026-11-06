@@ -84,7 +84,7 @@ export default async function PublicResourcePage({params}:{params:Promise<{kind:
         </section>
 
         <section className="resource-qr-label card">
-          <div className="qr-brand">CARE-Map · Benue ACReSAL</div>
+          <div className="qr-brand">CARE-Map · Environmental Resource Record</div>
           <img src={qr} alt={"QR code for "+String(resource.name)} width={240} height={240}/>
           <h2>{String(resource.name)}</h2>
           {resource.code&&<strong className="qr-code">{String(resource.code)}</strong>}

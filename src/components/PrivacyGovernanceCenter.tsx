@@ -84,7 +84,7 @@ export default function PrivacyGovernanceCenter(){
         <div className="stat"><strong>{openBreaches.length}</strong><span>Open breach records</span></div>
         <div className="stat"><strong>{notificationBreaches.length}</strong><span>NDPC notification clocks</span></div>
       </div>
-      <div className="notice"><strong>Legal-review status:</strong> this center prepares evidence and workflows but does not replace formal review by the responsible ACReSAL privacy/legal function or a qualified Nigerian data-protection professional.</div>
+      <div className="notice"><strong>Legal-review status:</strong> this center prepares evidence and workflows but does not replace formal review by the deployment controller and qualified local privacy/legal professionals.</div>
       {message&&<div className="notice">{message}</div>}
     </section>
 
@@ -158,7 +158,7 @@ export default function PrivacyGovernanceCenter(){
         <div><span>2</span>Confirm lawful bases for each processing activity and document processors/cross-border transfers.</div>
         <div><span>3</span>Complete DPIA assessment for location, imagery, monitoring, analytics, and any high-risk processing.</div>
         <div><span>4</span>Confirm NDPC registration/filing obligations and whether a DPO/DPCO is required for the operating entity.</div>
-        <div><span>5</span>Approve retention schedule against ACReSAL/government/World Bank records obligations.</div>
+        <div><span>5</span>Approve retention schedule against applicable law and the operator's records obligations.</div>
         <div><span>6</span>Review public notice, rights workflow, breach procedure, contracts, and security controls before launch.</div>
       </div>
     </section>
