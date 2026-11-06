@@ -8,14 +8,14 @@ export const dynamic="force-dynamic";
 
 export default async function AdminMigrationsPage(){
   const session=await getSession();
-  if(!isAdmin(session))redirect("/login");
+  if(!isAdmin(session))redirect("/login?next=%2Fstaff%2Fadmin%2Fmigrations");
   const status=await currentInfrastructureSnapshot();
   return <div className="stack">
     <div className="section-head">
       <div>
         <span className="page-eyebrow">Administration / Database</span>
         <h1>Database migrations</h1>
-        <p className="muted">Manage pending Aiven/PostGIS schema upgrades using your current signed-in administrator account.</p>
+        <p className="muted">Manage pending Aiven/PostGIS schema upgrades using your current signed-in administrator account. If your database only has the initial schema, sign-in remains available so you can apply migration 003 and subsequent upgrades here.</p>
       </div>
       <Link href="/staff/infrastructure" className="btn">Infrastructure</Link>
     </div>
