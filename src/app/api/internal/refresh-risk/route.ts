@@ -7,8 +7,8 @@ function authorized(request:Request){const secret=process.env.CRON_SECRET;return
 export async function GET(request:Request){
  if(!authorized(request))return NextResponse.json({error:"unauthorized"},{status:401});
  try{
-   await query(RISK_REFRESH_SQL);
    const expiredBucketsRemoved=await pruneExpiredRateLimits();
+   await query(RISK_REFRESH_SQL);
    return NextResponse.json({ok:true,refreshedAt:new Date().toISOString(),expiredBucketsRemoved},{headers:{"Cache-Control":"no-store"}});
  }catch(e){
    // Do not return SQL, connection details or personally identifying records.

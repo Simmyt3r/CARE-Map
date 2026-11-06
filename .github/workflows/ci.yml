@@ -54,6 +54,10 @@ jobs:
         run: npx vitest run tests/crf-templates.integration.test.ts
         env:
           CAREMAP_PG_INTEGRATION_URL: postgresql://ci:ci@localhost:5432/ci
+      - name: Verify concurrent rate limiting, migration recovery and administrator safety
+        run: npx vitest run tests/security-hardening.integration.test.ts
+        env:
+          CAREMAP_PG_INTEGRATION_URL: postgresql://ci:ci@localhost:5432/ci
       - run: npm run build
         env:
           SESSION_SECRET: ci-session-secret-that-is-longer-than-32-characters

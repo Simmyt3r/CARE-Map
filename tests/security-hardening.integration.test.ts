@@ -109,7 +109,7 @@ describe.skipIf(!connectionString)("serverless security with real concurrent Pos
     const rows=await a.query<{id:string}>("SELECT id FROM users WHERE role='admin' AND active=TRUE");
     const adminId=rows.rows[0].id;
     const targetId=adminId===actorA?actorB:actorA;
-    await a.query("ALTER TABLE audit_logs ADD CONSTRAINT audit_failure CHECK(FALSE)");
+    await a.query("ALTER TABLE audit_logs ADD CONSTRAINT audit_failure CHECK(FALSE) NOT VALID");
     await expect(updateAdminAccount(a,adminId,targetId,{role:"admin"})).rejects.toThrow();
     const state=await a.query("SELECT role FROM users WHERE id=$1",[targetId]);
     expect(state.rows[0].role).toBe("staff");

@@ -60,11 +60,11 @@ This avoids blocking internal pilot use merely because statewide boundary work i
 
 ## Migration ledger
 
-Both the web-based Aiven initializer and `npm run db:migrate` use the same migration ledger:
+Both the web-based Aiven initializer and `npm run db:migrate` use the same session-level PostgreSQL advisory lock and migration ledger:
 
 `care_map_schema_migrations`
 
-For every SQL file CARE-Map stores:
+A second migration runner is rejected while the lock is held. Each SQL migration and its ledger record now commit in **one transaction**; if SQL or the checksum insert fails, both roll back. Existing SQL files keep their checksums, and no legacy table contents are modified by this refactor. Avoid non-transactional SQL such as `CREATE INDEX CONCURRENTLY` in ordinary migration files. On a failed upgrade, inspect server logs, correct the cause, and rerun: only unrecorded migrations are retried. A previous partially applied deployment without a ledger requires a reviewed backup and manual reconciliation before retrying; do not mark such a migration applied without verifying its full effects.\n\nFor every SQL file CARE-Map stores:
 
 - filename
 - SHA-256 checksum
@@ -92,7 +92,7 @@ Running the initial setup/upgrade creates the ledger and processes the migration
 
 After that bootstrap, future runs skip recorded migrations.
 
-## Aiven TLS
+## Shared rate limiting and safe error responses\n\nMigration `021_shared_rate_limit.sql` creates PostgreSQL-backed buckets for login, registration, community reports, and privacy request/status endpoints. Counters use atomic UPSERTs across all Vercel instances, HMAC-SHA256 bucket keys (no plain IP stored), and a fixed expiry. The existing 02:00 daily maintenance cron removes up to 5,000 expired buckets older than one day each run. The shared limiter **fails closed with a 503** when its database table, database connection, or stable signing secret is unavailable; it never falls back to a process-local counter. Apply the migration before deploying code that calls this limiter and verify the CRON_SECRET-protected maintenance job is scheduled. Keep `RATE_LIMIT_SECRET` identical across all instances when set, or use the existing strong `SESSION_SECRET`.\n\nAnonymous report submission errors now return a generic 500 `REPORT_SUBMISSION_FAILED` response, with only diagnostic error codes logged server-side. Admin account role/activation changes lock active administrator rows, re-check permissions inside the transaction, and commit the audit entry with the account change.\n\n## Aiven TLS
 
 A database connection can technically succeed without AIVEN_CA_CERT because PostgreSQL clients can be configured to accept an unverified certificate. CARE-Map does not treat that as production-ready.
 
@@ -144,7 +144,7 @@ It does not expose secret values.
 
 ## Implementation and release parity
 
-The repository currently contains migration files **001–020**, including community extension stewardship and maintenance-photo evidence. Confirm the target database actually applied them, the ledger checksums match, and the current Vercel deployment contains the relevant code before using those workflows. A Vercel `READY` state alone does not establish which commit is live or that field acceptance passed.
+The repository currently contains migration files **001–021**, including community extension stewardship and maintenance-photo evidence. Confirm the target database actually applied them, the ledger checksums match, and the current Vercel deployment contains the relevant code before using those workflows. A Vercel `READY` state alone does not establish which commit is live or that field acceptance passed.
 
 ## What the panel does not prove
 
