@@ -28,3 +28,25 @@ export function isWithinNigeriaExtent(latitude:number,longitude:number){
     latitude>=NIGERIA_EXTENT.south&&latitude<=NIGERIA_EXTENT.north&&
     longitude>=NIGERIA_EXTENT.west&&longitude<=NIGERIA_EXTENT.east;
 }
+
+/** Screen all vertices of a GeoJSON geometry, including Multi* shapes. */
+export function assertNigeriaGeometry(value:unknown){
+  const geometry=typeof value==="string"?JSON.parse(value):value;
+  if(!geometry||typeof geometry!=="object"||!("coordinates" in geometry))
+    throw new Error("A valid GeoJSON geometry is required.");
+  let count=0;
+  function visit(node:unknown){
+    if(!Array.isArray(node)||!node.length)
+      throw new Error("Invalid GeoJSON coordinate structure.");
+    if(typeof node[0]==="number"||typeof node[1]==="number"){
+      if(node.length<2||!isWithinNigeriaExtent(Number(node[1]),Number(node[0])))
+        throw new Error("CARE-Map only imports geographic records within Nigeria's screening extent.");
+      count++;
+      if(count>200_000)throw new Error("GeoJSON has too many coordinates.");
+    }else{
+      for(const part of node)visit(part);
+    }
+  }
+  visit((geometry as {coordinates:unknown}).coordinates);
+  if(!count)throw new Error("GeoJSON geometry has no coordinates.");
+}

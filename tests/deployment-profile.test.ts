@@ -1,6 +1,6 @@
 import {describe,expect,it} from "vitest";
 import {parseDeploymentProfile} from "../src/lib/deployment-profile";
-import {isWithinNigeriaExtent,NIGERIAN_STATES,normalizeNigerianState}
+import {assertNigeriaGeometry,isWithinNigeriaExtent,NIGERIAN_STATES,normalizeNigerianState}
   from "../src/lib/nigeria-geography";
 
 describe("CARE-Map Nigeria-only deployment configuration",()=>{
@@ -29,6 +29,9 @@ describe("CARE-Map Nigeria-only deployment configuration",()=>{
     expect(()=>parseDeploymentProfile({zoom:"25"})).toThrow(/zoom/);
     expect(isWithinNigeriaExtent(9.08,8.68)).toBe(true);
     expect(isWithinNigeriaExtent(51.5,-0.12)).toBe(false);
+    expect(()=>assertNigeriaGeometry({type:"Point",coordinates:[-0.12,51.5]})).toThrow(/Nigeria/);
+    expect(()=>assertNigeriaGeometry({type:"LineString",coordinates:[[8.5,7.7],[-0.12,51.5]]})).toThrow(/Nigeria/);
+    expect(()=>assertNigeriaGeometry({type:"Polygon",coordinates:[[[8.5,7.7],[8.6,7.7],[8.6,7.8],[8.5,7.7]]]})).not.toThrow();
   });
   it("accepts old verified Nigerian state environment names",()=>{
     expect(parseDeploymentProfile({
