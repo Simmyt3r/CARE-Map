@@ -29,7 +29,7 @@ export default function AppNav(){
     <div className="shell topbar-inner">
       <Link className="brand brand-mark" href="/" aria-label="CARE-Map public homepage">
         <span className="brand-emblem" aria-hidden="true">CM</span>
-        <span><strong>CARE-Map</strong><small>{deploymentProfile.stateName} ACReSAL</small></span>
+        <span><strong>CARE-Map</strong><small>{deploymentProfile.regionName} · Climate & environment</small></span>
       </Link>
       <button type="button" className="public-menu-toggle" aria-controls={navId}
         aria-expanded={open} onClick={()=>setOpen(v=>!v)}>

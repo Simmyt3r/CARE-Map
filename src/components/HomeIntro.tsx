@@ -19,12 +19,12 @@ export default function HomeIntro(){
         <a className="btn" href="#public-map">Explore public map</a>
       </div>
       <div className="gis-status-strip" style={{marginTop:22}}>
-        <span><strong>Community-first</strong> · Report real problems</span>
-        <span><strong>Location-backed</strong> · Explore mapped evidence</span>
+        <span><strong>Community-powered</strong> · Report real problems</span>
+        <span><strong>Evidence-based</strong> · Explore mapped evidence</span>
       </div>
     </div>
     <div className="card hero-how">
-      <span className="page-eyebrow">How CARE-Map works</span>
+      <span className="page-eyebrow">From observations to climate action</span>
       <h2 style={{margin:0}}>{t("home.howTitle")}</h2>
       {steps.map((step,i)=><div className="hero-step" key={i}>
         <span className="hero-step-number" aria-hidden="true">{i+1}</span>

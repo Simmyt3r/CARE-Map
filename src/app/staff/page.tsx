@@ -41,8 +41,8 @@ export default async function StaffDashboard(){
  return <div className="stack">
   <div className="section-head">
     <div className="staff-page-lede">
-      <span className="page-eyebrow">Benue ACReSAL / Operational overview</span>
-      <h1>Welcome to CARE-Map</h1>
+      <span className="page-eyebrow">Climate intelligence / Operational overview</span>
+      <h1>Climate intelligence dashboard</h1>
       <p className="muted">Explore verified geographic evidence, manage community interventions and keep field follow-ups moving.</p>
     </div>
     <Link className="btn primary" href="/staff/extension">Manage interventions</Link>

@@ -6,8 +6,8 @@ import {LocalizationProvider} from "@/components/LocalizationProvider";
 import {deploymentProfile} from "@/lib/deployment-profile";
 
 export const metadata:Metadata={
-  title:"CARE-Map | "+deploymentProfile.stateName+" ACReSAL",
-  description:"A community-first geospatial workspace for "+deploymentProfile.stateName+" State ACReSAL interventions.",
+  title:"CARE-Map | Climate Intelligence & Resilience",
+  description:"Climate risk, environmental resources, satellite observations and community action mapped in one evidence-driven GIS platform. Coverage depends on approved regional data.",
   manifest:"/manifest.webmanifest"
 };
 

@@ -89,7 +89,7 @@ export default function StaffNav({role,name}:{role:string;name:string}){
       aria-label="Staff workspace navigation">
       <div className="staff-sidebar-brand">
         <div className="staff-sidebar-monogram" aria-hidden="true">CM</div>
-        <div><strong>CARE-Map</strong><small>Benue ACReSAL Workspace</small></div>
+        <div><strong>CARE-Map</strong><small>Climate Intelligence Workspace</small></div>
         <button className="staff-sidebar-close" type="button" onClick={()=>setOpen(false)}
           aria-label="Close navigation">×</button>
       </div>

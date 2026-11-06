@@ -1,26 +1,30 @@
 import {describe,expect,it} from "vitest";
 import {parseDeploymentProfile} from "../src/lib/deployment-profile";
 
-describe("CARE-Map jurisdiction configuration",()=>{
-  it("preserves approved Benue deployment defaults",()=>{
+describe("CARE-Map regional deployment configuration",()=>{
+  it("starts with neutral global branding and a world-scale map",()=>{
     expect(parseDeploymentProfile()).toEqual({
-      stateName:"Benue",defaultBenue:true,mapCenter:[8.7,7.35],mapZoom:6.5
+      regionName:"Global",stateName:"Global",mapCenter:[0,0],mapZoom:2
     });
   });
-  it("requires explicit data acceptance and map center for another state",()=>{
-    expect(()=>parseDeploymentProfile({stateName:"Nasarawa"})).toThrow(/dataset acceptance/);
+  it("requires approved source data and reviewed map center to claim a region",()=>{
+    expect(()=>parseDeploymentProfile({regionName:"Example Region"})).toThrow(/dataset acceptance/);
     expect(()=>parseDeploymentProfile({
-      stateName:"Nasarawa",stateDataApproved:"true"
+      regionName:"Example Region",regionDataApproved:"true"
     })).toThrow(/map center/);
     expect(parseDeploymentProfile({
-      stateName:"Nasarawa",stateDataApproved:"true",
-      centerLongitude:"8.53",centerLatitude:"8.54",zoom:"7"
-    })).toMatchObject({
-      stateName:"Nasarawa",defaultBenue:false,mapCenter:[8.53,8.54],mapZoom:7
-    });
+      regionName:"Example Region",regionDataApproved:"true",
+      centerLongitude:"12.4",centerLatitude:"-1.8",zoom:"7"
+    })).toMatchObject({regionName:"Example Region",mapCenter:[12.4,-1.8],mapZoom:7});
   });
-  it("rejects invalid state names, map longitude, latitude or zoom",()=>{
-    expect(()=>parseDeploymentProfile({stateName:"<script>"})).toThrow(/state name/);
+  it("supports legacy environment names without privileging any location",()=>{
+    expect(parseDeploymentProfile({
+      stateName:"Example State",stateDataApproved:"true",
+      centerLongitude:"8.53",centerLatitude:"8.54"
+    }).regionName).toBe("Example State");
+  });
+  it("rejects invalid region names, map longitude, latitude or zoom",()=>{
+    expect(()=>parseDeploymentProfile({regionName:"<script>"})).toThrow(/region name/);
     expect(()=>parseDeploymentProfile({centerLongitude:"NaN"})).toThrow(/map center/);
     expect(()=>parseDeploymentProfile({centerLatitude:"95"})).toThrow(/map center/);
     expect(()=>parseDeploymentProfile({zoom:"20"})).toThrow(/map center/);

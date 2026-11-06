@@ -7,7 +7,7 @@ export default function Home(){
     <HomeIntro/>
     <section id="public-map" className="stack gis-section">
       <LocalizedMapHeading/>
-      <p className="muted" style={{margin:"-4px 0 0"}}>Use the filters to explore mapped interventions. Boundaries and satellite findings should be interpreted with their source and verification status.</p>
+      <p className="muted" style={{margin:"-4px 0 0"}}>Use the filters to explore mapped environmental resources and climate observations. Boundaries and satellite findings should be interpreted with their source and verification status.</p>
       <PublicMap/>
     </section>
   </div>;
