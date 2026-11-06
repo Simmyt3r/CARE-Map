@@ -4,7 +4,13 @@ CARE-Map uses a reviewed translation-pack model for public-facing local-language
 
 English is the built-in default and permanent safe fallback.
 
-Original pilot-language packs (regional deployments require their own reviewed lists):
+Nigeria-wide target languages (require reviewed packs before publishing):
+
+- Hausa — language tag `ha`
+- Yoruba — language tag `yo`
+- Igbo — language tag `ig`
+
+Additional local-language targets for the original pilot:
 
 - Tiv — language tag `tiv`
 - Idoma — language tag `idu`
@@ -90,7 +96,7 @@ Public language APIs return only packs that are both:
 - status = reviewed
 - enabled = true
 
-If a requested pack is missing, disabled, unreviewed, unavailable, or the database cannot be reached, CARE-Map serves English.
+If a requested pack is missing, disabled, unreviewed, unavailable, or the database cannot be reached, CARE-Map serves English. Nigeria-only operation does not imply translation coverage in every state.
 
 The selected locale is stored in browser local storage under `caremap_locale`.
 
@@ -157,7 +163,7 @@ A future decision can promote local-language availability to a required launch g
 
 ## Content-quality rule
 
-CARE-Map intentionally contains no machine-guessed Tiv, Idoma, or Igede strings. Display names remain human-readable while stored/public language tags use `tiv`, `idu`, and `ige`.
+CARE-Map intentionally contains no machine-guessed Hausa, Yoruba, Igbo, Tiv, Idoma or Igede strings. Display names remain human-readable while supported tags are `ha`, `yo`, `ig`, `tiv`, `idu`, and `ige`.
 
 Human language review should check:
 
@@ -174,4 +180,4 @@ Audio or voice prompts should be reviewed separately if added later.
 
 ## Current external content gate
 
-The software framework is complete, but local-language deployment remains incomplete until fluent human reviewers supply and approve the actual Tiv, Idoma, and/or Igede packs.
+The software framework is complete, but local-language deployment remains incomplete until fluent human reviewers supply and approve Hausa, Yoruba, Igbo and/or regional language packs.
