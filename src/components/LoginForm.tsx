@@ -30,7 +30,10 @@ export default function LoginForm(){
         setMessage("The server returned an incomplete sign-in response. Please try again.");
         return;
       }
-      window.location.assign(body.user.role==="registered_community"?"/":body.user.role==="admin"?"/staff/admin/migrations":"/staff");
+      const requested=new URLSearchParams(window.location.search).get("next");
+      const destination=body.user.role==="registered_community"?"/":
+        body.user.role==="admin"&&requested==="/staff/admin/migrations"?requested:"/staff";
+      window.location.assign(destination);
     }catch{
       setMessage("Unable to connect to CARE-Map. Check your network and try again.");
     }finally{

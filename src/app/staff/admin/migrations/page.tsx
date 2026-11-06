@@ -8,7 +8,7 @@ export const dynamic="force-dynamic";
 
 export default async function AdminMigrationsPage(){
   const session=await getSession();
-  if(!isAdmin(session))redirect("/login");
+  if(!isAdmin(session))redirect("/login?next=%2Fstaff%2Fadmin%2Fmigrations");
   const status=await currentInfrastructureSnapshot();
   return <div className="stack">
     <div className="section-head">
