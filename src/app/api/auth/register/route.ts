@@ -2,14 +2,14 @@ import bcrypt from "bcryptjs";
 import {NextResponse} from "next/server";
 import {pool} from "@/lib/db";
 import {createSessionToken,setSessionCookie} from "@/lib/auth";
-import {clientIp,error,rateLimit} from "@/lib/http";
+import {clientIp,error,rateLimitGuard} from "@/lib/http";
 import {registerSchema} from "@/lib/validators";
 
 export const runtime="nodejs";
 
 export async function POST(request:Request){
   const ip=clientIp(request);
-  if(!rateLimit("register:"+ip,5,60*60_000))return error("Too many registrations",429,"RATE_LIMITED");
+  const limited=await rateLimitGuard("register:"+ip,5,60*60_000,"Too many registrations");if(limited)return limited;
 
   const parsed=registerSchema.safeParse(await request.json().catch(()=>null));
   if(!parsed.success)return error("Invalid registration details or privacy acknowledgement",400);
