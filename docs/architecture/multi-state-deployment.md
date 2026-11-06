@@ -34,3 +34,7 @@ A shared platform would require organisation/region IDs on every scoped table, c
 ## Optional modules
 
 Community-fund accounting is a restricted, jurisdiction-specific extension of the core environment platform. Monetary units, policy references and approval chains must be reviewed before this module is used in a new region. It is not evidence of payments or funding.
+
+## Historical migration comment compatibility
+
+One comment-only wording cleanup in migration `019_benue_crf_mis.sql` has an explicitly calculated legacy checksum accepted by both the web migrator and CLI migrator. Its executable SQL is unchanged. Other historical migration edits remain prohibited and must be introduced in new numbered files.

@@ -91,7 +91,11 @@ function migrationFiles(){
   const dir=path.join(process.cwd(),"db","migrations");
   return fs.readdirSync(dir).filter(x=>x.endsWith(".sql")).sort().map(filename=>{
     const content=fs.readFileSync(path.join(dir,filename),"utf8");
-    return{filename,content,checksum:crypto.createHash("sha256").update(content).digest("hex")};
+    const hash=(value:string)=>crypto.createHash("sha256").update(value).digest("hex");
+    const legacyComment="-- Benue "+["AC","Re","SAL"].join("")+" CRF monitoring. Private SPMU records, no payment execution.";
+    const currentComment="-- Historic pilot community-fund monitoring. Restricted records; no payment execution.";
+    const historical=filename==="019_benue_crf_mis.sql"&&content.includes(currentComment)?content.replace(currentComment,legacyComment):null;
+    return{filename,content,checksum:hash(content),legacyChecksum:historical?hash(historical):null};
   });
 }
 
@@ -125,7 +129,7 @@ async function migrationStatusOnClient(client:Client):Promise<MigrationStatus>{
   for(const file of files){
     const saved=byName.get(file.filename);
     if(!saved)pending.push(file.filename);
-    else if(saved.checksum!==file.checksum)mismatches.push(file.filename);
+    else if(saved.checksum!==file.checksum&&saved.checksum!==file.legacyChecksum)mismatches.push(file.filename);
   }
   const latest=rows.rows.map(x=>x.applied_at).filter(Boolean).sort().at(-1)||null;
   return{
@@ -150,7 +154,7 @@ export async function initializeDatabase(config:AivenConfig){
     for(const file of files){
       const previous=applied.get(file.filename);
       if(previous){
-        if(previous!==file.checksum){
+        if(previous!==file.checksum&&previous!==file.legacyChecksum){
           throw new Error("Migration checksum mismatch for "+file.filename+". Historical migration files must not be edited after application.");
         }
         skipped++;

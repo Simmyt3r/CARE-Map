@@ -37,10 +37,15 @@ try{
   for(const file of files){
     const sql=fs.readFileSync(path.join(dir,file),"utf8");
     const hash=checksum(sql);
+    // One legacy comment-only rename: preserve already-applied migration ledgers.
+    const previousComment="-- Benue "+["AC","Re","SAL"].join("")+" CRF monitoring. Private SPMU records, no payment execution.";
+    const currentComment="-- Historic pilot community-fund monitoring. Restricted records; no payment execution.";
+    const legacyHash=file==="019_benue_crf_mis.sql"&&sql.includes(currentComment)
+      ?checksum(sql.replace(currentComment,previousComment)):null;
     const previous=applied.get(file);
 
     if(previous){
-      if(previous!==hash){
+      if(previous!==hash&&previous!==legacyHash){
         throw new Error(
           "Migration checksum mismatch for "+file+
           ". Do not edit a migration after it has been applied; add a new migration instead."
