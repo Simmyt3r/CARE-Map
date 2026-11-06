@@ -3,7 +3,6 @@ import "./globals.css";
 import AppNav from "@/components/AppNav";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 import {LocalizationProvider} from "@/components/LocalizationProvider";
-import {deploymentProfile} from "@/lib/deployment-profile";
 
 export const metadata:Metadata={
   title:"CARE-Map | Climate Intelligence & Resilience",

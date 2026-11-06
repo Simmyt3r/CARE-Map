@@ -158,7 +158,7 @@ export default function PrivacyGovernanceCenter(){
         <div><span>2</span>Confirm lawful bases for each processing activity and document processors/cross-border transfers.</div>
         <div><span>3</span>Complete DPIA assessment for location, imagery, monitoring, analytics, and any high-risk processing.</div>
         <div><span>4</span>Confirm NDPC registration/filing obligations and whether a DPO/DPCO is required for the operating entity.</div>
-        <div><span>5</span>Approve retention schedule against applicable law and the operator's records obligations.</div>
+        <div><span>5</span>Approve retention schedule against applicable law and the operator&apos;s records obligations.</div>
         <div><span>6</span>Review public notice, rights workflow, breach procedure, contracts, and security controls before launch.</div>
       </div>
     </section>
