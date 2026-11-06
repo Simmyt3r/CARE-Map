@@ -5,6 +5,7 @@ import pg,{type Client} from "pg";
 import bcrypt from "bcryptjs";
 import {readinessSummary,type ReadinessItem} from "@/lib/readiness";
 import {postgresTlsOptions,safePostgresUri} from "@/lib/database-tls";
+import {acquireMigrationLock,releaseMigrationLock,applyMigrationFile} from "@/lib/migration-runner";
 
 export type AivenConfig={databaseUrl:string;caCert?:string};
 export type DbCheck={
@@ -141,15 +142,18 @@ async function migrationStatusOnClient(client:Client):Promise<MigrationStatus>{
 export async function initializeDatabase(config:AivenConfig){
   const client=new pg.Client({connectionString:tlsUri(config.databaseUrl),ssl:ssl(config.caCert,config.databaseUrl),connectionTimeoutMillis:10000});
   await client.connect();
+  let locked=false;
   try{
+    // Session lock is shared with the CLI runner and survives per-file commits.
+    await acquireMigrationLock(client);
+    locked=true;
     await ensureMigrationLedger(client);
     const files=migrationFiles();
     const existing=await client.query<{filename:string;checksum:string}>(
       "SELECT filename,checksum FROM care_map_schema_migrations"
     );
     const applied=new Map(existing.rows.map(x=>[x.filename,x.checksum]));
-    let appliedNow=0;
-    let skipped=0;
+    let appliedNow=0,skipped=0;
 
     for(const file of files){
       const previous=applied.get(file.filename);
@@ -160,19 +164,14 @@ export async function initializeDatabase(config:AivenConfig){
         skipped++;
         continue;
       }
-      await client.query(file.content);
-      await client.query(
-        "INSERT INTO care_map_schema_migrations(filename,checksum) VALUES($1,$2)",
-        [file.filename,file.checksum]
-      );
+      // SQL and checksum are committed together; failures leave no partial DDL.
+      await applyMigrationFile(client,file);
       appliedNow++;
     }
     const ext=await client.query<{version:string}>("SELECT postgis_lib_version() version");
-    return{
-      ok:true,migrations:files.length,appliedNow,skipped,
-      postgisVersion:ext.rows[0]?.version||null
-    };
+    return{ok:true,migrations:files.length,appliedNow,skipped,postgisVersion:ext.rows[0]?.version||null};
   }finally{
+    if(locked)await releaseMigrationLock(client).catch(()=>{});
     await client.end();
   }
 }

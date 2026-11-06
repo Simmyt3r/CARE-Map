@@ -1,6 +1,6 @@
 import {NextResponse} from "next/server";
 import {getSession,isStaff} from "@/lib/auth";
-import {clientIp,error,rateLimit} from "@/lib/http";
+import {clientIp,error,rateLimitGuard} from "@/lib/http";
 import {reportSchema} from "@/lib/validators";
 import {pool,query} from "@/lib/db";
 
@@ -9,7 +9,7 @@ export const dynamic="force-dynamic";
 
 export async function POST(request:Request){
   const ip=clientIp(request);
-  if(!rateLimit("reports:"+ip,8,60*60_000))return error("Too many reports from this connection. Try again later.",429,"RATE_LIMITED");
+  const limited=await rateLimitGuard("reports:"+ip,8,60*60_000,"Too many reports from this connection. Try again later.");if(limited)return limited;
 
   const parsed=reportSchema.safeParse(await request.json().catch(()=>null));
   if(!parsed.success)return error("Please provide a valid report, description and coordinates",400);
@@ -47,7 +47,9 @@ export async function POST(request:Request){
     return NextResponse.json({data:{id:reportId,status:"submitted"}},{status:201});
   }catch(e){
     await client.query("ROLLBACK").catch(()=>{});
-    return error(e instanceof Error?e.message:"Report could not be submitted.",400);
+    const code=e&&typeof e==="object"&&"code" in e?String(e.code):"UNKNOWN";
+    console.error("Report submission failed",{code});
+    return error("Report could not be submitted. Please try again later.",500,"REPORT_SUBMISSION_FAILED");
   }finally{
     client.release();
   }

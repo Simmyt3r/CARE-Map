@@ -1,5 +1,5 @@
 import {NextResponse} from "next/server";
-import {clientIp,error,rateLimit} from "@/lib/http";
+import {clientIp,error,rateLimitGuard} from "@/lib/http";
 import {getSession} from "@/lib/auth";
 import {query} from "@/lib/db";
 import {
@@ -13,7 +13,7 @@ export const dynamic="force-dynamic";
 
 export async function POST(request:Request){
   const ip=clientIp(request);
-  if(!rateLimit("privacy-request:"+ip,6,60*60_000))return error("Too many privacy requests from this connection. Try again later.",429,"RATE_LIMITED");
+  const limited=await rateLimitGuard("privacy-request:"+ip,6,60*60_000,"Too many privacy requests from this connection. Try again later.");if(limited)return limited;
 
   const body=await request.json().catch(()=>null) as {
     requestType?:string;name?:string;email?:string;phone?:string;description?:string;
@@ -53,7 +53,7 @@ export async function POST(request:Request){
 
 export async function GET(request:Request){
   const ip=clientIp(request);
-  if(!rateLimit("privacy-status:"+ip,20,60*60_000))return error("Too many status checks. Try again later.",429,"RATE_LIMITED");
+  const limited=await rateLimitGuard("privacy-status:"+ip,20,60*60_000,"Too many status checks. Try again later.");if(limited)return limited;
 
   const url=new URL(request.url);
   const reference=String(url.searchParams.get("reference")||"").trim().toUpperCase();
