@@ -3,6 +3,9 @@ export const DEFAULT_LOCALE="en";
 
 export const targetLanguages=[
   {code:"en",name:"English",nativeName:"English"},
+  {code:"ha",name:"Hausa",nativeName:"Hausa"},
+  {code:"yo",name:"Yoruba",nativeName:"Yorùbá"},
+  {code:"ig",name:"Igbo",nativeName:"Igbo"},
   {code:"tiv",name:"Tiv",nativeName:"Tiv"},
   {code:"idu",name:"Idoma",nativeName:"Idoma"},
   {code:"ige",name:"Igede",nativeName:"Igede"}
@@ -19,8 +22,8 @@ export const englishCatalog={
   "nav.language":"Language",
 
   "home.badge":"Climate intelligence · "+deploymentProfile.regionName,
-  "home.title":"Understand climate risk. Map resources. Coordinate action.",
-  "home.intro":"CARE-Map combines climate resilience planning, environmental resource mapping, satellite vegetation observations and community reporting. Geographic coverage reflects verified data in each deployment.",
+  "home.title":"Understand Nigeria’s climate risks. Map resources. Coordinate action.",
+  "home.intro":"CARE-Map brings together Nigeria’s environmental resources, climate resilience actions, satellite vegetation observations and community reports. Coverage expands state by state as verified geographic datasets become available.",
   "home.reportButton":"Report a problem",
   "home.staffButton":"Staff workspace",
   "home.howTitle":"How it works",
@@ -40,8 +43,8 @@ export const englishCatalog={
   "map.forests":"Forests",
   "map.rivers":"Rivers",
   "map.vegetationChange":"Vegetation change",
-  "map.lga":"Administrative area",
-  "map.allLgas":"All areas",
+  "map.lga":"Local Government Area (LGA)",
+  "map.allLgas":"All LGAs",
   "map.status":"Status",
   "map.anyStatus":"Any status",
   "map.functional":"Functional",
@@ -53,7 +56,7 @@ export const englishCatalog={
   "map.high":"High",
   "map.critical":"Critical",
   "map.dataError":"Map data could not be loaded.",
-  "map.aria":"CARE-Map interactive intervention map",
+  "map.aria":"CARE-Map interactive Nigeria climate and environmental map",
   "map.item":"CARE-Map item",
   "map.risk":"Risk",
   "map.viewRecord":"View public record",
@@ -69,7 +72,7 @@ export const englishCatalog={
   "register.failed":"Registration failed.",
 
   "report.title":"Community report",
-  "report.subtitle":"You can report without creating an account. Coordinates can be captured from your phone or entered manually.",
+  "report.subtitle":"Report a location in Nigeria without creating an account. Coordinates can be captured from your phone or entered manually.",
   "report.contextTitle":"Reporting against a mapped CARE-Map resource",
   "report.reference":"reference",
   "report.offlineWaiting":"report(s) waiting for internet. Keep this browser data until they are submitted.",

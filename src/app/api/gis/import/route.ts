@@ -1,3 +1,4 @@
+import {assertNigeriaGeometry,isWithinNigeriaExtent} from "@/lib/nigeria-geography";
 import {NextResponse} from "next/server";
 import {getSession,isStaff} from "@/lib/auth";
 import {error} from "@/lib/http";
@@ -50,6 +51,7 @@ export async function POST(request:Request){
           if(!lgas.has(lgaCode))throw new Error("Unknown LGA code: "+lgaCode);
           if(latitude==null||latitude< -90||latitude>90)throw new Error("Invalid latitude");
           if(longitude==null||longitude< -180||longitude>180)throw new Error("Invalid longitude");
+          if(!isWithinNigeriaExtent(latitude,longitude))throw new Error("Record coordinates fall outside Nigeria\x27s screening extent.");
           if(kind==="boreholes"){
             await client.query(
               "INSERT INTO boreholes(name,lga_code,location,status,borehole_code,description,gps_accuracy_m,captured_at,capture_source,created_by,updated_by) VALUES($1,$2,ST_SetSRID(ST_MakePoint($3,$4),4326),$5,$6,$7,$8,$9,'csv_import',$10,$10)",
@@ -70,6 +72,7 @@ export async function POST(request:Request){
             boreholes:["Point"],assets:["Point"],"forest-sites":["Polygon","MultiPolygon"],rivers:["LineString","MultiLineString"]
           };
           if(!allowedGeometry[kind].includes(geometry.type))throw new Error("Invalid geometry type "+geometry.type+" for "+kind);
+          assertNigeriaGeometry(geometry);
           const lgaCode=str(p.lgaCode||p.lga_code).toUpperCase();
           if(!lgas.has(lgaCode))throw new Error("Unknown LGA code: "+lgaCode);
           const geo=JSON.stringify(geometry);

@@ -1,3 +1,4 @@
+import {isWithinNigeriaExtent} from "@/lib/nigeria-geography";
 export type AoiPoint=[number,number];
 export type AoiPolygon={type:"Polygon";coordinates:AoiPoint[][]};
 export type AoiMultiPolygon={type:"MultiPolygon";coordinates:AoiPoint[][][]};
@@ -29,6 +30,8 @@ export function coordinateVertex(latitudeText:string,longitudeText:string):AoiPo
     throw new Error("Latitude must be a number between -90 and 90.");
   if(!Number.isFinite(longitude)||longitude< -180||longitude>180)
     throw new Error("Longitude must be a number between -180 and 180.");
+  if(!isWithinNigeriaExtent(latitude,longitude))
+    throw new Error("CARE-Map only accepts analysis locations within Nigeria's geographic extent.");
   return [longitude,latitude];
 }
 
@@ -65,6 +68,8 @@ export function validateAoi(value:unknown):AoiGeometry{
           typeof pair[1]!=="number"||!Number.isFinite(pair[0])||!Number.isFinite(pair[1])||
           pair[0]< -180||pair[0]>180||pair[1]< -90||pair[1]>90)
           throw new Error("Each coordinate must be [longitude, latitude] in WGS84 (EPSG:4326).");
+        if(!isWithinNigeriaExtent(pair[1],pair[0]))
+          throw new Error("CARE-Map AOI coordinates must lie within Nigeria\x27s geographic extent.");
         minLongitude=Math.min(minLongitude,pair[0]);
         minLatitude=Math.min(minLatitude,pair[1]);
         maxLongitude=Math.max(maxLongitude,pair[0]);

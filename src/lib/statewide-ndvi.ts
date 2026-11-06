@@ -42,6 +42,8 @@ export async function stateBoundaryReadiness(){
 
 export async function planStatewideJob(x:StatewideOptions,actorId:string){
   validateStatewideOptions(x);
+  if(deploymentProfile.stateName==="Nigeria")
+    throw new Error("State-wide Sentinel processing requires one approved Nigerian state and its complete LGA boundaries; this is not a national vegetation estimate.");
   if(!remoteSensingConfigured())throw new Error("Copernicus credentials must be configured before starting state-wide processing.");
   const ready=await stateBoundaryReadiness();
   if(!ready.totalLgas||ready.unmappedLgas)

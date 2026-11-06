@@ -5,8 +5,8 @@ import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 import {LocalizationProvider} from "@/components/LocalizationProvider";
 
 export const metadata:Metadata={
-  title:"CARE-Map | Climate Intelligence & Resilience",
-  description:"Climate risk, environmental resources, satellite observations and community action mapped in one evidence-driven GIS platform. Coverage depends on approved regional data.",
+  title:"CARE-Map Nigeria | Climate Intelligence & Resilience",
+  description:"Nigeria-wide climate resilience, environmental resources, satellite observations and community reporting. Coverage depends on verified Nigerian state and LGA data.",
   manifest:"/manifest.webmanifest"
 };
 

@@ -17,6 +17,7 @@ describe("Sentinel-2 manual and map AOI editor",()=>{
     expect(()=>coordinateVertex("","8.5")).toThrow(/both/);
     expect(()=>coordinateVertex("91","8.5")).toThrow(/Latitude/);
     expect(()=>coordinateVertex("7","181")).toThrow(/Longitude/);
+    expect(()=>coordinateVertex("51.5","-0.12")).toThrow(/Nigeria/);
   });
   it("accepts manual raw Polygon and single Feature or FeatureCollection",()=>{
     const geometry=polygonFromVertices([c1,c2,c3])!;
@@ -41,6 +42,8 @@ describe("Sentinel-2 manual and map AOI editor",()=>{
     const invalidCoordinate={type:"Polygon",coordinates:[[[8,7],[Infinity,7],[8,8],[8,7]]]};
     expect(()=>validateAoi(invalidCoordinate)).toThrow(/WGS84/);
     expect(()=>validateAoi({type:"FeatureCollection",features:[]})).toThrow(/exactly one/);
+    const abroad={type:"Polygon",coordinates:[[[0,8],[0.1,8],[0.1,8.1],[0,8]]]};
+    expect(()=>validateAoi(abroad)).toThrow(/Nigeria/);
   });
   it("rejects duplicate-only vertices before using polygon as an AOI",()=>{
     const repeated=polygonFromVertices([c1,c1,c1])!;

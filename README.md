@@ -1,8 +1,8 @@
 # CARE-Map
 
-**Climate Intelligence, Environmental Mapping & Community Resilience Platform**
+**Nigeria Climate Intelligence, Environmental Mapping & Community Resilience Platform**
 
-CARE-Map is a mobile-first, region-configurable GIS platform for mapping environmental resources, tracking climate resilience actions, collecting community observations, monitoring vegetation change, and prioritizing verified field action.
+CARE-Map is a Nigeria-only climate and environmental intelligence platform. It maps natural resources, infrastructure, vegetation change and community observations across Nigerian states and LGAs as verified data becomes available. It is not a global platform or a single-programme project.
 
 ## Current implementation
 
@@ -26,7 +26,7 @@ The repository contains an implemented Next.js application, PostGIS migrations, 
 - QR scan-to-report workflow tied to the exact mapped resource
 - Public privacy notice, privacy-rights request/status workflow and explicit optional-contact consent
 - Community self-service data export and account-identity anonymization
-- Reviewed public-language framework with English fallback and admin-approved Tiv/Idoma/Igede translation packs
+- Reviewed public-language framework with English fallback and optional Hausa/Yoruba/Igbo/Tiv/Idoma/Igede packs
 
 ### Staff
 - Secure staff/admin authentication
@@ -43,7 +43,7 @@ The repository contains an implemented Next.js application, PostGIS migrations, 
 - GIS Workbench for CSV/GeoJSON bulk imports with preview and row-level failures
 - GPS accuracy/capture provenance on point data
 - Field inspections with condition and GPS metadata
-- Site-photo uploads through Vercel Blob
+- Site-photo uploads through Cloudinary
 - Public-safe resource history summaries and photo galleries
 - Automated GIS data-quality checks and possible-duplicate detection
 - Spatial Analysis workspace for nearby-feature queries using true PostGIS distances
@@ -80,7 +80,7 @@ The repository contains an implemented Next.js application, PostGIS migrations, 
 
 ## Technology
 
-- Next.js 16.3.8 + React + TypeScript
+- Next.js 16.4.5 + React + TypeScript
 - MapLibre GL JS
 - Aiven for PostgreSQL
 - PostGIS
@@ -90,7 +90,11 @@ The repository contains an implemented Next.js application, PostGIS migrations, 
 
 Architecture decision: docs/architecture/decisions/0003-adopt-aiven-postgis-nextjs.md
 
-## Optional fresh-region bootstrap\n\nThe original migration seed reflects the first implementation. A new, otherwise-empty database can replace that seed **only with explicit operator approval** and verified administrative area codes using `npm run geo:bootstrap -- approved-areas.json`. The script requires `CAREMAP_GEOGRAPHY_BOOTSTRAP_CONFIRM=REPLACE_EMPTY_INITIAL_GEOGRAPHY`, refuses existing boundaries or operational records, and rolls back on failure. Never run this against a live dataset. Follow [regional deployment guidance](docs/architecture/multi-state-deployment.md).\n\n## Local setup
+## Optional fresh Nigerian state bootstrap
+
+The original migration seed reflects the first implementation. A new, otherwise-empty database can replace that seed **only with explicit operator approval** and verified administrative area codes using `npm run geo:bootstrap -- approved-areas.json`. The script requires `CAREMAP_GEOGRAPHY_BOOTSTRAP_CONFIRM=REPLACE_EMPTY_INITIAL_GEOGRAPHY`, refuses existing boundaries or operational records, and rolls back on failure. Never run this against a live dataset. Follow [Nigeria deployment guidance](docs/architecture/multi-state-deployment.md).
+
+## Local setup
 
 1. Create an Aiven for PostgreSQL service.
 2. Copy .env.example to .env.local.
@@ -107,11 +111,18 @@ Architecture decision: docs/architecture/decisions/0003-adopt-aiven-postgis-next
 
 db/migrations/001_init.sql enables PostGIS, pgcrypto, and citext; creates the operational schema; creates GIST spatial indexes; and contains historical seed geography for the first deployment; regional reuse requires a separately reviewed geographic dataset. db/migrations/002_field_operations.sql adds GPS quality/provenance, inspections, import auditing, and GIS quality views. db/migrations/003_operations_governance.sql adds report ownership, priority/deadlines, status history, account governance metadata, and supporting indexes. db/migrations/004_remote_sensing.sql adds persisted Sentinel-2 vegetation analyses and spatial indexes. db/migrations/005_vegetation_monitoring.sql adds recurring vegetation watchlists, observation history, and acknowledgeable satellite alerts. db/migrations/006_satellite_field_verification.sql links satellite alerts to field-verification reports and records report origin. db/migrations/007_lga_boundaries.sql adds authoritative LGA polygons, source provenance, spatial indexes and boundary-import audit history. db/migrations/008_coverage_geography_indexes.sql adds functional GiST geography indexes for metre-based borehole and asset proximity analysis. db/migrations/009_settlements_access.sql adds verified settlement/community points, population provenance safeguards, spatial indexes and settlement-import audit history. db/migrations/010_river_corridor_indexes.sql adds geography indexes for verified river corridors and open-report proximity queries. db/migrations/011_hazard_zones.sql adds verified hazard polygons, provenance/verification metadata, spatial indexes and audited hazard imports. db/migrations/012_catchments.sql adds verified catchment/landscape polygons, optional hierarchy, provenance metadata, spatial indexes and audited imports. db/migrations/013_field_acceptance.sql adds field acceptance runs, canonical workflow checks and dedicated evidence records. db/migrations/014_privacy_governance.sql adds privacy-notice evidence, data-subject rights requests, and the breach-response register. db/migrations/015_localization.sql adds reviewed translation packs and import audit history. Migration execution is tracked separately in care_map_schema_migrations using filename, SHA-256 checksum and applied timestamp.
 
-## Region-neutral deployment\n\nThe default public presentation is **Global** and makes no claim that a worldwide dataset is available. To brand an installation for a specific region, set `NEXT_PUBLIC_CAREMAP_REGION_NAME`, `NEXT_PUBLIC_CAREMAP_REGION_DATA_APPROVED=true`, and verified map longitude/latitude. The approval flag does not change the underlying database or guarantee that source geography matches. Historical migration `001_init.sql` contains the initial project's locality seed; follow [the regional deployment guardrails](docs/architecture/multi-state-deployment.md) rather than relabeling legacy records.\n\n## Environment variables
+## Nigeria-only deployment
+
+The default product and public map are **Nigeria-wide**, not global. A state-specific pilot can supply an approved Nigerian state/FCT using `NEXT_PUBLIC_CAREMAP_REGION_NAME`, `NEXT_PUBLIC_CAREMAP_REGION_DATA_APPROVED=true` and verified Nigerian coordinates. These configuration flags do **not** install nationwide state/LGA data or certify land borders. Historical migration `001_init.sql` contains the initial project's locality seed; follow [the regional deployment guardrails](docs/architecture/multi-state-deployment.md) rather than relabeling legacy records.
+
+## Environment variables
 
 | Variable | Purpose |
 |---|---|
-| NEXT_PUBLIC_CAREMAP_REGION_NAME | Optional approved deployment region (default: Global) |\n| NEXT_PUBLIC_CAREMAP_REGION_DATA_APPROVED | Required `true` when claiming a specific region |\n| NEXT_PUBLIC_CAREMAP_MAP_LONGITUDE / NEXT_PUBLIC_CAREMAP_MAP_LATITUDE | Verified initial map centre for regional deployment |\n| DATABASE_URL | Aiven PostgreSQL connection URI |
+| NEXT_PUBLIC_CAREMAP_REGION_NAME | Optional approved Nigerian state/FCT (default: Nigeria) |
+| NEXT_PUBLIC_CAREMAP_REGION_DATA_APPROVED | Required `true` for an approved Nigerian state pilot |
+| NEXT_PUBLIC_CAREMAP_MAP_LONGITUDE / NEXT_PUBLIC_CAREMAP_MAP_LATITUDE | Verified map centre within Nigeria (required for a state pilot) |
+| DATABASE_URL | Aiven PostgreSQL connection URI |
 | AIVEN_CA_CERT | Aiven CA certificate for TLS verification |
 | SESSION_SECRET | Signs authentication sessions |
 | CRON_SECRET | Protects scheduled maintenance/risk endpoint |

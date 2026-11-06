@@ -70,7 +70,7 @@ describe.skipIf(!url)("GIS context against real PostGIS",()=>{
   expect(result.scope).toBe("point");
   expect(result.lgas.map(x=>x.code)).toEqual(["LGA1"]);
   expect(result.assets.some(x=>x.kind==="borehole"&&x.inside)).toBe(true);
-  expect(informativeLocationText(result)).toContain("Makurdi Test administrative area, region not established");
+  expect(informativeLocationText(result)).toContain("Makurdi Test LGA, Nigeria (state not established)");
  },30_000);
 
  it("does not invent a region or administrative area outside known coverage",async()=>{
@@ -78,6 +78,6 @@ describe.skipIf(!url)("GIS context against real PostGIS",()=>{
   expect(result.state).toBeNull();
   expect(result.lgas).toHaveLength(0);
   expect(result.communityMatch).toBe("not_found");
-  expect(result.warnings.join(" ")).toMatch(/region and administrative area are not confirmed/);
+  expect(result.warnings.join(" ")).toMatch(/state and LGA are not confirmed/);
  },30_000);
 });

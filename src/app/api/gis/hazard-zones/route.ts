@@ -1,3 +1,4 @@
+import {assertNigeriaGeometry} from "@/lib/nigeria-geography";
 import {NextResponse} from "next/server";
 import {getSession,isStaff} from "@/lib/auth";
 import {error} from "@/lib/http";
@@ -158,6 +159,7 @@ export async function POST(request:Request){
         if(!feature.geometry||!["Polygon","MultiPolygon"].includes(String(feature.geometry.type))){
           throw new Error("Hazard geometry must be Polygon or MultiPolygon.");
         }
+        assertNigeriaGeometry(feature.geometry);
         const p=feature.properties||{};
         const name=str(p.name||p.zoneName||p.zone_name).slice(0,220);
         if(!name)throw new Error("Hazard zone name is required.");

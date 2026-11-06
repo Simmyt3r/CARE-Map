@@ -16,7 +16,7 @@ export default function PrivacyPage(){
     <section className="card stack">
       <span className="badge">Privacy notice · version {PRIVACY_NOTICE_VERSION}</span>
       <h1>CARE-Map privacy notice</h1>
-      <p>CARE-Map processes limited personal data so community members and staff can submit, follow up, verify, and manage environmental and infrastructure reports. This notice explains what is collected, why it is used, how long it is kept, and how to exercise your rights.</p>
+      <p>CARE-Map operates in Nigeria and processes limited personal data so community members and staff can submit, follow up, verify, and manage environmental and infrastructure reports. This notice explains what is collected, why it is used, how long it is kept, and how to exercise your rights.</p>
       <div className="resource-facts">
         <div><span>Data controller</span><strong>{controller}</strong></div>
         <div><span>Privacy contact</span><strong>{email}</strong></div>
@@ -46,7 +46,7 @@ export default function PrivacyPage(){
     <section className="card stack"><h2>Retention and anonymization</h2>
       <p>CARE-Map’s current operating rule is to anonymize personal identifiers attached to resolved reports after two years, while retaining de-identified operational information where needed for historical, audit, monitoring, or trend purposes.</p>
       <p>Community accounts remain active until disabled or erased. Self-service erasure anonymizes the account identity and removes optional reporter identity/contact fields from linked reports, while operational report records may remain in de-identified form where there is a lawful project need.</p>
-      <p>This retention schedule is subject to formal legal review and applicable local laws and records-management obligations before public launch.</p>
+      <p>This retention schedule remains subject to review under the Nigeria Data Protection Act 2023, applicable guidance from the Nigeria Data Protection Commission, and other relevant Nigerian laws before public launch.</p>
     </section>
 
     <section className="grid two">
@@ -57,7 +57,7 @@ export default function PrivacyPage(){
       <div className="card stack"><h2>Sharing, security and complaints</h2>
         <p>Access to non-public personal data is restricted to authorized CARE-Map staff/admin workflows. Database, session, and audit controls are used to reduce unauthorized access.</p>
         <p>Third-party infrastructure may process data on behalf of CARE-Map, including Vercel for application hosting, Aiven for database hosting, and Cloudinary for new photo storage. Older photos may remain on Vercel Blob. Cloudinary photo delivery URLs currently use publicly accessible links, so staff must upload only approved, non-sensitive and redacted evidence. Final processor/cross-border records and storage permissions require legal review before public launch.</p>
-        <p>You may also contact the competent data-protection regulator in your jurisdiction.</p>
+        <p>For privacy complaints in Nigeria, you may contact the Nigeria Data Protection Commission (NDPC) through its official website at https://ndpc.gov.ng/. CARE-Map must still provide a verified local data-controller contact before launch.</p>
       </div>
     </section>
 
