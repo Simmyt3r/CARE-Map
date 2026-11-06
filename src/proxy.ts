@@ -1,9 +1,8 @@
 import {NextRequest,NextResponse} from "next/server";
-import {getSession,isStaff} from "@/lib/auth";
+import {getSessionFromRequest,isStaff} from "@/lib/auth";
 import {loadWorkspaceAccess} from "@/lib/workspace-access";
 import {requiredWorkspaceAccess,canAccessAnyWorkspace} from "@/lib/workspaces";
 
-export const runtime="nodejs";
 export async function proxy(request:NextRequest){
  const path=request.nextUrl.pathname;
  const required=requiredWorkspaceAccess(path,request.method);
@@ -14,7 +13,7 @@ export async function proxy(request:NextRequest){
    NextResponse.json({error:{code:"WORKSPACE_FORBIDDEN",message}},
      {status,headers:{"Cache-Control":"no-store"}});
  try{
-  const session=await getSession();
+  const session=await getSessionFromRequest(request);
   if(!isStaff(session)){
    if(api)return denied("Staff sign-in is required.",401);
    const login=new URL("/login",request.url);

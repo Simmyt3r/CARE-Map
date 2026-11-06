@@ -1,10 +1,10 @@
 import {beforeEach,describe,expect,it,vi} from "vitest";
 import {NextRequest} from "next/server";
-import {getSession} from "@/lib/auth";
+import {getSessionFromRequest} from "@/lib/auth";
 import {loadWorkspaceAccess} from "@/lib/workspace-access";
 import {proxy} from "../src/proxy";
 vi.mock("@/lib/auth",()=>({
- getSession:vi.fn(),
+ getSessionFromRequest:vi.fn(),
  isAdmin:(s:{role?:string}|null)=>s?.role==="admin",
  isStaff:(s:{role?:string}|null)=>s?.role==="staff"||s?.role==="admin"
 }));
@@ -19,10 +19,10 @@ describe("workspace access proxy",()=>{
  it("never blocks existing anonymous report submission and public resource map queries",async()=>{
   expect((await proxy(req("/api/reports","POST"))).status).toBe(200);
   expect((await proxy(req("/api/resources/boreholes"))).status).toBe(200);
-  expect(getSession).not.toHaveBeenCalled();
+  expect(getSessionFromRequest).not.toHaveBeenCalled();
  });
  it("blocks a staff user from both a hidden page and its direct API",async()=>{
-  vi.mocked(getSession).mockResolvedValue({...actor,role:"staff"} as never);
+  vi.mocked(getSessionFromRequest).mockResolvedValue({...actor,role:"staff"} as never);
   vi.mocked(loadWorkspaceAccess).mockResolvedValue(["field"] as never);
   const page=await proxy(req("/staff/remote-sensing"));
   expect(page.status).toBeGreaterThanOrEqual(300);
@@ -32,19 +32,19 @@ describe("workspace access proxy",()=>{
   expect(await api.text()).toContain("WORKSPACE_FORBIDDEN");
  });
  it("allows assigned staff and every administrator",async()=>{
-  vi.mocked(getSession).mockResolvedValueOnce({...actor,role:"staff"} as never);
+  vi.mocked(getSessionFromRequest).mockResolvedValueOnce({...actor,role:"staff"} as never);
   vi.mocked(loadWorkspaceAccess).mockResolvedValueOnce(["gis"] as never);
   expect((await proxy(req("/api/gis/import","POST"))).status).toBe(200);
-  vi.mocked(getSession).mockResolvedValueOnce({...actor,role:"admin"} as never);
+  vi.mocked(getSessionFromRequest).mockResolvedValueOnce({...actor,role:"admin"} as never);
   expect((await proxy(req("/staff/admin/migrations"))).status).toBe(200);
  });
  it("denies staff admin-only routes even with all interface grants",async()=>{
-  vi.mocked(getSession).mockResolvedValue({...actor,role:"staff"} as never);
+  vi.mocked(getSessionFromRequest).mockResolvedValue({...actor,role:"staff"} as never);
   expect((await proxy(req("/api/admin/users","GET"))).status).toBe(403);
   expect(loadWorkspaceAccess).not.toHaveBeenCalled();
  });
  it("rejects unauthenticated private endpoints without hiding public ones",async()=>{
-  vi.mocked(getSession).mockResolvedValue(null);
+  vi.mocked(getSessionFromRequest).mockResolvedValue(null);
   expect((await proxy(req("/api/crf/ledger"))).status).toBe(401);
   expect((await proxy(req("/api/reports","POST"))).status).toBe(200);
  });
