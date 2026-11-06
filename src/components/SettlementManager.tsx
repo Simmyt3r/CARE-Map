@@ -185,7 +185,7 @@ export default function SettlementManager(){
   function template(){
     const csv=[
       "settlementCode,name,settlementType,lgaCode,latitude,longitude,population,populationYear,populationSource,gpsAccuracy,notes",
-      "SET-001,Example Community,community,MAKURDI,7.7304,8.5361,2500,2024,Approved survey,5.0,Example only"
+      "SET-001,Example Community,community,AREA-001,0.1000,0.1000,2500,2024,Example survey,5.0,Illustrative coordinates only"
     ].join("\n")+"\n";
     download("care-map-settlements-template.csv",csv,"text/csv");
   }
@@ -218,7 +218,7 @@ export default function SettlementManager(){
         <option value="csv">CSV coordinates</option>
         <option value="geojson">GeoJSON points</option>
       </select></div>
-      <div className="field"><label>Dataset source / provenance</label><input value={source} disabled={busy} onChange={e=>{setSource(e.target.value);resetProgress();}} placeholder="e.g. Benue ACReSAL validated community inventory · 2026-10"/></div>
+      <div className="field"><label>Dataset source / provenance</label><input value={source} disabled={busy} onChange={e=>{setSource(e.target.value);resetProgress();}} placeholder="e.g. Verified community inventory · publisher and date"/></div>
     </div>
 
     <div className="grid three">

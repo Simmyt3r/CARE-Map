@@ -1,43 +1,31 @@
-# Scope
+# CARE-Map — Generic Climate Platform Scope
 
-**Status:** Draft
-**Last updated:** 2026-09-01
+CARE-Map is an organisation-neutral platform for **climate resilience, environmental information, and field operations**, with local organisations responsible for source data and decisions.
 
-## Pilot LGAs
+## Core supported capabilities
 
-**Resolved 2026-09-01:** the initial rollout covers all Benue LGAs where ACReSAL already has active ground-level interventions (dam rehabilitation, boreholes, gully-erosion control, afforestation, or climate-smart farming support) as of September 2026 — 14 of Benue's 23 LGAs:
+- GIS inventory of water points, natural assets, infrastructure, restoration sites, waterways and administrative boundaries
+- Community observations, optional identities, geolocation, evidence and staff verification
+- Satellite vegetation change using Sentinel-2 NDVI with cloud/quality limitations and field verification
+- Hazards, river corridors, catchments, settlement access, interventions and geographically grounded action prioritisation
+- Field inspections, stewardship follow-up, offline reporting, map exports and accountable staff actions
+- Public education, language packs, privacy notices and access/retention controls
 
-Makurdi, Vandeikya, Otukpo, Gwer West, Ogbadibo, Gboko, Ohimini, Oju, Konshisha, Gwer East, Katsina-Ala, Kwande, Guma, and Agatu.
+## Geographic scope
 
-Makurdi and Vandeikya were the original pilot LGAs named for the broader ACReSAL scheme; the rest were included because they already have real interventions for CARE-Map to track from launch. The remaining 9 LGAs are candidates for a later expansion phase — see [roadmap.md](roadmap.md).
+**No region is presumed by the product brand.** Each installation is responsible for approved geographic inputs and the local administration hierarchy. The first implementation's historical migrations contain an example state dataset; those historical files must not be rewritten or presented as global coverage. See [regional deployment guardrails](../architecture/multi-state-deployment.md).
 
-## In Scope
+## Optional or jurisdiction-specific capabilities
 
-- Boreholes
-- Project assets (irrigation pumps, equipment, etc.)
-- Forests and afforestation sites
-- Official rivers and water-related interventions
-- Community-reported small rivers and streams
+Community revolving fund / finance tracking is not a universal climate data requirement. It must be configured and legally reviewed for local currencies, eligibility rules, oversight and external reporting where used.
 
-## Out of Scope (for now)
+## Outside initial scope
 
-Deferred to later phases, per [roadmap.md](roadmap.md) and the README's [Future Enhancements](../../README.md#8-future-enhancements):
+- Live meteorological forecasting or certified disaster alerting
+- Attribution of a specific environmental change to an individual project without evidence
+- Automatic regulatory certifications, fund disbursement, or publication of unverified interventions
+- A secure shared multi-tenant database for unrelated organisations or regions
 
-- Full offline-first mobile application
-- Advanced/custom machine learning models (initial AI features are rule-based or simple ML)
-- Satellite data integration (e.g. Google Earth Engine)
-- SMS or WhatsApp notifications
-- Multi-language support
+## Launch conditions
 
-## Assumptions
-
-- The initial version focuses on core tracking and community reporting; AI features start simple and improve as more data is collected.
-- The system should work well on mobile devices from day one, even before full offline support exists.
-- Integration with existing ACReSAL tools will be considered where possible, but no specific integration is committed yet.
-- Development proceeds in phases — see [roadmap.md](roadmap.md).
-
-## Constraints
-
-- Public-facing features must not require login (community map, problem reporting, small-river reporting).
-- Staff data must be protected; public data is view-only.
-- Target users include staff and community members in areas that may have poor internet connectivity, which shapes performance and (eventual) offline requirements.
+Verify data provenance, geographic coordinates, role access, privacy-controller identity, satellite processing, realistic connectivity, legal obligations, and physical field acceptance in each deployment. Do not infer successful deployment from an automated build.

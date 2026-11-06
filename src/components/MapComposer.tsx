@@ -35,7 +35,7 @@ export default function MapComposer(){
   const[risk,setRisk]=useState("");
   const[labels,setLabels]=useState(true);
   const[showBoundaries,setShowBoundaries]=useState(true);
-  const[title,setTitle]=useState("Benue ACReSAL Operational Map");
+  const[title,setTitle]=useState("CARE-Map Climate and Environment Map");
   const[subtitle,setSubtitle]=useState("CARE-Map GIS situation map");
   const[notes,setNotes]=useState("");
   const[message,setMessage]=useState("");
@@ -294,7 +294,7 @@ export default function MapComposer(){
     <section className="map-print-sheet">
       <header className="composer-print-header">
         <div>
-          <div className="composer-kicker">Benue ACReSAL · CARE-Map</div>
+          <div className="composer-kicker">Climate intelligence · CARE-Map</div>
           <h1>{title||"CARE-Map Operational Map"}</h1>
           {subtitle&&<p>{subtitle}</p>}
         </div>

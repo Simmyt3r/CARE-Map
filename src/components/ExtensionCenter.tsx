@@ -158,7 +158,7 @@ export default function ExtensionCenter({admin}:{admin:boolean}){
 
     {tab==="projects"&&<>
       <form className="card stack" onSubmit={submitProject}>
-        <h2>Register ACReSAL intervention</h2>
+        <h2>Register environmental intervention</h2>
         <p className="muted">Every intervention needs a community focal person who agrees to be contacted. Their telephone number stays in staff-only records.</p>
         <div className="extension-form-divider"><span>01</span><div><strong>Intervention details</strong><small>Identify the project and community.</small></div></div>
         <div className="grid two">
@@ -166,7 +166,7 @@ export default function ExtensionCenter({admin}:{admin:boolean}){
           <div className="field"><label>Project name</label><input required value={form.projectName} onChange={e=>setForm(x=>({...x,projectName:e.target.value}))}/></div>
           <div className="field"><label>Project type</label><select value={form.projectType} onChange={e=>setForm(x=>({...x,projectType:e.target.value}))}>{typeChoices.map(([code,name])=><option value={code} key={code}>{name}</option>)}</select></div>
           <div className="field"><label>Community name</label><input required value={form.communityName} onChange={e=>setForm(x=>({...x,communityName:e.target.value}))}/></div>
-          <div className="field"><label>Benue LGA</label><select required value={form.lgaCode} onChange={e=>setForm(x=>({...x,lgaCode:e.target.value}))}><option value="">Choose LGA</option>{lgas.map(l=><option key={l.code} value={l.code}>{l.name}</option>)}</select></div>
+          <div className="field"><label>Administrative area (LGA)</label><select required value={form.lgaCode} onChange={e=>setForm(x=>({...x,lgaCode:e.target.value}))}><option value="">Choose LGA</option>{lgas.map(l=><option key={l.code} value={l.code}>{l.name}</option>)}</select></div>
           <div className="field"><label>Project status</label><select value={form.projectStatus} onChange={e=>setForm(x=>({...x,projectStatus:e.target.value}))}>{["planned","active","completed","needs_maintenance","closed"].map(s=><option key={s} value={s}>{s.replaceAll("_"," ")}</option>)}</select></div>
           <div className="extension-form-divider"><span>02</span><div><strong>Project coordinates</strong><small>Device GPS is preferred; all locations require review.</small></div></div>
           <div className="field"><label>Latitude</label><input required inputMode="decimal" value={form.latitude} onChange={e=>manualCoordinate("latitude",e.target.value)}/></div>

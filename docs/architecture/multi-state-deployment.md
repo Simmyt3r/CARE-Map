@@ -1,57 +1,40 @@
-# CARE-Map Multi-State Reuse — Deployment & Data Isolation Plan
+# CARE-Map: Regional Deployment and Data Isolation
 
-**Status:** Design guardrails and first configuration refactor implemented 15 October 2026. **Benue remains the only provisioned dataset.** CARE-Map is NOT yet a shared multi-state/tenant platform.
+CARE-Map is a general-purpose climate intelligence, environmental resource mapping and community resilience platform. The public-facing product is not associated with any particular agency or funded programme.
 
-## Decision: separate deployment per state first
+## Supported architecture
 
-CARE-Map's GIS, workflows, reports, extension, Sentinel-2 and operational tools can be reused by other Nigerian states. To avoid accidental cross-state exposure, the approved near-term pattern is **one Vercel project, one Aiven database and state-specific source datasets per state**. Separate accounts, Cloudinary storage prefixes or accounts, operational contacts, secrets, reports, community interventions, backups, domain and acceptance approvals for each deployment.
+- One independently configured deployment per region or operating organisation.
+- Separate PostgreSQL/PostGIS database, identity records, encryption/session secrets, file storage, privacy controller, verified GIS layers, and operating procedures.
+- The default public label is **Global**, with a world-scale map. This is a neutral presentation only; it does not assert that global datasets are installed.
+- To display a specific region, set `NEXT_PUBLIC_CAREMAP_REGION_NAME`, `NEXT_PUBLIC_CAREMAP_REGION_DATA_APPROVED=true`, and reviewed map latitude/longitude. The approval flag records an operator decision; it does **not** validate GIS datasets or provide tenant isolation.
+- Legacy `NEXT_PUBLIC_CAREMAP_STATE_NAME` and `NEXT_PUBLIC_CAREMAP_STATE_DATA_APPROVED` environment variables remain accepted for compatibility.
 
-Do not point a new state's deployment to Benue's existing `DATABASE_URL`. Do not copy staff, citizen, GPS, report or consent records to an unrelated state deployment.
+## Critical database restriction
 
-### Configuration available now
+Historical migration `db/migrations/001_init.sql` seeds a specific Nigerian state and marks certain local government areas as pilots. **Do not edit this historical migration**: database migration checksums protect already-provisioned installations. New non-default deployments must not relabel these historic records as a different region. For a freshly migrated empty database, an operator can use the explicit `npm run geo:bootstrap -- approved-areas.json` script to replace only the original untouched seed. It requires verified `DATABASE_URL`, `AIVEN_CA_CERT` and `CAREMAP_GEOGRAPHY_BOOTSTRAP_CONFIRM=REPLACE_EMPTY_INITIAL_GEOGRAPHY`. A JSON file must declare `regionName`, `provenance`, and `areas` containing unique `{code,name,pilot}` entries. The script refuses existing boundaries or operational records and runs within a transaction. Never execute it on an operational deployment; verify all relationships, spatial layers and field acceptance gates before launch.
 
-The existing application now centralizes its public deployment identity and initial map viewport. By default, no environment variables are required and the existing Benue values remain:
+The current tables use `lgas` and `lga_code` as internal administrative-geography identifiers. The UI can speak about administrative areas, but this **does not yet make geographic identifiers universally portable**. A truly arbitrary country, province or multi-country deployment needs a reviewed migration for administrative-unit hierarchy and source-specific spatial data.
 
-| Variable | Existing default | New-state example / meaning |
-|---|---|---|
-| `NEXT_PUBLIC_CAREMAP_STATE_NAME` | `Benue` | A state name, only after reviewing that state's complete source dataset |
-| `NEXT_PUBLIC_CAREMAP_MAP_LONGITUDE` | `8.7` | Reviewed map center longitude, WGS84 |
-| `NEXT_PUBLIC_CAREMAP_MAP_LATITUDE` | `7.35` | Reviewed map center latitude, WGS84 |
-| `NEXT_PUBLIC_CAREMAP_MAP_ZOOM` | `6.5` | Initial map zoom between 3 and 15 |
-| `NEXT_PUBLIC_CAREMAP_STATE_DATA_APPROVED` | not set | Must be `true` before displaying a non-Benue state identity |
+## Deployment checklist
 
-**Important:** The `STATE_DATA_APPROVED` variable is a deployment-approval gate, **not** an automated geospatial validation or proof of legal/operational acceptance. These are build-time client-visible values, never secrets. Changing them requires a build/redeploy. They do **not** change which data is in PostgreSQL.
+1. Choose and verify the geographic scope and data controller.
+2. Provision dedicated Aiven/PostGIS, Cloudinary and Vercel resources.
+3. Verify geographic reference system (WGS84), administrative codes and boundary provenance.
+4. Remove or replace legacy seed data only with a documented, backed-up transition, never by relabeling it.
+5. Import approved environmental layers, settlements, water points, land cover, catchments and hazard evidence.
+6. Configure legal basis, retention, operator contacts and reviewed translations; avoid location-specific legal claims outside the jurisdiction.
+7. Validate GIS boundaries, report geolocation checks, satellite imagery quality gates and role permissions.
+8. Run CI and field acceptance with real devices; validate access, privacy, scaling and monitoring before public release.
 
-The app's navigation branding, default English home description, browser metadata and initial public-map center now use the profile. Other Benue-specific strings, translations, baseline coordinates, import assumptions and GIS documents need review before an actual new-state release.
+## Future central multi-region service
 
-### Blockers before setting any other state's approval flag
+A shared platform would require organisation/region IDs on every scoped table, composite uniqueness, database-enforced isolation, per-request authorization, scoped exports, audit controls, and migration/recovery plans. This is not implemented by presentation settings. Until then use separate databases and deployments.
 
-1. **Migrations seed Benue LGAs today.** Historical `db/migrations/001_init.sql` includes 23 Benue LGA rows and must **not** be changed because the existing database uses migration checksums. A separate new-state bootstrap and verified LGA seed path are still needed. Do not run the current Benue seed and simply relabel the app.
-2. Existing LGA primary keys and operational tables presume one deployment jurisdiction. They are **not tenant-isolated** by `state_id`, so pointing two states at the same database would mix records and permissions.
-3. The existing public translation list contains Benue-specific languages such as Tiv, Idoma and Igede. New states need officially reviewed language packs and correct consent/privacy notice text.
-4. Validate state/LGA boundaries, settlement sets, catchments, forest and river sources, administrative codes, map extents and GPS-to-LGA behavior using authority-approved datasets.
-5. Configure separate Aiven/Vercel/Cloudinary/Copernicus credentials, backup retention, administrator accounts and allowed web origins. Test HTTPS, TLS CA verification, quotas and source provenance.
-6. Confirm community-competition projects, field officers, visits and rewards belong to that deployment's jurisdiction. Role separation in current application assumes one operating organization.
-7. Complete local safety/technical review of climate/erosion guidance, citizen education and jurisdictional policy and translations.
-8. Complete full Android/browser/GIS/NDVI/cloud/offline acceptance and record signed state-specific approval. **Only then** enable state identity and release the branded deployment.
+## Optional modules
 
-### Later: central multi-state platform
+Community-fund accounting is a restricted, jurisdiction-specific extension of the core environment platform. Monetary units, policy references and approval chains must be reviewed before this module is used in a new region. It is not evidence of payments or funding.
 
-If several participating states demand a **single shared** CARE-Map service, that is a distinct authorized architectural change and requires:
-- State registry and non-ambiguous `state_id` on every scoped table including LGA codes, assets, reports, users, attachments, audit, project interventions and satellite findings.
-- Database-enforced tenant isolation / Row Level Security where applicable, verified per-state authorization for every API route and export.
-- A migration plan preserving Benue production data, safe composite unique keys and full integration tests preventing cross-state reads/writes.
-- Per-state privacy policies, data retention, responsible data controller roles and governance, plus state-specific domains or access controls.
-- Cost and load planning for Aiven connection pressure, queue/cron workloads and satellite quotas.
+## Historical migration comment compatibility
 
-Until those prerequisites are met, **do not describe CARE-Map as an existing multi-tenant system**. Portability and multi-tenancy are different capabilities.
-
-## Stabilization changes on 15 October 2026
-
-- Require certificate-verified TLS to PostgreSQL and strip connection-string TLS flags that could override application policy.
-- Add connection/query time limits; public health checks no longer reveal driver error messages.
-- Reduce anonymous generic resource responses to explicit public fields, keeping internal actor IDs, field GPS metadata and operational notes staff-only.
-- Preserve Benue defaults and gate other-state public map identity on explicit deployment approval.
-- Add unit tests for TLS and deployment configuration. Shared cross-instance rate limiting remains an open item; do not present process-local rate control as a complete solution.
-
-**Migration status:** No additional database migration is introduced by these portability and security changes. For the Benue project, existing migration 001–017 files and data remain unchanged.
+One comment-only wording cleanup in migration `019_benue_crf_mis.sql` has an explicitly calculated legacy checksum accepted by both the web migrator and CLI migrator. Its executable SQL is unchanged. Other historical migration edits remain prohibited and must be introduced in new numbered files.

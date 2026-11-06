@@ -4,7 +4,7 @@
 
 ## How GPS capture now behaves
 
-The four existing capture forms (community reports, staff boreholes/assets, ACReSAL community intervention registration and inspections) share high-accuracy `watchPosition` acquisition. The app requests a fresh location (`maximumAge:0`), checks the WGS84 numeric coordinates and reported horizontal accuracy, collects updated readings for up to 30 seconds, and retains the lowest reported accuracy from valid **recent** readings.
+The four existing capture forms (community reports, staff boreholes/assets, climate and environmental programmes community intervention registration and inspections) share high-accuracy `watchPosition` acquisition. The app requests a fresh location (`maximumAge:0`), checks the WGS84 numeric coordinates and reported horizontal accuracy, collects updated readings for up to 30 seconds, and retains the lowest reported accuracy from valid **recent** readings.
 
 - Target: **≤30 m** reported horizontal accuracy. This is a field-collection target, **not** survey-grade or a guarantee of positional truth.
 - A single excellent fix may settle after about 8 seconds; distinct good fixes can end acquisition sooner.

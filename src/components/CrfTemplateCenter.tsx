@@ -156,7 +156,7 @@ export default function CrfTemplateCenter({communities,cigs,loans}:{
     <p className="muted">{records.filter(r=>r.template_code===chosen).length} recent filings of this type. Filing status is a document-review state, not CRF financial authorization.</p>
    </div>
    <div className="card stack">
-    <h3>Link to Benue&apos;s official CRF records</h3>
+    <h3>Link to verified community-fund records</h3>
     {([["communityId","Community",communities.map(c=>({id:c.id,label:c.community_name}))],
        ["cigId","CIG",cigs.map(c=>({id:c.id,label:c.cig_name}))],
        ["loanId","Loan",loans.map(l=>({id:l.id,label:l.loan_reference}))]] as [keyof typeof scope,string,Choice[]][]).map(([key,label,choices])=>

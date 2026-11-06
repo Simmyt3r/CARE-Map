@@ -4,7 +4,7 @@ import {
  validateCrfScoring,CRF_SENSITIVE_FORM_CODES
 } from "../src/lib/crf-templates";
 
-describe("Revised ACReSAL CRF Manual template companion",()=>{
+describe("Community finance template companion",()=>{
  it("covers every mandatory form and all T12 and T15 subforms",()=>{
   expect(CRF_TEMPLATES).toHaveLength(26);
   for(let number=1;number<=19;number++){

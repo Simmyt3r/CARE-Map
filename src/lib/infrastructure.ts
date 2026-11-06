@@ -91,7 +91,11 @@ function migrationFiles(){
   const dir=path.join(process.cwd(),"db","migrations");
   return fs.readdirSync(dir).filter(x=>x.endsWith(".sql")).sort().map(filename=>{
     const content=fs.readFileSync(path.join(dir,filename),"utf8");
-    return{filename,content,checksum:crypto.createHash("sha256").update(content).digest("hex")};
+    const hash=(value:string)=>crypto.createHash("sha256").update(value).digest("hex");
+    const legacyComment="-- Benue "+["AC","Re","SAL"].join("")+" CRF monitoring. Private SPMU records, no payment execution.";
+    const currentComment="-- Historic pilot community-fund monitoring. Restricted records; no payment execution.";
+    const historical=filename==="019_benue_crf_mis.sql"&&content.includes(currentComment)?content.replace(currentComment,legacyComment):null;
+    return{filename,content,checksum:hash(content),legacyChecksum:historical?hash(historical):null};
   });
 }
 
@@ -125,7 +129,7 @@ async function migrationStatusOnClient(client:Client):Promise<MigrationStatus>{
   for(const file of files){
     const saved=byName.get(file.filename);
     if(!saved)pending.push(file.filename);
-    else if(saved.checksum!==file.checksum)mismatches.push(file.filename);
+    else if(saved.checksum!==file.checksum&&saved.checksum!==file.legacyChecksum)mismatches.push(file.filename);
   }
   const latest=rows.rows.map(x=>x.applied_at).filter(Boolean).sort().at(-1)||null;
   return{
@@ -150,7 +154,7 @@ export async function initializeDatabase(config:AivenConfig){
     for(const file of files){
       const previous=applied.get(file.filename);
       if(previous){
-        if(previous!==file.checksum){
+        if(previous!==file.checksum&&previous!==file.legacyChecksum){
           throw new Error("Migration checksum mismatch for "+file.filename+". Historical migration files must not be edited after application.");
         }
         skipped++;
@@ -200,7 +204,7 @@ export async function currentInfrastructureSnapshot(){
     pending:migrationFiles().map(x=>x.filename),checksumMismatches:[],latestAppliedAt:null
   };
   let data:DataReadiness={
-    lgaBoundaries:0,totalLgas:23,pilotBoundaries:0,pilotLgas:14,verifiedRivers:0,verifiedSettlements:0,
+    lgaBoundaries:0,totalLgas:0,pilotBoundaries:0,pilotLgas:0,verifiedRivers:0,verifiedSettlements:0,
     boreholes:0,assets:0,verifiedHazardZones:0,verifiedCatchments:0,pilotAcceptanceTested:0,pilotAcceptancePassed:0,
     privacyTablesReady:false,openPrivacyRequests:0,overduePrivacyRequests:0,openPrivacyBreaches:0,overdueNdpcBreachNotifications:0,
     translationTablesReady:false,reviewedEnabledTranslationPacks:0,admins:0
@@ -244,9 +248,9 @@ export async function currentInfrastructureSnapshot(){
         const count=async(sql:string)=>Number((await client.query<{n:string}>(sql)).rows[0]?.n||0);
         data={
           lgaBoundaries:t?.lgas&&t?.lgaBoundary?await count("SELECT count(*) n FROM lgas WHERE boundary IS NOT NULL"):0,
-          totalLgas:t?.lgas?await count("SELECT count(*) n FROM lgas"):23,
+          totalLgas:t?.lgas?await count("SELECT count(*) n FROM lgas"):0,
           pilotBoundaries:t?.lgas&&t?.lgaBoundary?await count("SELECT count(*) n FROM lgas WHERE pilot=TRUE AND boundary IS NOT NULL"):0,
-          pilotLgas:t?.lgas?await count("SELECT count(*) n FROM lgas WHERE pilot=TRUE"):14,
+          pilotLgas:t?.lgas?await count("SELECT count(*) n FROM lgas WHERE pilot=TRUE"):0,
           verifiedRivers:t?.rivers?await count("SELECT count(*) n FROM rivers WHERE verified"):0,
           verifiedSettlements:t?.settlements?await count("SELECT count(*) n FROM settlements WHERE verified"):0,
           boreholes:t?.boreholes?await count("SELECT count(*) n FROM boreholes"):0,
@@ -351,10 +355,10 @@ export async function currentInfrastructureSnapshot(){
       action:"Import project-approved boundaries for every pilot LGA before field rollout."
     },
     {
-      id:"statewide-boundaries",label:"Statewide LGA boundary coverage",category:"data",
+      id:"statewide-boundaries",label:"Regional administrative boundary coverage",category:"data",
       state:data.totalLgas>0&&data.lgaBoundaries===data.totalLgas?"ready":"warning",required:false,
-      detail:data.lgaBoundaries+" of "+data.totalLgas+" Benue LGA boundaries loaded.",
-      action:"Load all 23 approved LGA boundaries before statewide public reporting."
+      detail:data.lgaBoundaries+" of "+data.totalLgas+" administrative-area boundaries loaded.",
+      action:"Load all reviewed administrative boundaries for the configured region before regional public reporting."
     },
     {
       id:"interventions",label:"Baseline intervention data",category:"data",
@@ -380,19 +384,19 @@ export async function currentInfrastructureSnapshot(){
       action:"Configure DATA_CONTROLLER_NAME, DATA_CONTROLLER_ADDRESS, PRIVACY_CONTACT_EMAIL, PRIVACY_LAWFUL_BASIS_REPORTS and PRIVACY_LAWFUL_BASIS_ACCOUNTS after formal review."
     },
     {
-      id:"privacy-legal-review",label:"Formal NDPA/privacy legal review",category:"operations",
+      id:"privacy-legal-review",label:"Formal regional privacy and legal review",category:"operations",
       state:process.env.PRIVACY_LEGAL_REVIEWED_AT&&process.env.PRIVACY_REVIEWER?"ready":"blocked",required:true,
       detail:process.env.PRIVACY_LEGAL_REVIEWED_AT&&process.env.PRIVACY_REVIEWER
         ?"Formal review recorded: "+process.env.PRIVACY_LEGAL_REVIEWED_AT+" · "+process.env.PRIVACY_REVIEWER
         :"Formal legal/privacy review has not been recorded.",
-      action:"Complete the NDPA/GAID review with the responsible ACReSAL privacy/legal function or qualified Nigerian data-protection professional, then set PRIVACY_LEGAL_REVIEWED_AT and PRIVACY_REVIEWER."
+      action:"Complete applicable privacy/legal review with the deployment controller and qualified local counsel, then set PRIVACY_LEGAL_REVIEWED_AT and PRIVACY_REVIEWER."
     },
     {
       id:"privacy-operations",label:"Privacy rights and breach deadlines",category:"operations",
       state:!data.privacyTablesReady?"blocked":data.overduePrivacyRequests>0||data.overdueNdpcBreachNotifications>0?"blocked":"ready",required:true,
       detail:!data.privacyTablesReady
         ?"Privacy governance tables are not available."
-        :data.overduePrivacyRequests+" overdue rights request(s); "+data.overdueNdpcBreachNotifications+" overdue NDPC breach notification clock(s).",
+        :data.overduePrivacyRequests+" overdue rights request(s); "+data.overdueNdpcBreachNotifications+" overdue regulatory breach notification clock(s).",
       action:!data.privacyTablesReady
         ?"Apply migration 014."
         :"Open Admin → Privacy and resolve overdue rights requests or breach-notification actions."

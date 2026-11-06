@@ -189,7 +189,7 @@ A decrease can be caused by:
 
 For monitoring, compare similar seasons when possible and use field verification for consequential conclusions.
 
-A sensible ACReSAL workflow is:
+A sensible climate resilience workflow is:
 
 ```
 Satellite change signal

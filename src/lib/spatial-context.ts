@@ -31,8 +31,8 @@ export function parsePoint(latitude:unknown,longitude:unknown){
 }
 export function informativeLocationText(context:SpatialContext){
   const names=context.lgas.map(l=>l.name);
-  const lga=names.length===1?names[0]+" LGA":names.length>1?names.join(", ")+" LGAs":"LGA not matched";
-  return [lga,context.state?context.state+" State":"state not established"].join(", ");
+  const area=names.length===1?names[0]+" administrative area":names.length>1?names.join(", ")+" administrative areas":"administrative area not matched";
+  return [area,context.state||"region not established"].join(", ");
 }
 function numeric(v:unknown){return Number(v)||0;}
 
@@ -120,7 +120,7 @@ export async function resolveSpatialContext(geometry:{type:string;coordinates:un
     ...(r.location_reviewed===null?{}:{locationReviewed:Boolean(r.location_reviewed)})
   }));
   const warnings:string[]=[];
-  if(!lgas.length)warnings.push("No stored LGA polygon overlaps this location; state and LGA are not confirmed.");
+  if(!lgas.length)warnings.push("No verified administrative boundary overlaps this location; the region and administrative area are not confirmed.");
   if(lgas.length>1)warnings.push("AOI crosses LGA boundaries. The reported NDVI change belongs to the whole AOI, not separately to each LGA.");
   if(!communities.length)warnings.push("No named settlement point in the database within the search distance.");
   if(communities.length&&!communities.some(c=>c.verified))
@@ -129,7 +129,7 @@ export async function resolveSpatialContext(geometry:{type:string;coordinates:un
   const communityMatch:SpatialContext["communityMatch"]=communities.some(c=>c.inside)
     ?"mapped_point_inside":communities.length?"nearby_point_only":"not_found";
   return{
-    scope,state:lgas.length?deploymentProfile.stateName:null,
+    scope,state:lgas.length&&deploymentProfile.regionName!=="Global"?deploymentProfile.regionName:null,
     stateBasis:lgas.length?"stored_lga_boundary":"unconfirmed",
     lgas,communities,assets,assetCount:assetResult.rows.length,
     assetListTruncated:assetResult.rows.length>50,communityMatch,warnings

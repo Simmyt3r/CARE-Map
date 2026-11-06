@@ -51,7 +51,7 @@ This restates the requirements from the [root README](../../README.md) as discre
 |----|-------------|
 | FR-19 | Public/community users can view the map, report problems, and report small rivers without an account. |
 | FR-20 | Registered community users can additionally track the status of their own submitted reports. |
-| FR-21 | ACReSAL staff have full create, edit, update, and verification rights. |
+| FR-21 | Authorized environmental staff have full create, edit, update, and verification rights. |
 | FR-22 | Administrators can manage users and configure the system. |
 
 ## Non-Functional Requirements
@@ -70,7 +70,7 @@ This restates the requirements from the [root README](../../README.md) as discre
 
 | Stakeholder | Interest |
 |-------------|----------|
-| ACReSAL Staff / SPMU | Manage data, monitor progress, receive alerts |
+| Regional Environmental Staff / Programme Management | Manage data, monitor progress, receive alerts |
 | GIS / MIS Officer | Spatial data management and analysis |
 | M&E Team | Reporting and performance tracking |
 | Community Members | View interventions and report problems |
@@ -82,7 +82,7 @@ All three were resolved on 2026-09-01 and are kept here for traceability rather 
 
 - [x] ~~What load/response-time targets define "fast loading" (NFR-03), and how many concurrent users should the system support?~~ → Resolved: 500 concurrent users, sub-2-second map load (see NFR-03 above).
 - [x] ~~What data retention and privacy rules apply to community-submitted reports and registered users' personal data?~~ → Resolved: see [data-privacy.md](data-privacy.md).
-- [x] ~~Which LGAs (Local Government Areas) are in scope for the initial rollout?~~ → Resolved: all ~14 currently-active ACReSAL LGAs (see [scope.md](scope.md)).
+- [x] ~~Which LGAs (Local Government Areas) are in scope for the initial rollout?~~ → Resolved: an operator-approved set of administrative areas, dependent on verified data (see [scope.md](scope.md)).
 
 
 ## Implementation and client baseline (2026-10-09)

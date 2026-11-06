@@ -29,7 +29,7 @@ All CARE-Map spatial records use SRID 4326. Points are stored for boreholes, ass
 
 ## Revisit triggers
 
-Revisit this stack only if field deployment reveals a concrete constraint such as native offline requirements, substantially higher tile traffic, satellite-processing workloads, or integration requirements from ACReSAL existing systems.
+Revisit this stack only if field deployment reveals a concrete constraint such as native offline requirements, substantially higher tile traffic, satellite-processing workloads, or integration requirements from climate and environmental programmes existing systems.
 
 
 ## Stability policy

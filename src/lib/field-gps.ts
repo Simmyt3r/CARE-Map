@@ -20,7 +20,7 @@ export function usableGpsSample(position:Pick<GeolocationPosition,"coords"|"time
   const {latitude,longitude,accuracy}=position.coords;
   if(![latitude,longitude,accuracy,position.timestamp].every(Number.isFinite))return null;
   if(latitude< -90||latitude>90||longitude< -180||longitude>180)return null;
-  if(latitude===0&&longitude===0)return null; // null-island sentinel, not an ACReSAL field site
+  if(latitude===0&&longitude===0)return null; // null-island sentinel, not a verified field site
   if(accuracy<=0||accuracy>100_000)return null;
   if(position.timestamp>now+5000||now-position.timestamp>GPS_MAX_SAMPLE_AGE_MS)return null;
   return {latitude,longitude,accuracyMeters:accuracy,capturedAt:new Date(position.timestamp).toISOString()};

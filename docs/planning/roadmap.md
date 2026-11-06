@@ -81,7 +81,7 @@ Production gate: run the migration against the real Aiven service and field-test
 5. Deploy to Vercel.
 6. Import or collect verified initial intervention coordinates.
 7. Field-test GPS capture and report workflow.
-8. Launch internally to ACReSAL staff.
+8. Launch internally to environmental programme staff.
 9. Open the public map after data-quality review.
 
 
@@ -197,7 +197,7 @@ Production gate: run the migration against the real Aiven service and field-test
 
 ## Phase 11 — Administrative Boundaries ✅ Baseline complete
 
-- [x] Store Benue LGA MultiPolygon boundaries in PostGIS
+- [x] Store regional administrative-unit MultiPolygon boundaries in PostGIS
 - [x] GiST spatial index for LGA boundaries
 - [x] Preserve boundary source/version provenance
 - [x] Record who imported each boundary and when
@@ -205,7 +205,7 @@ Production gate: run the migration against the real Aiven service and field-test
 - [x] Match common `code`, `lga_code`, `LGA_NAME`, `NAME_2` and related property schemas
 - [x] Validate Polygon/MultiPolygon geometry and repair invalid geometry before storage
 - [x] GIS Workbench boundary-import/status panel
-- [x] Show loaded vs missing boundaries for all 23 Benue LGAs
+- [x] Show loaded vs missing boundaries for all 23 regional administrative-units
 - [x] Public-map LGA boundary overlay and selected-LGA highlight
 - [x] Zoom public map to an imported LGA polygon
 - [x] Map Composer LGA boundary layer and selected-LGA highlight
@@ -215,7 +215,7 @@ Production gate: run the migration against the real Aiven service and field-test
 - [x] Count open/critical reports physically inside each LGA boundary
 - [x] Regression tests for boundary matching and GeoJSON extents
 
-**Production gate:** apply migration 007 and import a project-approved Benue LGA boundary dataset with documented provenance. Do not treat arbitrary third-party polygons as authoritative without GIS/SPMU validation.
+**Production gate:** apply migration 007 and import a project-approved regional administrative-unit boundary dataset with documented provenance. Do not treat arbitrary third-party polygons as authoritative without GIS and programme-management validation.
 
 
 ## Phase 12 — Intervention Coverage Analysis ✅ Baseline complete
@@ -452,7 +452,7 @@ Production gate: run the migration against the real Aiven service and field-test
 - [x] Regression tests for privacy request validation and breach timing
 - [x] NDPA/GAID-oriented privacy planning documentation
 
-**Formal legal gate remains open:** the software implementation does not itself complete the legal review. The responsible ACReSAL privacy/legal function or qualified Nigerian data-protection professional must approve controller roles, lawful bases, retention, DPIA need, processor/transfers, NDPC registration/filing obligations, DPO/DPCO requirements, cookies/storage, minors, breach SOP and the final public notice.
+**Formal legal gate remains open:** the software implementation does not itself complete the legal review. The responsible environmental programme privacy/legal function or qualified qualified regional data-protection professional must approve controller roles, lawful bases, retention, DPIA need, processor/transfers, NDPC registration/filing obligations, DPO/DPCO requirements, cookies/storage, minors, breach SOP and the final public notice.
 
 **Production rule:** only set `PRIVACY_LEGAL_REVIEWED_AT` and `PRIVACY_REVIEWER` after that real review is completed.
 

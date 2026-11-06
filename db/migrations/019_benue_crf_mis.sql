@@ -1,5 +1,5 @@
 BEGIN;
--- Benue ACReSAL CRF monitoring. Private SPMU records, no payment execution.
+-- Historic pilot community-fund monitoring. Restricted records; no payment execution.
 -- Deliberately isolated from the public CARE-Map community/asset registry.
 CREATE TABLE IF NOT EXISTS crf_role_assignments (
   user_id UUID NOT NULL REFERENCES users(id),

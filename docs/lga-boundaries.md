@@ -1,6 +1,6 @@
 # CARE-Map LGA Administrative Boundaries
 
-CARE-Map can store project-approved Benue Local Government Area boundaries as PostGIS `MultiPolygon` geometries.
+CARE-Map can store locally verified administrative-area boundaries as PostGIS `MultiPolygon` geometries.
 
 ## Why boundaries matter
 
@@ -55,7 +55,7 @@ Then:
 4. Select **Validate & import boundaries**.
 5. Review imported and missing LGA counts.
 
-Imports are limited to 100 features per batch. Benue has 23 LGAs, so a normal state boundary file is well within the limit.
+Imports are limited to 100 features per batch. Importing an administrative region with more than 100 features requires multiple batches. Stored identifiers must already exist in the deployment database.
 
 ## Matching feature properties
 
@@ -80,9 +80,9 @@ It also tries common name fields:
 Names are normalized before matching, so values such as:
 
 ```
-Gwer East
-GWER_EAST
-Gwer-East
+Example Area
+EXAMPLE_AREA
+Example-Area
 ```
 
 all normalize to:
@@ -133,12 +133,12 @@ Example request body:
 
 ```json
 {
-  "source": "Approved Benue SPMU LGA boundary dataset · 2026-10",
+  "source": "Verified region boundary dataset · source and version",
   "features": [
     {
       "type": "Feature",
       "properties": {
-        "LGA_NAME": "Makurdi"
+        "LGA_NAME": "Example Area"
       },
       "geometry": {
         "type": "Polygon",
@@ -167,11 +167,11 @@ When boundaries are loaded:
 
 Boundary geometry affects analysis and reporting. Do not import an arbitrary internet dataset and label it authoritative.
 
-Before operational use, the GIS/SPMU team should confirm:
+Before operational use, the authorised GIS and regional operations team should confirm:
 
 - source organization
 - dataset date/version
-- Benue coverage
+- approved geographic coverage
 - LGA naming
 - topology/geometry quality
 - CRS

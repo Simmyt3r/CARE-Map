@@ -30,6 +30,7 @@ jobs:
           node-version: 22
       - run: npm install
       - run: npm audit --omit=dev --audit-level=critical
+      - run: node --check scripts/bootstrap-geography.mjs
       - run: npm run typecheck
       - run: npm run lint
       - run: npm test

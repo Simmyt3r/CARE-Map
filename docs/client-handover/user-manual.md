@@ -3,14 +3,14 @@
 **Audience:** public users, community reporters, GIS/field officers, supervisors and system administrators. **Status:** Training draft; confirm screens against the client deployment.
 
 ## 1. What the platform does
-CARE-Map displays verified ACReSAL interventions, supports geographically located problem reports, manages inspections and work, analyzes geographic coverage/exposure and compares satellite vegetation observations. It is a decision-support tool; professional field validation remains necessary.
+CARE-Map displays verified climate resilience interventions, supports geographically located problem reports, manages inspections and work, analyzes geographic coverage/exposure and compares satellite vegetation observations. It is a decision-support tool; professional field validation remains necessary.
 
 ## 2. Roles
 | Role | Typical access |
 |---|---|
 | Visitor | Public map/resource pages, anonymous community report, QR-to-report |
 | Registered community | Public functions plus personal report tracking and account privacy controls |
-| Staff / GIS officer | Authorized resource editing, GIS import/export and spatial analysis, inspections, report review, ACReSAL extension visits and stewardship assessments, NDVI monitoring and field acceptance |
+| Staff / GIS officer | Authorized resource editing, GIS import/export and spatial analysis, inspections, report review, community extension visits and stewardship assessments, NDVI monitoring and field acceptance |
 | Admin | Staff functions plus account/role governance, community assessment/location approval, migration management, readiness, privacy, localization and audit review |
 
 ## 3. Public map and resource lookup
@@ -81,7 +81,7 @@ The PostgreSQL API accepts a maximum of **200 records per request**; direct API 
 If an older deployment times out when importing a file, do not repeatedly submit the full file. Deploy the corrected importer, refresh CARE-Map, then retry through the batch interface. The final imported count must be confirmed in the database. A partially processed source can contain records from prior batches; the new importer skips identical existing records without resetting or deleting data.
 
 
-## 13. ACReSAL extension and community project maintenance
+## 13. Environmental extension and community project maintenance
 
 - Open **Staff → Extension & communities** (`/staff/extension`) to register project codes, intervention type, community and LGA, location and a consenting local focal person's name/phone/role. The contact is **staff-only**.
 - Record a guidance, inspection or maintenance-support visit and its next follow-up date. Report a project problem from the public `/extension` page without publishing the focal person's contact details.
