@@ -53,4 +53,4 @@ CARE-Map is a region-configurable climate intelligence and environmental resilie
 ## Documentation maintenance
 Update the architecture index and SRS for material changes; issue new numbered migrations rather than changing applied files. Document the Git commit/version, author, date, review and approval for each client delivery. Architecture decisions are preserved as ADRs; new decisions supersede accepted ADRs rather than rewriting history.
 
-- [Community Fund-MIS implementation and acceptance](planning/benue-crf-mis.md) (restricted community/CIG registry, verified loan monitoring, manual requirements, reporting caveats and rollout gates)
+- [Community Fund-MIS implementation and acceptance](planning/community-resilience-fund.md) (restricted community/CIG registry, verified loan monitoring, manual requirements, reporting caveats and rollout gates)

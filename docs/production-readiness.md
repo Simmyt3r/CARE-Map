@@ -26,7 +26,7 @@ Required pilot-launch gates include:
 - latest completed field acceptance run passes for every pilot LGA
 - final data-controller identity, address, privacy contact and lawful-basis wording configured
 - formal privacy/legal review attested with review date and reviewer
-- privacy-governance tables present with no overdue rights request or tracked NDPC breach-notification clock
+- privacy-governance tables present with no overdue rights request or tracked locally applicable breach-notification clock
 
 Advanced capability gates include:
 
@@ -54,7 +54,7 @@ The score is calculated from required gates only. Ready gates receive full credi
 CARE-Map's initial rollout is pilot-LGA-first. Therefore:
 
 - all pilot LGA boundaries are a required launch gate
-- all 23 Benue LGA boundaries are tracked as a separate statewide capability gate
+- all configured administrative-area boundaries are tracked as a separate statewide capability gate
 
 This avoids blocking internal pilot use merely because statewide boundary work is unfinished.
 
@@ -144,7 +144,7 @@ It does not expose secret values.
 
 ## Implementation and release parity
 
-The repository currently contains migration files **001–017**, including ACReSAL extension stewardship and maintenance-photo evidence. Confirm the target database actually applied them, the ledger checksums match, and the current Vercel deployment contains the relevant code before using those workflows. A Vercel `READY` state alone does not establish which commit is live or that field acceptance passed.
+The repository currently contains migration files **001–020**, including community extension stewardship and maintenance-photo evidence. Confirm the target database actually applied them, the ledger checksums match, and the current Vercel deployment contains the relevant code before using those workflows. A Vercel `READY` state alone does not establish which commit is live or that field acceptance passed.
 
 ## What the panel does not prove
 
@@ -157,4 +157,4 @@ A green readiness score means the software and required baseline configuration a
 - scientific validation of hazard or remote-sensing products
 - staff training
 
-Those remain human governance tasks requiring designated ACReSAL/client approval.
+Those remain human governance tasks requiring the deploying organisation's documented approval.
