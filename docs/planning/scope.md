@@ -1,31 +1,24 @@
-# CARE-Map — Generic Climate Platform Scope
+# CARE-Map — Nigeria-only Climate Intelligence
 
-CARE-Map is an organisation-neutral platform for **climate resilience, environmental information, and field operations**, with local organisations responsible for source data and decisions.
-
-## Core supported capabilities
-
-- GIS inventory of water points, natural assets, infrastructure, restoration sites, waterways and administrative boundaries
-- Community observations, optional identities, geolocation, evidence and staff verification
-- Satellite vegetation change using Sentinel-2 NDVI with cloud/quality limitations and field verification
-- Hazards, river corridors, catchments, settlement access, interventions and geographically grounded action prioritisation
-- Field inspections, stewardship follow-up, offline reporting, map exports and accountable staff actions
-- Public education, language packs, privacy notices and access/retention controls
+CARE-Map is an independent climate resilience, environmental mapping and community operations platform **for Nigeria only**. It is not tied to a donor, funded programme or one state.
 
 ## Geographic scope
+- Nigeria (ISO NG) is the public identity and default national map.
+- Approved state deployments may focus on one of Nigeria's 36 states or the Federal Capital Territory, using validated state/LGA data.
+- Existing migration 001 seeds only the original pilot state. **No nationwide geographic dataset has been loaded by this refactor.** State/LGA boundaries, reference identifiers and provenance must be independently verified.
+- The approximate Nigeria coordinate envelope screens obviously foreign report or Sentinel AOI locations and keeps the UI near Nigeria. A location inside that rectangle is **not** proof it is inside Nigeria. Border, coastal or island sites require official/validated polygon review.
+- The state-wide Sentinel workflow remains one-state-only and cannot claim national vegetation change when all states have not been processed.
 
-**No region is presumed by the product brand.** Each installation is responsible for approved geographic inputs and the local administration hierarchy. The first implementation's historical migrations contain an example state dataset; those historical files must not be rewritten or presented as global coverage. See [regional deployment guardrails](../architecture/multi-state-deployment.md).
+## Capabilities
+- Nigerian GIS inventory of water points, restoration projects, environmental assets, forests, rivers and catchments
+- Community reporting, offline GPS capture, site evidence, staff review and actions
+- Sentinel-2 NDVI with quality gating and field verification
+- Hazard, settlement, river corridor, catchment and LGA exposure analysis
+- Reviewed Nigerian language translation packs, accessibility and privacy governance
+- Optional restricted funding workflow, separate from the national climate platform
 
-## Optional or jurisdiction-specific capabilities
+## Not part of the product
+International deployments, global climate prediction, government certification, automated loan disbursement, or legal confirmation of national borders. Map evidence does not replace official validation.
 
-Community revolving fund / finance tracking is not a universal climate data requirement. It must be configured and legally reviewed for local currencies, eligibility rules, oversight and external reporting where used.
-
-## Outside initial scope
-
-- Live meteorological forecasting or certified disaster alerting
-- Attribution of a specific environmental change to an individual project without evidence
-- Automatic regulatory certifications, fund disbursement, or publication of unverified interventions
-- A secure shared multi-tenant database for unrelated organisations or regions
-
-## Launch conditions
-
-Verify data provenance, geographic coordinates, role access, privacy-controller identity, satellite processing, realistic connectivity, legal obligations, and physical field acceptance in each deployment. Do not infer successful deployment from an automated build.
+## Production requirements
+Verify state and LGA source data, national scope, privacy-controller identity and responsibilities under Nigerian data protection requirements, satellite processing, roles, device tests and scientific review before claiming launch readiness. A successful build is not evidence of nationwide operational coverage.

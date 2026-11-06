@@ -1,40 +1,33 @@
-# CARE-Map: Regional Deployment and Data Isolation
+# CARE-Map Nigeria — State and LGA Deployment
 
-CARE-Map is a general-purpose climate intelligence, environmental resource mapping and community resilience platform. The public-facing product is not associated with any particular agency or funded programme.
+CARE-Map is a Nigeria-only environmental and climate intelligence platform. It supports Nigerian state-level deployment without programme-specific branding; it does not offer a Global or international country mode.
 
-## Supported architecture
+## Product identity and settings
+- Country: Nigeria, ISO NG. The national map is centred at approximately 8.6753°E, 9.0820°N.
+- Default public product: **CARE-Map Nigeria**. No region environment variables are needed.
+- To configure a state pilot, set `NEXT_PUBLIC_CAREMAP_REGION_NAME` to an actual Nigerian state (or FCT), `NEXT_PUBLIC_CAREMAP_REGION_DATA_APPROVED=true`, plus a reviewed map centre using `NEXT_PUBLIC_CAREMAP_MAP_LONGITUDE` and `NEXT_PUBLIC_CAREMAP_MAP_LATITUDE`.
+- The old `NEXT_PUBLIC_CAREMAP_STATE_NAME` and `NEXT_PUBLIC_CAREMAP_STATE_DATA_APPROVED` variables remain accepted for compatibility with Nigerian deployments only.
+- The approval flag is an operator attestation, **not proof** of dataset validation or tenant isolation. Public branding remains Nigeria-wide.
+- Other countries, arbitrary international names and `Global` are rejected.
 
-- One independently configured deployment per region or operating organisation.
-- Separate PostgreSQL/PostGIS database, identity records, encryption/session secrets, file storage, privacy controller, verified GIS layers, and operating procedures.
-- The default public label is **Global**, with a world-scale map. This is a neutral presentation only; it does not assert that global datasets are installed.
-- To display a specific region, set `NEXT_PUBLIC_CAREMAP_REGION_NAME`, `NEXT_PUBLIC_CAREMAP_REGION_DATA_APPROVED=true`, and reviewed map latitude/longitude. The approval flag records an operator decision; it does **not** validate GIS datasets or provide tenant isolation.
-- Legacy `NEXT_PUBLIC_CAREMAP_STATE_NAME` and `NEXT_PUBLIC_CAREMAP_STATE_DATA_APPROVED` environment variables remain accepted for compatibility.
+## Coordinates and national coverage
+The WGS84 extent in `src/lib/nigeria-geography.ts` is a broad *screening rectangle*. It rejects clearly international coordinates but must never be represented as an authoritative national boundary. Exact national affiliation, especially near borders and coastlines, needs reviewed national/state/LGA polygon layers, provenance, QA, and human review. Map navigation stays near Nigeria.
 
-## Critical database restriction
+All 36 states and the FCT need authoritative and reviewed boundaries, identifiers and supporting LGA coverage for nationwide GIS completeness. This project does not seed all of them automatically.
 
-Historical migration `db/migrations/001_init.sql` seeds a specific Nigerian state and marks certain local government areas as pilots. **Do not edit this historical migration**: database migration checksums protect already-provisioned installations. New non-default deployments must not relabel these historic records as a different region. For a freshly migrated empty database, an operator can use the explicit `npm run geo:bootstrap -- approved-areas.json` script to replace only the original untouched seed. It requires verified `DATABASE_URL`, `AIVEN_CA_CERT` and `CAREMAP_GEOGRAPHY_BOOTSTRAP_CONFIRM=REPLACE_EMPTY_INITIAL_GEOGRAPHY`. A JSON file must declare `regionName`, `provenance`, and `areas` containing unique `{code,name,pilot}` entries. The script refuses existing boundaries or operational records and runs within a transaction. Never execute it on an operational deployment; verify all relationships, spatial layers and field acceptance gates before launch.
+## Historical deployment and safe bootstrap
+Historical database migration `001_init.sql` seeds the original pilot state's LGAs. Migration history/checksums must remain unchanged. A new **empty** Nigerian state deployment can use `npm run geo:bootstrap -- approved-areas.json` with explicit operator approval, reviewed `DATABASE_URL` and `AIVEN_CA_CERT`, and `CAREMAP_GEOGRAPHY_BOOTSTRAP_CONFIRM=REPLACE_EMPTY_INITIAL_GEOGRAPHY`; the script refuses operational data and existing verified boundaries. Never run it on an active database.
 
-The current tables use `lgas` and `lga_code` as internal administrative-geography identifiers. The UI can speak about administrative areas, but this **does not yet make geographic identifiers universally portable**. A truly arbitrary country, province or multi-country deployment needs a reviewed migration for administrative-unit hierarchy and source-specific spatial data.
+The schema currently stores internal `lgas` and `lga_code`, not a nationally complete multi-state hierarchy. A future all-state service needs state codes, validated LGA codes, per-organisation access control, scoped exports and auditing. Separate databases and deployments should be used until multi-tenant isolation is fully designed and tested.
 
-## Deployment checklist
+## State Sentinel processing
+The implemented state-wide Sentinel-2 tiling code requires a specifically configured Nigerian state and complete approved LGA polygons. Without a state selection, the workflow does **not** create misleading `Nigeria State` analysis jobs. A national aggregate is a separate future capability with state-aware aggregation, quotas and complete spatial quality controls.
 
-1. Choose and verify the geographic scope and data controller.
-2. Provision dedicated Aiven/PostGIS, Cloudinary and Vercel resources.
-3. Verify geographic reference system (WGS84), administrative codes and boundary provenance.
-4. Remove or replace legacy seed data only with a documented, backed-up transition, never by relabeling it.
-5. Import approved environmental layers, settlements, water points, land cover, catchments and hazard evidence.
-6. Configure legal basis, retention, operator contacts and reviewed translations; avoid location-specific legal claims outside the jurisdiction.
-7. Validate GIS boundaries, report geolocation checks, satellite imagery quality gates and role permissions.
-8. Run CI and field acceptance with real devices; validate access, privacy, scaling and monitoring before public release.
+## Nigerian governance
+The data controller must review the Nigeria Data Protection Act 2023, Nigeria Data Protection Commission guidance, retention, lawful bases, rights, storage/processor transfers and breach reporting. Official NDPC resource: https://ndpc.gov.ng/.
 
-## Future central multi-region service
+## Optional community finance
+The existing restricted community fund module is optional and contains legacy NGN-specific pilot data/rules. It does not imply public funding or payment execution and is not the defining purpose of CARE-Map.
 
-A shared platform would require organisation/region IDs on every scoped table, composite uniqueness, database-enforced isolation, per-request authorization, scoped exports, audit controls, and migration/recovery plans. This is not implemented by presentation settings. Until then use separate databases and deployments.
-
-## Optional modules
-
-Community-fund accounting is a restricted, jurisdiction-specific extension of the core environment platform. Monetary units, policy references and approval chains must be reviewed before this module is used in a new region. It is not evidence of payments or funding.
-
-## Historical migration comment compatibility
-
-One comment-only wording cleanup in migration `019_benue_crf_mis.sql` has an explicitly calculated legacy checksum accepted by both the web migrator and CLI migrator. Its executable SQL is unchanged. Other historical migration edits remain prohibited and must be introduced in new numbered files.
+## Migration checksum compatibility
+The historical `019_benue_crf_mis.sql` filename remains to preserve migration identity. The comment-only legacy checksum accommodation in the migration tools must be retained. All future SQL changes go into new migration files.
