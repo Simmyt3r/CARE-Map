@@ -30,7 +30,7 @@ jobs:
           node-version: 22
       - run: npm install
       - run: npm audit --omit=dev --audit-level=critical
-      - run: npm run typecheck
+      - run: node --check scripts/bootstrap-geography.mjs\n      - run: npm run typecheck
       - run: npm run lint
       - run: npm test
       - name: Verify scheduled PostGIS risk and retention maintenance

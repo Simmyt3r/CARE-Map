@@ -90,7 +90,7 @@ The repository contains an implemented Next.js application, PostGIS migrations, 
 
 Architecture decision: docs/architecture/decisions/0003-adopt-aiven-postgis-nextjs.md
 
-## Local setup
+## Optional fresh-region bootstrap\n\nThe original migration seed reflects the first implementation. A new, otherwise-empty database can replace that seed **only with explicit operator approval** and verified administrative area codes using `npm run geo:bootstrap -- approved-areas.json`. The script requires `CAREMAP_GEOGRAPHY_BOOTSTRAP_CONFIRM=REPLACE_EMPTY_INITIAL_GEOGRAPHY`, refuses existing boundaries or operational records, and rolls back on failure. Never run this against a live dataset. Follow [regional deployment guidance](docs/architecture/multi-state-deployment.md).\n\n## Local setup
 
 1. Create an Aiven for PostgreSQL service.
 2. Copy .env.example to .env.local.
