@@ -57,7 +57,7 @@ export async function validateLgaPoint(lgaCode:string,point:FieldPoint){
   const result=await query<{inside:boolean|null}>(`SELECT CASE WHEN boundary IS NULL THEN NULL
       ELSE ST_Covers(boundary,ST_SetSRID(ST_MakePoint($2,$3),4326)) END inside
     FROM lgas WHERE code=$1`,[lgaCode,point.longitude,point.latitude]);
-  if(!result.rowCount)throw new Error("Unknown Benue LGA.");
+  if(!result.rowCount)throw new Error("Unknown administrative area for this deployment.");
   if(result.rows[0].inside===false)
     throw new Error("Point does not fall inside the selected LGA polygon. Check GPS and LGA selection.");
   return result.rows[0].inside===true;

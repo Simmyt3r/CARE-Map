@@ -1,5 +1,5 @@
 /**
- * Index for the mandatory forms in the revised ACReSAL CRF Manual, Part Four,
+ * Index for the optional programme-specific forms in the initial CRF manual, Part Four,
  * pages 61–103. This is a data-entry COMPANION, not a modified legal form.
  * Original printed/PDF content, signatures and bank instructions remain in
  * the signed, SPMU-controlled source document.
@@ -241,7 +241,7 @@ export const CRF_TEMPLATES:CrfTemplate[]=[
   f("buyers","Off-taker CAC reference, produce, volume, quality, price basis, payment terms, collection point, review date","Register",true,"textarea"),
   f("payment_checks","Registration and references from at least two producers","Due diligence",true),
   f("removed_buyers","Removed buyers with reasons, date and approving authority","Removals")
- ],"Benue is not among the initially identified three states for the formal market-linkage pilot; use only when authorized.")
+ ],"This external programme report applies only where independently authorized by the sponsoring organisation.")
 ];
 export const CRF_TEMPLATE_CODES=CRF_TEMPLATES.map(t=>t.code);
 export function getCrfTemplate(code:string){return CRF_TEMPLATES.find(t=>t.code===code);}

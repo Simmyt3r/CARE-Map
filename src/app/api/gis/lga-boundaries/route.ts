@@ -72,7 +72,7 @@ export async function POST(request:Request){
         let match:{code:string;name:string}|undefined;
         for(const code of candidates.codes){match=byCode.get(code);if(match)break;}
         if(!match){for(const name of candidates.names){match=byName.get(name);if(match)break;}}
-        if(!match)throw new Error("Could not match feature to a CARE-Map LGA. Include code/lga_code or a recognized LGA name.");
+        if(!match)throw new Error("Could not match feature to a configured administrative area. Include its code or recognized name.");
         if(matchedCodes.has(match.code))throw new Error("Duplicate boundary feature for "+match.name+" in this import batch.");
 
         const geo=JSON.stringify(feature.geometry);
@@ -128,7 +128,7 @@ export async function POST(request:Request){
     }});
   }catch(e){
     await client.query("ROLLBACK").catch(()=>{});
-    return error(e instanceof Error?e.message:"LGA boundary import failed.",400);
+    return error(e instanceof Error?e.message:"Administrative boundary import failed.",400);
   }finally{
     client.release();
   }
