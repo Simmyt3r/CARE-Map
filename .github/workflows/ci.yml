@@ -46,6 +46,10 @@ jobs:
         run: npx vitest run tests/statewide-ndvi.integration.test.ts
         env:
           CAREMAP_PG_INTEGRATION_URL: postgresql://ci:ci@localhost:5432/ci
+          NEXT_PUBLIC_CAREMAP_REGION_NAME: Benue
+          NEXT_PUBLIC_CAREMAP_REGION_DATA_APPROVED: "true"
+          NEXT_PUBLIC_CAREMAP_MAP_LONGITUDE: "8.53"
+          NEXT_PUBLIC_CAREMAP_MAP_LATITUDE: "7.73"
       - name: Verify CRF migration and two-account financial safeguards
         run: npx vitest run tests/crf-mis.integration.test.ts
         env:

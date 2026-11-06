@@ -1,3 +1,4 @@
+import {isWithinNigeriaExtent} from "@/lib/nigeria-geography";
 import type {QueryResultRow} from "pg";
 
 export type GeoPolygon={
@@ -72,6 +73,8 @@ export function normalizeAoi(input:any):GeoPolygon{
           point[0]< -180||point[0]>180||point[1]< -90||point[1]>90){
           throw new Error("AOI coordinates must be valid WGS84 [longitude, latitude] pairs.");
         }
+        if(!isWithinNigeriaExtent(point[1],point[0]))
+          throw new Error("CARE-Map only processes satellite AOIs within Nigeria\x27s geographic extent.");
         minLon=Math.min(minLon,point[0]);maxLon=Math.max(maxLon,point[0]);
         minLat=Math.min(minLat,point[1]);maxLat=Math.max(maxLat,point[1]);
         if(i>0){const prev=ring[i-1];signedArea+=prev[0]*point[1]-point[0]*prev[1];}

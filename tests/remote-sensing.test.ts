@@ -13,6 +13,8 @@ describe("remote sensing helpers",()=>{
     const polygon={type:"Polygon",coordinates:[[[8.5,7.7],[8.6,7.7],[8.6,7.8],[8.5,7.7]]]};
     expect(normalizeAoi(polygon)).toEqual(polygon);
     expect(()=>normalizeAoi({type:"Point",coordinates:[8.5,7.7]})).toThrow();
+    const abroad={type:"Polygon",coordinates:[[[-0.1,51.5],[0,51.5],[0,51.6],[-0.1,51.5]]]};
+    expect(()=>normalizeAoi(abroad)).toThrow(/Nigeria/);
   });
 
   it("classifies vegetation loss severity",()=>{

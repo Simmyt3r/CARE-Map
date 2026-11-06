@@ -3,6 +3,9 @@ export const DEFAULT_LOCALE="en";
 
 export const targetLanguages=[
   {code:"en",name:"English",nativeName:"English"},
+  {code:"ha",name:"Hausa",nativeName:"Hausa"},
+  {code:"yo",name:"Yoruba",nativeName:"Yorùbá"},
+  {code:"ig",name:"Igbo",nativeName:"Igbo"},
   {code:"tiv",name:"Tiv",nativeName:"Tiv"},
   {code:"idu",name:"Idoma",nativeName:"Idoma"},
   {code:"ige",name:"Igede",nativeName:"Igede"}
