@@ -52,7 +52,7 @@ describe.skipIf(!url)("GIS context against real PostGIS",()=>{
   const poly={type:"Polygon",coordinates:[[[8.50,7.70],[8.55,7.70],[8.55,7.75],[8.50,7.75],[8.50,7.70]]]};
   const result=await resolveSpatialContext(poly);
   expect(result.scope).toBe("area");
-  expect(result.state).toBe("Benue");
+  expect(result.state).toBeNull();
   expect(result.lgas.map(x=>x.code)).toEqual(["LGA1","LGA2"]);
   expect(result.lgas.reduce((sum,l)=>sum+(l.coveragePct||0),0)).toBeCloseTo(100,0);
   expect(result.communities.map(c=>c.name)).toContain("Community A");
@@ -70,14 +70,14 @@ describe.skipIf(!url)("GIS context against real PostGIS",()=>{
   expect(result.scope).toBe("point");
   expect(result.lgas.map(x=>x.code)).toEqual(["LGA1"]);
   expect(result.assets.some(x=>x.kind==="borehole"&&x.inside)).toBe(true);
-  expect(informativeLocationText(result)).toContain("Makurdi Test LGA, Benue State");
+  expect(informativeLocationText(result)).toContain("Makurdi Test administrative area, region not established");
  },30_000);
 
- it("does not invent a Nigerian state/LGA outside known coverage",async()=>{
+ it("does not invent a region or administrative area outside known coverage",async()=>{
   const result=await resolveSpatialContext(parsePoint(4.5,3.5));
   expect(result.state).toBeNull();
   expect(result.lgas).toHaveLength(0);
   expect(result.communityMatch).toBe("not_found");
-  expect(result.warnings.join(" ")).toMatch(/state and LGA are not confirmed/);
+  expect(result.warnings.join(" ")).toMatch(/region and administrative area are not confirmed/);
  },30_000);
 });
