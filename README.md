@@ -119,7 +119,10 @@ The default product and public map are **Nigeria-wide**, not global. A state-spe
 
 | Variable | Purpose |
 |---|---|
-| NEXT_PUBLIC_CAREMAP_REGION_NAME | Optional approved Nigerian state/FCT (default: Nigeria) |\n| NEXT_PUBLIC_CAREMAP_REGION_DATA_APPROVED | Required `true` for an approved Nigerian state pilot |\n| NEXT_PUBLIC_CAREMAP_MAP_LONGITUDE / NEXT_PUBLIC_CAREMAP_MAP_LATITUDE | Verified map centre within Nigeria (required for a state pilot) |\n| DATABASE_URL | Aiven PostgreSQL connection URI |
+| NEXT_PUBLIC_CAREMAP_REGION_NAME | Optional approved Nigerian state/FCT (default: Nigeria) |
+| NEXT_PUBLIC_CAREMAP_REGION_DATA_APPROVED | Required `true` for an approved Nigerian state pilot |
+| NEXT_PUBLIC_CAREMAP_MAP_LONGITUDE / NEXT_PUBLIC_CAREMAP_MAP_LATITUDE | Verified map centre within Nigeria (required for a state pilot) |
+| DATABASE_URL | Aiven PostgreSQL connection URI |
 | AIVEN_CA_CERT | Aiven CA certificate for TLS verification |
 | SESSION_SECRET | Signs authentication sessions |
 | CRON_SECRET | Protects scheduled maintenance/risk endpoint |
