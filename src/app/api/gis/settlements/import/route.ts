@@ -1,3 +1,4 @@
+import {isWithinNigeriaExtent} from "@/lib/nigeria-geography";
 import {NextResponse} from "next/server";
 import {getSession,isStaff} from "@/lib/auth";
 import {error} from "@/lib/http";
@@ -34,6 +35,7 @@ function pointFromCsv(row:Row){
   const lng=Number(row.longitude??row.lng??row.lon);
   if(!Number.isFinite(lat)||lat< -90||lat>90)throw new Error("Invalid latitude.");
   if(!Number.isFinite(lng)||lng< -180||lng>180)throw new Error("Invalid longitude.");
+  if(!isWithinNigeriaExtent(lat,lng))throw new Error("Settlement is outside Nigeria\x27s geographic screening extent.");
   return {latitude:lat,longitude:lng};
 }
 function pointFromFeature(feature:Feature){

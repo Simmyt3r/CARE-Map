@@ -1,3 +1,4 @@
+import {assertNigeriaGeometry} from "@/lib/nigeria-geography";
 import {NextResponse} from "next/server";
 import {getSession,isStaff} from "@/lib/auth";
 import {error} from "@/lib/http";
@@ -67,6 +68,7 @@ export async function POST(request:Request){
         const feature=features[i];
         if(!feature||feature.type!=="Feature")throw new Error("Item must be a GeoJSON Feature.");
         if(!feature.geometry||!isBoundaryGeometry(feature.geometry.type))throw new Error("Geometry must be Polygon or MultiPolygon.");
+        assertNigeriaGeometry(feature.geometry);
 
         const candidates=lgaFeatureCandidates(feature);
         let match:{code:string;name:string}|undefined;
