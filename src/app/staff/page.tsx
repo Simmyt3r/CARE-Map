@@ -1,5 +1,5 @@
 import Link from "next/link";
-import {getSession,isAdmin} from "@/lib/auth";
+import {getSession} from "@/lib/auth";
 import {loadWorkspaceAccess} from "@/lib/workspace-access";
 import {WORKSPACES,canAccessWorkspace} from "@/lib/workspaces";
 import {query} from "@/lib/db";
@@ -15,7 +15,7 @@ type RiskRow={entity_type:string;name:string|null;lga_code:string;risk_score:num
 export default async function StaffDashboard(){
  const session=await getSession();
  const access=await loadWorkspaceAccess(session);
- const admin=isAdmin(session);
+ const admin=session?.role==="admin";
  const canSeeOperations=admin||canAccessWorkspace(session?.role||"",access,"operations");
  const assigned=WORKSPACES.filter(item=>canAccessWorkspace(session?.role||"",access,item.id));
  let counts:DashboardCounts|null=null;
