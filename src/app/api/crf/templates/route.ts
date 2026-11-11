@@ -49,7 +49,7 @@ export async function GET(request:Request){
  const params=new URL(request.url).searchParams;
  const requested=params.get("template")||"";
  if(requested&&!getCrfTemplate(requested))return error("Unknown CRF template.");
- const allowed=CRF_TEMPLATES.filter(t=>mayRead(t,access.roles));
+ const allowed=CRF_TEMPLATES.filter(t=>access.adminReadAll||mayRead(t,access.roles));
  const templates=allowed.map(t=>({code:t.code,title:t.title,manualPage:t.manualPage,
    scope:t.scope,fields:t.fields,note:t.note||null}));
  if(requested&&!allowed.some(t=>t.code===requested))

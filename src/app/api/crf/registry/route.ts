@@ -33,7 +33,7 @@ export async function GET(request:Request){
  const user=await getSession();
  try{
   const access=await crfAccess(user);
-  if(!access||!canCrf(access.roles,"view"))return error("CRF role required.",403,"CRF_FORBIDDEN");
+  if(!access||(!access.adminReadAll&&!canCrf(access.roles,"view")))return error("CRF role required.",403,"CRF_FORBIDDEN");
   const lga=new URL(request.url).searchParams.get("lga")||"";
   if(lga.length>60)return error("Invalid LGA filter.");
   const [communities,cigs,lgas,members]=await Promise.all([
@@ -54,7 +54,7 @@ export async function GET(request:Request){
        GROUP BY c.id,k.id
        ORDER BY c.created_at DESC LIMIT 400`,[lga]),
    query("SELECT code,name FROM lgas ORDER BY name"),
-   canCrf(access.roles,"registry")||access.roles.some(role=>
+   access.adminReadAll||canCrf(access.roles,"registry")||access.roles.some(role=>
      ["me_officer","finance_officer","internal_auditor"].includes(role))
     ?query(`SELECT m.id,m.cig_id,m.member_reference,m.sex,m.participation_verified,m.recorded_by,
        m.verification_ref FROM crf_cig_members m JOIN crf_cigs c ON c.id=m.cig_id

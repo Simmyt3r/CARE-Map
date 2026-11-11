@@ -10,7 +10,7 @@ export async function GET(request:Request){
  const user=await getSession();
  try{
   const access=await crfAccess(user);
-  if(!access||!canCrf(access.roles,"report"))return error("CRF reporting role required.",403,"CRF_FORBIDDEN");
+  if(!access||(!access.adminReadAll&&!canCrf(access.roles,"report")))return error("CRF reporting role required.",403,"CRF_FORBIDDEN");
   const params=new URL(request.url).searchParams;
   const month=params.get("month")||new Date().toISOString().slice(0,7);
   const lga=params.get("lga")||"";

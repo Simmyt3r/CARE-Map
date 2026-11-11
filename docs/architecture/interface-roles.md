@@ -31,7 +31,7 @@ Presets in **Admin → Users & access** quickly assign common combinations. Admi
 - Navigation and dashboard cards show assigned interfaces only. Administrators see all interfaces, grouped into collapsible sections.
 - `src/proxy.ts` authorizes **staff pages and private API routes** against the current database grants for every request, not against an untrusted browser setting or stale JWT permission payload. Admin bypass is still subject to the original endpoint's existing data-validation and CRF duty rules.
 - Public community report submissions, own-report APIs, public resource listing and map queries retain their existing public behavior.
-- The separate community-fund assignment system is **still required** even when the Finance interface is assigned.
+- Administrators can **read** every confidential community-fund register and reporting view, but changing financial records, certifying evidence or approving filings still requires an independently assigned CRF duty. For non-admin staff, the separate community-fund assignment system is **still required** even when Finance is assigned.
 - Admin workspace changes are transactionally audited. Permission checks fail closed on database failures except the migration-022 compatibility case, when staff are limited to Field assets + Community reports.
 - This is **interface authorization**, not fine-grained geographic or organisation-level data isolation. Those require separate scoped database design.
 
