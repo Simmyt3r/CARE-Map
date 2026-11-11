@@ -12,7 +12,7 @@ export const dynamic="force-dynamic";
  */
 export async function GET(request:Request){
  const session=await getSession();const access=await crfAccess(session);
- if(!access||!canCrf(access.roles,"report"))
+ if(!access||(!access.adminReadAll&&!canCrf(access.roles,"report")))
   return error("CRF reporting duty required.",403,"CRF_FORBIDDEN");
  const sp=new URL(request.url).searchParams;
  const communityId=sp.get("communityId")||"";

@@ -4,7 +4,7 @@ import type {Session} from "@/lib/auth";
 
 export const CRF_ROLES=["desk_officer","me_officer","gis_officer","finance_officer","internal_auditor","management"] as const;
 export type CrfRole=typeof CRF_ROLES[number];
-export type CrfAccess={userId:string;roles:CrfRole[]};
+export type CrfAccess={userId:string;roles:CrfRole[];adminReadAll:boolean};
 export type CrfPolicy={recoveryMinimum:number;par60Maximum:number;womenMemberMinimum:number;womenValueMinimum:number;membersPerCig:number};
 export const CRF_POLICY:CrfPolicy={
  recoveryMinimum:75,par60Maximum:25,womenMemberMinimum:40,womenValueMinimum:30,membersPerCig:15
@@ -20,12 +20,16 @@ export function canCrf(roles:readonly CrfRole[],permission:"view"|"registry"|"fi
  };
  return roles.some(role=>allowed[permission].includes(role));
 }
-/** Administrator status does not automatically confer confidential CRF access. */
+/** Admins may view CRF oversight data but need independently assigned CRF duties for edits or verification. */
 export async function crfAccess(session:Session|null):Promise<CrfAccess|null>{
  if(!session||session.role==="registered_community")return null;
  const rs=await query<{crf_role:CrfRole}>(
    "SELECT crf_role FROM crf_role_assignments WHERE user_id=$1 ORDER BY crf_role",[session.sub]);
- return rs.rows.length?{userId:session.sub,roles:rs.rows.map(r=>r.crf_role)}:null;
+ const roles=rs.rows.map(r=>r.crf_role);
+ // Admins can inspect the full confidential CRF workspace. Their CRF duty
+ // assignments remain authoritative for any write, approval or verification.
+ return roles.length||session.role==="admin"
+  ?{userId:session.sub,roles,adminReadAll:session.role==="admin"}:null;
 }
 export async function crfTransaction<T>(work:(client:PoolClient)=>Promise<T>):Promise<T>{
  const client=await pool().connect();

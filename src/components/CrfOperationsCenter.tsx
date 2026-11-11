@@ -60,7 +60,7 @@ export default function CrfOperationsCenter({admin,initialAccess}:{
  const canRegistry=roles.some(r=>["desk_officer","management"].includes(r));
  const canFinance=roles.some(r=>["desk_officer","finance_officer"].includes(r));
  const canVerify=roles.some(r=>["finance_officer","internal_auditor"].includes(r));
- const canReport=roles.some(r=>["desk_officer","finance_officer","internal_auditor","me_officer","management"].includes(r));
+ const canReport=admin||roles.some(r=>["desk_officer","finance_officer","internal_auditor","me_officer","management"].includes(r));
  async function read(path:string){
   const r=await fetch(path,{cache:"no-store"});
   const j=await r.json().catch(()=>({}));
@@ -121,6 +121,10 @@ export default function CrfOperationsCenter({admin,initialAccess}:{
       aria-pressed={tab===t} onClick={()=>setTab(t)}>{t==="overview"?"Command dashboard":
        t==="registry"?"Communities & CIGs":t==="finance"?"Loans & recovery":t==="field"?"Inspections & T16/T17":t==="templates"?"Manual T1–T19":"Role assignments"}</button>)}
   </div>
+  {admin&&initialAccess&&!roles.length&&<div className="notice" role="status">
+   Administrator oversight is read-only until a separately authorized CRF duty is assigned.
+   Entries, independent reviews and bank-related verification remain restricted.
+  </div>}
   {loading&&<p className="muted" role="status">Checking authenticated CRF records…</p>}
   {message&&<div className="notice" role="status">{message}</div>}
   {!initialAccess&&tab!=="access"&&<div className="card stack">

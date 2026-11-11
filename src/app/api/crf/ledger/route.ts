@@ -33,7 +33,7 @@ export async function GET(request:Request){
  const user=await getSession();
  try{
   const access=await crfAccess(user);
-  if(!access||!canCrf(access.roles,"finance")&&!canCrf(access.roles,"report"))
+  if(!access||(!access.adminReadAll&&!canCrf(access.roles,"finance")&&!canCrf(access.roles,"report")))
    return error("Authorized CRF finance/review role required.",403,"CRF_FORBIDDEN");
   const loanId=new URL(request.url).searchParams.get("loanId");
   const loans=await query(`SELECT l.id,l.cig_id,l.loan_reference,l.cycle,l.principal_ngn,

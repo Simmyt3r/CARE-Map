@@ -33,7 +33,7 @@ export async function GET(){
  const session=await getSession();
  try{
   const access=await crfAccess(session);
-  if(!access||!canCrf(access.roles,"view"))return error("CRF duty required.",403,"CRF_FORBIDDEN");
+  if(!access||(!access.adminReadAll&&!canCrf(access.roles,"view")))return error("CRF duty required.",403,"CRF_FORBIDDEN");
   const [inspections,assets,actions]=await Promise.all([
    query(`SELECT i.id,i.cig_id,c.cig_name,k.community_name,k.lga_code,i.inspected_on,
       i.activity_verified,i.findings_status,i.notes,i.evidence_ref,
