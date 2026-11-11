@@ -8,8 +8,7 @@ function secret(){const value=process.env.SESSION_SECRET;if(!value||value.length
 export async function createSessionToken(session:Session){return new SignJWT({email:session.email,name:session.name,role:session.role}).setProtectedHeader({alg:"HS256"}).setSubject(session.sub).setIssuedAt().setExpirationTime("12h").sign(secret());}
 export async function setSessionCookie(token:string){const jar=await cookies();jar.set(COOKIE,token,{httpOnly:true,secure:process.env.NODE_ENV==="production",sameSite:"lax",path:"/",maxAge:43200});}
 export async function clearSessionCookie(){const jar=await cookies();jar.set(COOKIE,"",{httpOnly:true,secure:process.env.NODE_ENV==="production",sameSite:"lax",path:"/",maxAge:0});}
-export async function getSession():Promise<Session|null>{
- const token=(await cookies()).get(COOKIE)?.value;
+async function sessionFromToken(token:string|undefined):Promise<Session|null>{
  if(!token)return null;
  try{
    const {payload}=await jwtVerify(token,secret());
@@ -22,6 +21,13 @@ export async function getSession():Promise<Session|null>{
    if(!user)return null;
    return {sub:user.id,email:user.email,name:user.name,role:user.role};
  }catch{return null;}
+}
+export async function getSession():Promise<Session|null>{
+ return sessionFromToken((await cookies()).get(COOKIE)?.value);
+}
+/** Proxy reads the request cookie directly instead of relying on server-component context. */
+export async function getSessionFromRequest(request:{cookies:{get:(name:string)=>{value:string}|undefined}}):Promise<Session|null>{
+ return sessionFromToken(request.cookies.get(COOKIE)?.value);
 }
 export function isStaff(s:Session|null):s is Session{return !!s&&(s.role==="staff"||s.role==="admin");}
 export function isAdmin(s:Session|null):s is Session{return !!s&&s.role==="admin";}
